@@ -14,12 +14,9 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		RepaSocket rpa = RepaSocket.getRepaSocket();
 		try {
-			rpa.repaOpen();
-			rpa.registerInterest("apt-chat://message");
-			rpa.repaClose();
-		} catch (SocketException e) {
+			MonitorAbelha monitor = new MonitorAbelha();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
