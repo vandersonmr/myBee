@@ -1,60 +1,114 @@
 package com.example.teste21;
 
-import java.net.SocketException;
 import java.util.LinkedList;
+
+import android.util.Log;
 
 import ufrj.coppe.lcp.repa.PrefixAddress;
 import ufrj.coppe.lcp.repa.RepaMessage;
 import ufrj.coppe.lcp.repa.RepaSocket;
 
 public class MonitorAbelha {
-	RepaSocket rpa = RepaSocket.getRepaSocket();
-	LinkedList<String> listaReq = new LinkedList<String>();
-	public MonitorAbelha(){
+	private RepaSocket rpa = RepaSocket.getRepaSocket();
+	private LinkedList<String> listReq = new LinkedList<String>();
+	private Thread execution;
+	private Thread listenerMsg;
+	public MonitorAbelha() {
 		try {
-			listenerMsg();
+			initRepa();
+			
+			listenerMsg = new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					listenerMsg();
+				}
+			});
+			listenerMsg.setPriority(Thread.MAX_PRIORITY);
+			listenerMsg.start();
+			
+			execution = new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					trataPedidos();
+				}
+			});
+			execution.setPriority(Thread.MIN_PRIORITY);
+			execution.start();
+			
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	// Gera dado randomico
-	private String gerarDadoTemperatura(){
-		return String.valueOf((int)(Math.random()*100))+"º celcius";
+
+	private void initRepa() {
+		try {
+			rpa.repaOpen();
+			rpa.registerInterest("client");
+		} catch (Exception e) {
+			// TODO!
+			e.printStackTrace();
+		}
+	}
+
+	private void closeRepa() {
+		rpa.repaClose();
 	}
 	
-	// Recebe um string e manda pro servidor.
-	public void sendMsgToServer(String data){
-		String interest="servidor";
-		int data_length=data.length();
-		if (data_length>0){
+	public void close(){
+		listenerMsg.stop();
+		execution.stop();
+		closeRepa();
+	}
+
+	private String gerarDadoTemperatura() {
+		return String.valueOf((int) (Math.random() * 100)) + "º celcius";
+	}
+
+	private void sendMsgToServer(String data) {
+		String interest = "server";
+		int data_length = data.length();
+		if (data_length > 0) {
 			try {
-				rpa.repaSend(new RepaMessage(interest,data.getBytes(),new PrefixAddress()));
+				rpa.repaSend(new RepaMessage(interest, data.getBytes(),
+						new PrefixAddress()));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			System.out.printf("Message sent I: %s | D: %s\n",interest,data);
+			Log.i("Client","Message sent I: "+interest+" | D: "+data+"\n");
 		}
 	}
 
-	// PARSE da requisição
-	private void getData(String data){
-		if (data.equals("temperatura")){
+	private void getData(String data) {
+		if (data.equals("temperatura")) {
 			sendMsgToServer(gerarDadoTemperatura());
 		}
 	}
-	
-	// Thread que pega fila e executa
-	private void trataPedidos(){
-		while(!listaReq.isEmpty()){
-			getData(listaReq.remove());
+
+	private void trataPedidos() {
+		while (true) {
+			if(!listReq.isEmpty()){
+				getData(listReq.remove());
+			}
 		}
 	}
-	
-	// Thread que ouve servidor e infilera pedido | EU 
-	public void listenerMsg(){
-		
+
+	private void listenerMsg() {
+		try {
+			while (true) {
+				RepaMessage msg = rpa.repaRecv();
+				if (msg != null) {
+					listReq.add(msg.toString());
+				}
+			}
+		} catch (Exception e) {
+			// TODO!
+			e.printStackTrace();
+		}
 	}
 }
