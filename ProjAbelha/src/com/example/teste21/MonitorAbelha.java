@@ -103,7 +103,7 @@ public class MonitorAbelha {
 			while (true) {
 				RepaMessage msg = rpa.repaRecv();
 				if (msg != null) {
-					listReq.add(msg.toString());
+					listReq.add(new String(msg.getData()));
 				}
 			}
 		} catch (Exception e) {
