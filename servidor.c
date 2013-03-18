@@ -20,7 +20,9 @@ bool terminated;
 FILE *f;
 void saveData(char* addr,char *data){
 	f = fopen(addr,"a+");
-	fprintf(f,"%s\n",data);
+	time_t t;
+	time(&t);
+	fprintf(f,"%s%s\n\n",ctime(&t),data);
 	fclose(f);		
 }
 
