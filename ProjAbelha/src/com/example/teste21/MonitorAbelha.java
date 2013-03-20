@@ -2,6 +2,8 @@ package com.example.teste21;
 
 import java.util.LinkedList;
 
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import ufrj.coppe.lcp.repa.PrefixAddress;
@@ -13,7 +15,17 @@ public class MonitorAbelha {
 	private LinkedList<String> listReq = new LinkedList<String>();
 	private Thread execution;
 	private Thread listenerMsg;
-	public MonitorAbelha() {
+	private Handler handler;
+	private Message message = new Message();
+	
+	private void log(String s){
+		message = new Message();
+		message.obj = s;
+		handler.sendMessage(message);
+	}
+	
+	public MonitorAbelha(Handler handler) {
+		this.handler = handler;
 		try {
 			initRepa();
 			
@@ -49,6 +61,7 @@ public class MonitorAbelha {
 		try {
 			rpa.repaOpen();
 			rpa.registerInterest("client");
+			log("Setado interesse em client");
 		} catch (Exception e) {
 			// TODO!
 			e.printStackTrace();
@@ -81,6 +94,7 @@ public class MonitorAbelha {
 				e.printStackTrace();
 			}
 			Log.i("Client","Message sent I: "+interest+" | D: "+data+"\n");
+			log("Mensagem enviada I: "+interest+" | D: "+data+"\n");
 		}
 	}
 

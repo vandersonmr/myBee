@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Teste21</string>
-    <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="app_name">MonitorAbelhas</string>
+    <string name="action_settings">Configurações</string>
+    <string name="hello_world">Monitoramento de abelhas</string>
+    <string name="title_activity_example">Monitor</string>
 
 </resources>

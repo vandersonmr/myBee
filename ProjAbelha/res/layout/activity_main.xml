@@ -9,8 +9,26 @@
     tools:context=".MainActivity" >
 
     <TextView
+        android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/hello_world" />
+
+    <EditText
+        android:id="@+id/log"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/textView1"
+        android:ems="10"
+        android:inputType="textMultiLine" 
+		android:gravity="top|left"
+        android:singleLine="false"
+        android:lines="10"
+        >
+        <requestFocus />
+    </EditText>
 
 </RelativeLayout>
