@@ -25,8 +25,8 @@ public class MonitorAbelha {
 	}
 	
 	public MonitorAbelha(Handler handler) {
-		this.handler = handler;
 		try {
+			this.handler = handler;
 			initRepa();
 			
 			listenerMsg = new Thread(new Runnable() {
