@@ -47,8 +47,9 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
-	protected void onDestroy(){
-		//monitor.close();
+	protected void onDestroy(){	
+		super.onDestroy();
+		monitor.close();
 	}
 	
 	@Override
