@@ -44,7 +44,7 @@ public class MonitorAbelha {
 				
 				@Override
 				public void run() {
-					trataPedidos();
+					processRequest();
 				}
 			});
 			execution.setPriority(Thread.MIN_PRIORITY);
@@ -78,7 +78,7 @@ public class MonitorAbelha {
 		closeRepa();
 	}
 
-	private String gerarDadoTemperatura() {
+	private String getTemperature() {
 		return String.valueOf((int) (Math.random() * 100)) + "º celcius";
 	}
 
@@ -100,11 +100,11 @@ public class MonitorAbelha {
 
 	private void getData(String data) {
 		if (data.equals("temperatura")) {
-			sendMsgToServer(gerarDadoTemperatura());
+			sendMsgToServer(getTemperature());
 		}
 	}
 
-	private void trataPedidos() {
+	private void processRequest() {
 		while (true) {
 			if(!listReq.isEmpty()){
 				getData(listReq.remove());
