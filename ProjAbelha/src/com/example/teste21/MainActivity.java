@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
-	private MonitorAbelha monitor;
+	private MonitorCliente monitor;
 	private TextView log;
 	
 	private void setLog(String s){
@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
 	            }
 	        };
 
-	        monitor = new MonitorAbelha(handler);
+	        monitor = new MonitorCliente(handler);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
