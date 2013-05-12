@@ -9,21 +9,43 @@
 #include <stdio.h> 
 #include <errno.h>
 #include <pthread.h>
+#include <mysql.h>
 
 #include "hdr/repa.h"
 #include "hdr/linkedlist.h"
 
+#define server "localhost"
+#define user "root"
+#define password "123"
+#define database "monitorAbelhas"
+
 pthread_t thread;
 
-bool terminated;
+bool terminated; 
 
-FILE *f;
-void saveData(char* addr,char *data){
-	f = fopen(addr,"a+");
+MYSQL *connect;
+
+int init_mysql_connection(){
+	connect = mysql_init(NULL);
+	if (mysql_real_connect(connect,server,user,password,database,0,NULL,0) == NULL){
+		printf("%s\n",mysql_error(connect));
+		mysql_close(connect);
+		return 0;
+	}
+	return 1;
+}
+
+void saveData(char *prefix, char *data){
+	char *query = (char*)malloc(255*sizeof(char));
 	time_t t;
 	time(&t);
-	fprintf(f,"%s%s\n\n",ctime(&t),data);
-	fclose(f);		
+	char *date = (char*)malloc(255*sizeof(char));
+	date = ctime(&t);
+	sscanf(date,"%[^\n]",date);
+	sprintf(query,"INSERT INTO temperatures VALUES ('%s','%s','%s')",prefix,date,data);
+	if (mysql_query(connect,query)){ //return true if get an error.
+		printf("%s\n",mysql_error(connect));
+	}
 }
 
 void* handle_message(void* param) {
@@ -59,6 +81,10 @@ int main(void) {
 	char *interest, *data;
 	char *dummy = NULL;
 
+	if (!init_mysql_connection()){
+		return EXIT_FAILURE;
+	}
+
 	if (repa_open() < 0) {
 		printf("Error open repa (Error No: %d \"%s\").\n", errno, strerror(errno));
 		return EXIT_FAILURE;
@@ -77,6 +103,7 @@ int main(void) {
 	while(true);
 
 	terminated = true;
+	mysql_close(connect);
 	repa_close();
 	pthread_join(thread, NULL);
 	exit(EXIT_SUCCESS);
