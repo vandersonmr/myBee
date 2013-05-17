@@ -11,8 +11,8 @@
 #include <pthread.h>
 #include <mysql.h>
 
-#include "hdr/repa.h"
-#include "hdr/linkedlist.h"
+#include "repa/hdr/repa.h"
+#include "repa/hdr/linkedlist.h"
 
 #define server "localhost"
 #define user "root"
