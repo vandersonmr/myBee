@@ -1,6 +1,6 @@
 arch=x86_64
 cc=gcc
-flags=-O3 -w repa/build/lib.linux-$(arch)-2.7/repa.so -lpthread -lpython2.7
+flags=-O3 -w -Irepa/ repa/build/lib.linux-$(arch)-2.7/repa.so -lpthread -lpython2.7
 all: repad servidor client
 repad:
 	cd ./repa;\
