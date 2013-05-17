@@ -1,0 +1,68 @@
+REP API
+=======
+
+	Programming library using the REP protocol. With this library you can 
+send and receive messages using interests.
+
+Usage on Desktop (JAVA)
+=======================
+
+	In your Desktop project:
+
+1. Import the package 'librepa.jar'
+2. Add the shared library 'librepa.so' in subdirectory where the java application
+can find and load it.
+3. On create the RepaSocket, you need put the location of "librepa.so", and this
+library must be same version of your platform (x86 or x86_64).
+4. Before run your Radnet Java application, you must run the "repad" service 
+with root permission.
+
+
+Usage on Android
+================
+
+	In your Android project:
+
+1. Import the package 'librepa.jar'
+2. Add the shared library 'librepa.so' in subdirectory libs/armeabi
+
+Credits/Thanks
+--------------
+
+ * [Renato de Castro Dutra] - Idea of REP protocol
+ * [Héberte Fernandes de Moraes] - Developer of REPD daemon, 
+		REPD service and REP API
+ * [Claudio Luis de Amorim] - Advisor
+
+
+License
+=======
+
+	See LICENSE file.
+
+
+Compiling for:
+==============
+
+#ANDROID:
+ To compile this code to work in linux x86 or x64, set variable "CPATH" for "include" 
+and "include/linux" directory in JAVA (JDK) folder tree and just use make command to build.
+
+ To compile this code to work in android, you will need the 
+android source code:
+	- change variable "CPATH" in "android_cfg_build.sh" for "include" and "include/linux" directory in java folder tree 
+	- change variable "TOP" in "android_cfg_build.sh" and "android_copy.sh" for android source code
+	- run "source android_cfg_build.sh"
+	- use "mm" command to compile the code
+	- use "android_copy.sh" to copy binarys from android tree code
+	
+.:_*_:. If use "mm clean" command, remove all the duplicate folders in android root folder that there are at android/external
+
+
+#PYTHON:
+ To compile the REP Module for Python, unpack the RepaModule-X.X.tar.gz, enter in the folder RepaModule-X.X and use the following commands:
+
+# Build the REP Module
+-> python setup.py build
+# The next command need the root permission because the module will be installed on your Python folder
+-> sudo python setup.py install 
