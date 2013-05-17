@@ -7,9 +7,9 @@ repad:
 	python setup.py build;\
 	cd ..;
 servidor: repad
-	$(cc) servidor2.c $(flags) -I/usr/include/mysql -lmysqlclient -o servidor 
+	$(cc) servidor2.c -I/usr/include/mysql -lmysqlclient -o servidor $(flags)
 client: repad 
-	$(cc) $(flags) client2.c -o  client
+	$(cc) client2.c -o  client $(flags)
 
 
 
