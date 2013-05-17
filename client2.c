@@ -1,5 +1,5 @@
-#include "hdr/repa.h"
-#include "hdr/linkedlist.h"
+#include "repa/hdr/repa.h"
+#include "repa/hdr/linkedlist.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
