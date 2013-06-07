@@ -11,7 +11,7 @@ servidor: repad
 client: repad 
 	$(cc) client2.c -o  client $(flags)
 cgi:
-	$(cc) web-UI/CGI/getDados.c web-UI/CGI/dataDAO.c -o  web-UI/getDados $(flags) -Iinclude/ -I/usr/include/mysql -lmysqlclient
+	$(cc) web-UI/CGI/getDados.c database/dataDAO.c -o web-UI/getDados $(flags) -Iinclude/ -I/usr/include/mysql -lmysqlclient
 clear:
 	rm -f client;\
 	rm -f servidor;\
