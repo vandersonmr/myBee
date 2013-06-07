@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <time.h>
 
+int last = 35;
 void getTemperature(char* data){
 	srand(time(NULL));
-	sprintf(data,"%d",rand() % 100);
+	last += rand() % 4 - 1;
+	sprintf(data,"%d", last);
 	strcat(data," graus celcius.");
 }
 
@@ -41,7 +43,7 @@ int main(){
 	while (true){
 		getTemperature(data);
 		sendMessage(data);
-		sleep(10);
+		sleep(4);
 	}
 	free(interest);
 	free(data);

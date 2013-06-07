@@ -1,0 +1,97 @@
+<html>
+    <meta charset="utf-8">
+<head>
+	<script language="javascript" type="text/javascript" src="jquery.js"></script>
+        <script language="javascript" type="text/javascript" src="jquery.flot.js"></script>
+
+<script type="text/javascript">
+jQuery(document).ready(function () {
+
+	function startTime()
+	{
+		var today=new Date();
+		var h=today.getHours();
+		var m=today.getMinutes();
+		var s=today.getSeconds();
+
+		m=checkTime(m);
+		s=checkTime(s);
+		document.getElementById('horario').innerHTML=h+":"+m+":"+s;
+			t=setTimeout(function(){startTime()},500);
+		}
+
+		function checkTime(i)
+		{
+			if (i<10)
+			{
+				i="0" + i;
+			}
+		return i;
+	}
+
+
+    var temperatures = [], totalPoints = 100;
+    function parseData(input) {
+	if(temperatures.length > 0)
+		temperatures = temperatures.splice(1);
+
+	var rows = input.split("<br>");
+	for(var captura=0; captura < rows.length; ++captura){
+		var temp = rows[captura].split("&")[2];
+
+		temperatures.push(temp);
+		
+	}
+	
+	
+
+        var res = [];
+        for (var i = 0; i < temperatures.length; ++i)
+            res.push([i, temperatures.pop()])
+        return res;
+    }
+
+    var updateInterval = 2000;
+
+
+    var plot = $.plot("#graph", [{data:[],lines:{show:true}}]);
+
+    function update() {
+	var input;
+	$.get('cgi-bin/getDados').success(
+	    function(data){	
+		
+      		 plot.setData([ parseData(data) ]);
+		 plot.setupGrid();
+       		 plot.draw();
+	});
+
+        setTimeout(update, updateInterval);
+    }
+    
+    startTime();
+    update();
+});
+</script>
+
+</head>
+<body>
+<center><h1>Sistema de Monitoramento Abelhas<h1></center>
+<center><h3>Horário atual: <div id="horario"></div></h3></center>
+<div >
+	<h2>Node: 1</h2>
+		<div id="graph" style="width:600px;height:300px;float:left"></div>
+		<h3>Infos:</h3>		
+		<div id="info" ><h4>Ultima coleta:</h4>
+					Temperatura: <br>
+					Horário:<br>
+
+				<h3>Status: <br> <div id="status" style="color:blue">OK</div></h3>
+					 
+		</div>
+		<br><br><br><br><br><br>
+		<div id="mouseInfo" style="float:left">Passe o mouse por cima para indentificar dados em particular.</div>
+	</body>
+</div>
+
+</html>

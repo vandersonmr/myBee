@@ -9,15 +9,15 @@
 #include <stdio.h> 
 #include <errno.h>
 #include <pthread.h>
-#include <mysql.h>
+#include <mysql/mysql.h>
 
-#include "hdr/repa.h"
-#include "hdr/linkedlist.h"
+#include "repa/hdr/repa.h"
+#include "repa/hdr/linkedlist.h"
 
-#define server "localhost"
-#define user "root"
-#define password "123456"
-#define database "monitorAbelhas"
+#define SERVER "localhost"
+#define USER "root"
+#define PASSWORD "123456"
+#define DATABASE "monitoramentoAbelha"
 
 pthread_t thread;
 
@@ -27,7 +27,13 @@ MYSQL *connect;
 
 int init_mysql_connection(){
 	connect = mysql_init(NULL);
-	if (mysql_real_connect(connect,server,user,password,database,0,NULL,0) == NULL){
+	
+	if(!connect){
+		fprintf(stderr, "%s\n", mysql_error(connect));
+		exit(EXIT_FAILURE);
+	}
+ 	connect=mysql_real_connect(connect,SERVER,USER,PASSWORD,DATABASE,0,NULL,0);	
+	if(!connect){
 		printf("%s\n",mysql_error(connect));
 		mysql_close(connect);
 		return 0;
