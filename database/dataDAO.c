@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "dataDAO.h" 
+#include <time.h>
 
 int connectDatabase(char* USER, char* PASS,char* db, char* server){
 	connect=mysql_init(NULL);
@@ -19,9 +20,20 @@ int connectDatabase(char* USER, char* PASS,char* db, char* server){
 	return 0;
 }
 
-void saveData(Data* data){
-	
+
+void saveData(char *prefix, char *data){
+	char *query = (char*)malloc(255*sizeof(char));
+	time_t t;
+	time(&t);
+	char *date = (char*)malloc(255*sizeof(char));
+	date = ctime(&t);
+	sscanf(date,"%[^\n]",date);
+	sprintf(query,"INSERT INTO temperatures VALUES ('%s','%s','%s')",prefix,date,data);
+	if (mysql_query(connect,query)){ //return true if get an error.
+		printf("%s\n",mysql_error(connect));
+	}
 }
+
 
 int loadLastsDatas(Data* data,int q){
 	MYSQL_RES *res_set;

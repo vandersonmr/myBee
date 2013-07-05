@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <mysql.h>
-
+#include "dataDAO.h"
 #include "hdr/repa.h"
 #include "hdr/linkedlist.h"
 
@@ -22,31 +22,6 @@
 pthread_t thread;
 
 bool terminated; 
-
-MYSQL *connect;
-
-int init_mysql_connection(){
-	connect = mysql_init(NULL);
-	if (mysql_real_connect(connect,server,user,password,database,0,NULL,0) == NULL){
-		printf("%s\n",mysql_error(connect));
-		mysql_close(connect);
-		return 0;
-	}
-	return 1;
-}
-
-void saveData(char *prefix, char *data){
-	char *query = (char*)malloc(255*sizeof(char));
-	time_t t;
-	time(&t);
-	char *date = (char*)malloc(255*sizeof(char));
-	date = ctime(&t);
-	sscanf(date,"%[^\n]",date);
-	sprintf(query,"INSERT INTO temperatures VALUES ('%s','%s','%s')",prefix,date,data);
-	if (mysql_query(connect,query)){ //return true if get an error.
-		printf("%s\n",mysql_error(connect));
-	}
-}
 
 void* handle_message(void* param) {
 	ssize_t read_len = 0;
@@ -81,7 +56,7 @@ int main(void) {
 	char *interest, *data;
 	char *dummy = NULL;
 
-	if (!init_mysql_connection()){
+	if (connectDatabase(user,password,database,server)){
 		return EXIT_FAILURE;
 	}
 
