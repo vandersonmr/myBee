@@ -5,7 +5,24 @@
 #define USER "root"
 #define PASSWORD "123456"
 #define DATABASE "monitorAbelhas"
+
+char* getStatus(Data* temperatures,int numrows){
+    char* status = malloc(100*sizeof(char));
+    status = "OK";
+    return status;
+}
+
+void printTemperatures(Data* temperature,int numrows){
+    int i;
+    for(i=0; i < numrows; i++){
+        printf("%s & %s & %d<br>\n",
+	    	temperature[i].fromNode,
+            temperature[i].time,
+            temperature[i].temperature); 
+    }
  
+}
+
 int main()
 {
     printf("Content-Type: text/html;charset=us-ascii\n\n");
@@ -18,11 +35,9 @@ int main()
 	numrows = loadLastsDatas(data,75);
     }
 
-    int i;
-    for(i=0; i < numrows; i++){
-        printf("%s & %s & %d<br>\n",
-		data[i].fromNode,data[i].time,data[i].temperature); 
-    }
+    printf("%s <br>\n",getStatus(data,numrows));
+    
+    printTemperatures(data,numrows);
     
     closeConnection();  
     return 0;
