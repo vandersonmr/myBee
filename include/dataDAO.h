@@ -11,7 +11,7 @@ typedef struct Data{
 MYSQL* connect;
 
 int connectDatabase(char*,char*,char*,char*);
-void saveData(Data*);
+void saveData(char*,char*);
 int loadLastsDatas(Data*,int);
 void closeConnection();
 
