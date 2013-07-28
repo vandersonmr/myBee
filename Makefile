@@ -12,6 +12,10 @@ client: repad
 	$(cc) client2.c -o  client $(flags)
 cgi:
 	$(cc) web-UI/CGI/getDados.c database/dataDAO.c -o web-UI/getDados $(flags) -Iinclude/ -I/usr/include/mysql -lmysqlclient
+	sudo cp web-UI/*.html /var/www/ -f
+	sudo cp web-UI/*.js /var/www/ -f
+	sudo cp web-UI/getDados /usr/lib/cgi-bin/ -f
+
 clear:
 	rm -f client;\
 	rm -f servidor;\
