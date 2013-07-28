@@ -31,6 +31,29 @@ function timeControl(){
 /* ---------------------------*/
 
 /* Plot Graph code */
+function nodeGraphManager(name){
+	this.name = name;
+	this.data = []
+	this.plot = $.plot("#graph", [{data:[],lines:{show:true}}])
+	this.nodeStatus = "OK";	
+
+	this.setData = function(data){
+		this.data = data; 		
+	}
+	
+	this.setNodeStatus = function(nodeStatus){
+		this.nodeStatus = nodeStatus;
+		$("#status").html(nodeStatus);
+	}
+		
+	this.update = function(){
+		this.plot.setData([ this.data ]);
+		this.plot.setupGrid();
+		this.plot.draw();
+	}
+ 
+}
+
 var temperatures = [], totalPoints = 100;
 function parseData(input) {
 	if(temperatures.length > 0)
@@ -52,22 +75,14 @@ function parseData(input) {
 
 var updateInterval = 2000;
 
-
-var plot = $.plot("#graph", [{data:[],lines:{show:true}}]);
-
-function setStatusFrom(data){
-	var statusNode = data.split("<br>")[0];
-	$("#status").html(statusNode);
-}
-
 function update() {
 	var input;
 	$.get('cgi-bin/getDados').success(
 			function(data){	
-			setStatusFrom(data);
-			plot.setData([ parseData(data) ]);
-			plot.setupGrid();
-			plot.draw();
+			var node = window.node
+			node.setNodeStatus(data.split("<br>")[0])
+			node.setData(parseData(data));
+			node.update();
 			});
 
 	setTimeout(update, updateInterval);
@@ -78,5 +93,7 @@ function update() {
 jQuery(document).ready(new function () {
 		var tc = new timeControl();
 		tc.startClockUpdate();
+		var node1 = new nodeGraphManager();
+		window.node = node1;
 		update();
 		});
