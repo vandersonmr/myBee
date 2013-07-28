@@ -14,11 +14,6 @@
 #include "hdr/repa.h"
 #include "hdr/linkedlist.h"
 
-#define server "localhost"
-#define user "root"
-#define password "123456"
-#define database "monitorAbelhas"
-
 pthread_t thread;
 
 bool terminated; 
@@ -56,7 +51,7 @@ int main(void) {
 	char *interest, *data;
 	char *dummy = NULL;
 
-	if (connectDatabase(user,password,database,server)){
+	if (connectDatabase(USER,PASSWORD,DATABASE,SERVER)){
 		return EXIT_FAILURE;
 	}
 

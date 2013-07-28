@@ -1,10 +1,6 @@
 #include <stdio.h>
 #include "dataDAO.h"
 #include <stdlib.h>
-#define SERVER "localhost"
-#define USER "root"
-#define PASSWORD "123456"
-#define DATABASE "monitorAbelhas"
 
 char* getStatus(Data* temperatures,int numrows){
     char* status = malloc(100*sizeof(char));

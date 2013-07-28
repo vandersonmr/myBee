@@ -2,7 +2,7 @@
 #include "dataDAO.h" 
 #include <time.h>
 
-int connectDatabase(char* USER, char* PASS,char* db, char* server){
+int connectDatabase(char* user, char* pass,char* db, char* server){
 	connect=mysql_init(NULL);
 	
 	if(!connect){
@@ -10,7 +10,7 @@ int connectDatabase(char* USER, char* PASS,char* db, char* server){
 		return 1;
 	}
 
-	connect=mysql_real_connect(connect,server,USER,PASS,db,0,NULL,0);
+	connect=mysql_real_connect(connect,server,user,pass,db,0,NULL,0);
 	
 	if(!connect){
 		fprintf(stderr,"Impossível se conectar.");

@@ -2,6 +2,11 @@
 #define DATADAO_H
 #include "mysql/mysql.h"
 
+#define SERVER "localhost"
+#define USER "root"
+#define PASSWORD "123"
+#define DATABASE "monitorAbelhas"
+
 typedef struct Data{
 	char* fromNode;
 	int temperature;
