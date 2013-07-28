@@ -1,24 +1,32 @@
 /* Clock code */
-function startTime()
-{
-	var today=new Date();
-	var h=today.getHours();
-	var m=today.getMinutes();
-	var s=today.getSeconds();
+function timeControl(){
+	this.getTime = function(){
+		var today=new Date()
+		var h=today.getHours()
+		var m=today.getMinutes()
+		var s=today.getSeconds()
 
-	m=checkTime(m);
-	s=checkTime(s);
-	document.getElementById('horario').innerHTML=h+":"+m+":"+s;
-	t=setTimeout(function(){startTime()},500);
-}
-
-function checkTime(i)
-{
-	if (i<10)
-	{
-		i="0" + i;
+		m=this.checkTime(m)
+		s=this.checkTime(s)
+		return h+":"+m+":"+s
 	}
-	return i;
+
+	this.updateClock = function(){	
+		document.getElementById('horario').innerHTML=this.getTime()
+	}
+
+	this.checkTime = function(i){
+		if (i<10)
+		{
+			i="0" + i
+		}
+		return i
+	}
+	
+	this.startClockUpdate = function(){
+		var func = this
+		setInterval(function(){ func.updateClock() },500)
+	}
 }
 /* ---------------------------*/
 
@@ -56,10 +64,10 @@ function update() {
 	var input;
 	$.get('cgi-bin/getDados').success(
 			function(data){	
-				setStatusFrom(data);
-				plot.setData([ parseData(data) ]);
-				plot.setupGrid();
-				plot.draw();
+			setStatusFrom(data);
+			plot.setData([ parseData(data) ]);
+			plot.setupGrid();
+			plot.draw();
 			});
 
 	setTimeout(update, updateInterval);
@@ -68,6 +76,7 @@ function update() {
 
 /* Main */
 jQuery(document).ready(new function () {
-		startTime();
+		var tc = new timeControl();
+		tc.startClockUpdate();
 		update();
 		});
