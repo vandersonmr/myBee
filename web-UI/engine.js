@@ -34,11 +34,13 @@ function timeControl(){
 function nodeGraphManager(name){
 	this.name = name
 	this.data = []
+	var times = []
+	this.nodeStatus = "OK"
 
 	$("#GraphsGrid").append("<div class=\"graph\">"+
         						"<h2>Node: "+name+"</h2>"+
                 	"<div id=\""+name+"\"  style=\"width:600px;height:300px;float:left\"></div>"+
-                        "<h3>Status: <br> <div id=\"status\" style=\"color:blue\">OK</div></h3>" + 
+                        "<h3>Status: <br> <div id=\"status\" style=\"color:blue\">"+this.nodeStatus+"</div></h3>" + 
                 	"</div>"+
         		"</div>")
 
@@ -50,10 +52,10 @@ function nodeGraphManager(name){
 					hoverable: true,
 					clickable: true}
 				      })
-	this.nodeStatus = "OK"
 
-	this.setData = function(data){
-		this.data = data 		
+	this.setData = function(data, time)	{
+		this.data = data
+		times = time
 	}
 	
 	this.setNodeStatus = function(nodeStatus){
@@ -62,7 +64,7 @@ function nodeGraphManager(name){
 	}
 		
 	this.update = function(){
-		this.plot.setData([ this.data ])
+		this.plot.setData( [this.data] )
 		this.plot.setupGrid()
 		this.plot.draw()
 	}
@@ -73,10 +75,10 @@ function nodeGraphManager(name){
 			if (previousPoint != item.dataIndex) {
 				previousPoint = item.dataIndex;
 				$("#tooltip").remove();
-				var x = item.datapoint[0].toFixed(2),
-				y = item.datapoint[1].toFixed(2);
+				var x = item.datapoint[0],
+				y = item.datapoint[1];
 				showTooltip(item.pageX, item.pageY,
-				     "As "+ x + " temperatura de  " + y+ " graus célcius");
+				     "Data: "+ times[x] + "<br> Temperatura: " + y + "º célcius");
 			}
 		} else {
 			$("#tooltip").remove();
@@ -93,17 +95,21 @@ function parseData(input) {
 		temperatures = temperatures.splice(1)
 
 	var rows = input.split("<br>");
-	for(var captura=1; captura < rows.length; ++captura){
-		var temp = rows[captura].split("&")[2]
+	var time = []
+	for(var captura=0; captura < rows.length; ++captura){
+		var temp = rows[captura].split("&")
+		var tempT = temp[2]
+		var tempTime = temp[1]
 
-		temperatures.push(temp)
-
+		temperatures.push(tempT)
+		time.push(tempTime)
 	}
 
 	var res = [];
-	for (var i = 0; i < temperatures.length; ++i)
-		res.push([i, temperatures.pop()])
-			return res
+	for (var i = 0; i < temperatures.length; ++i){
+		res.push([i,temperatures.pop()])
+	}
+	return [res,time.reverse()]
 }
 
 function showTooltip(x, y, contents) {
@@ -119,7 +125,7 @@ function showTooltip(x, y, contents) {
 	}).appendTo("body").fadeIn(200);
 }
 
-var updateInterval = 2000;
+var updateInterval = 500;
 
 function update() {
 	var input
@@ -127,7 +133,8 @@ function update() {
 			function(data){	
 				var node = window.node
 				node.setNodeStatus(data.split("<br>")[0])
-				node.setData(parseData(data))
+				var datas = parseData(data)
+				node.setData(datas[0],datas[1])
 				node.update()
 			});
 
@@ -139,7 +146,7 @@ function update() {
 jQuery(document).ready(new function () {
 		var tc = new timeControl()
 		tc.startClockUpdate()
-		var node1 = new nodeGraphManager("graph")
+		//var node1 = new nodeGraphManager("graph")
 		var node1 = new nodeGraphManager("graph2")
 		window.node = node1
 		update()
