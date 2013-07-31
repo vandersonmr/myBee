@@ -1,0 +1,9 @@
+.graph {
+    width: 850px;
+    height: 450px;
+    padding: 20px 15px 15px;
+    margin: 15px auto 30px;
+    border: 1px solid rgb(221, 221, 221);
+    background: linear-gradient(rgb(246, 246, 246) 0px, rgb(255, 255, 255) 50px) repeat scroll 0% 0% transparent;
+    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.15);
+}

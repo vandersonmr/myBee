@@ -1,7 +1,7 @@
-arch=x86_64
+arch=i686
 cc=gcc
 flags=-O0 -g -w -Irepa/ repa/build/lib.linux-$(arch)-2.7/repa.so -lpthread -lpython2.7 
-all: repad servidor client cgi
+all: repad servidor client
 repad:
 	cd ./repa;\
 	python setup.py build;\
@@ -12,9 +12,10 @@ client: repad
 	$(cc) client2.c -o  client $(flags)
 cgi:
 	$(cc) web-UI/CGI/getDados.c database/dataDAO.c -o web-UI/getDados $(flags) -Iinclude/ -I/usr/include/mysql -lmysqlclient
-	sudo cp web-UI/*.html /var/www/ -f
-	sudo cp web-UI/*.js /var/www/ -f
-	sudo cp web-UI/getDados /usr/lib/cgi-bin/ -f
+	sudo cp web-UI/*.html /var/www/
+	sudo cp web-UI/*.js /var/www/
+	sudo cp web-UI/*.css /var/www/
+	sudo cp web-UI/getDados /usr/lib/cgi-bin/ 
 
 clear:
 	rm -f client;\
