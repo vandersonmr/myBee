@@ -34,7 +34,15 @@ function timeControl(){
 function nodeGraphManager(name){
 	this.name = name
 	this.data = []
-	this.plot = $.plot("#graph", [{data:[], label: name+" temp."}],
+
+	$("#GraphsGrid").append("<div class=\"graph\">"+
+        						"<h2>Node: "+name+"</h2>"+
+                	"<div id=\""+name+"\"  style=\"width:600px;height:300px;float:left\"></div>"+
+                        "<h3>Status: <br> <div id=\"status\" style=\"color:blue\">OK</div></h3>" + 
+                	"</div>"+
+        		"</div>")
+
+	this.plot = $.plot("#"+name, [{data:[], label: name+" temp."}],
 			              {series: {
 					lines:{show:true}, 
 					points:{show:true}},
@@ -58,9 +66,9 @@ function nodeGraphManager(name){
 		this.plot.setupGrid()
 		this.plot.draw()
 	}
-
+	
 	var previousPoint = null;
-	$("#graph").bind("plothover", function (event, pos, item) {
+	$("#"+name).bind("plothover", function (event, pos, item) {
 		if (item) {
 			if (previousPoint != item.dataIndex) {
 				previousPoint = item.dataIndex;
@@ -131,7 +139,8 @@ function update() {
 jQuery(document).ready(new function () {
 		var tc = new timeControl()
 		tc.startClockUpdate()
-		var node1 = new nodeGraphManager()
+		var node1 = new nodeGraphManager("graph")
+		var node1 = new nodeGraphManager("graph2")
 		window.node = node1
 		update()
 });

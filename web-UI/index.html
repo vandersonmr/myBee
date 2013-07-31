@@ -4,24 +4,15 @@
     <link type="text/css" rel="stylesheet" href="style.css"></link>
 </head>
 <body>
-<center><h1>Sistema de Monitoramento Abelhas<h1></center>
-<center><h3>Horário atual: <div id="horario"></div></h3></center>
-<div >
-	<h2>Node: 1</h2>
-		<div id="graph" class="graph" style="width:600px;height:300px;float:left"></div>
-		<h3>Infos:</h3>		
-		<div id="info" ><h4>Ultima coleta:</h4>
-					Temperatura: <br>
-					Horário:<br>
+	<center><h1>Sistema de Monitoramento Abelhas<h1></center>
+	<center><h3>Horário atual: <div id="horario"></div></h3></center>
 
-				<h3>Status: <br> <div id="status" style="color:blue">OK</div></h3>
-					 
-		</div>
-		<br><br><br><br><br><br>
-	</body>
-</div>
+	<div id="GraphsGrid">
+	</div>
 
 	<script language="javascript" type="text/javascript" src="jquery.js"></script>
         <script language="javascript" type="text/javascript" src="jquery.flot.js"></script>	
 	<script language="javascript" type="text/javascript" src="engine.js"></script>
+
+</body>
 </html>
