@@ -66,7 +66,7 @@ int main(void) {
 	char *interest, *data;
 	char *dummy = NULL;
 
-	if (connectDatabase(USER,PASSWORD,DATABASE,SERVER)){
+	if (connectDatabase() == 1){
 		return EXIT_FAILURE;
 	}
 

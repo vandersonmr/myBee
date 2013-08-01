@@ -2,10 +2,8 @@
 #define DATADAO_H
 #include "mysql/mysql.h"
 
-#define SERVER "localhost"
-#define USER "root"
-#define PASSWORD "123"
-#define DATABASE "monitorAbelhas"
+#define PATH_CONF "database/db.conf"
+#define LINE_SIZE 255
 
 typedef struct Data{
 	char* fromNode;
@@ -16,7 +14,8 @@ typedef struct Data{
 
 MYSQL* connect;
 
-int connectDatabase(char*,char*,char*,char*);
+void getConfData(char*, char*, char*, char*);
+int connectDatabase();
 void saveData(char*,char*,int);
 int loadLastsDatas(Data*,int);
 void closeConnection();

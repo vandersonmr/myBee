@@ -2,7 +2,31 @@
 #include "dataDAO.h" 
 #include <time.h>
 
-int connectDatabase(char* user, char* pass,char* db, char* server){
+void getConfData(char* server, char* user, char* pass, char* db){
+	FILE *fp = fopen(PATH_CONF,"r");
+	char *data, *type, *temp;
+	data = (char*)malloc(LINE_SIZE*sizeof(char));
+	type = (char*)malloc(LINE_SIZE*sizeof(char));
+	temp = (char*)malloc(LINE_SIZE*sizeof(char));
+	
+	while (fgets(data,LINE_SIZE,fp) != NULL){
+		sscanf(data,"%[^=]=\"%[^\"]",type,temp);
+		if (strcmp(type,"SERVER") == 0)
+			memcpy(server,temp,LINE_SIZE);
+		else if (strcmp(type,"USER") == 0)
+			memcpy(user,temp,LINE_SIZE);
+		else if (strcmp(type,"PASSWORD") == 0)
+			memcpy(pass,temp,LINE_SIZE);
+		else if (strcmp(type,"DATABASE") == 0)
+			memcpy(db,temp,LINE_SIZE);
+	}
+	fclose(fp);
+	free(data);
+	free(type);
+	free(temp);
+}
+
+int connectDatabase(){
 	connect=mysql_init(NULL);
 
 	if(!connect){
@@ -10,7 +34,19 @@ int connectDatabase(char* user, char* pass,char* db, char* server){
 		return 1;
 	}
 
+	char *server = (char*)malloc(LINE_SIZE*sizeof(char));
+	char *user = (char*)malloc(LINE_SIZE*sizeof(char));
+	char *pass = (char*)malloc(LINE_SIZE*sizeof(char));
+	char *db = (char*)malloc(LINE_SIZE*sizeof(char));
+	
+	getConfData(server,user,pass,db);
+
 	connect=mysql_real_connect(connect,server,user,pass,db,0,NULL,0);
+
+	free(server);
+	free(user);
+	free(pass);
+	free(db);
 
 	if(!connect){
 		fprintf(stderr,"Impossível se conectar.");
@@ -22,13 +58,13 @@ int connectDatabase(char* user, char* pass,char* db, char* server){
 
 
 void saveData(char *prefix, char *data, int status){
-	char query[255];
+	char query[LINE_SIZE];
 	char *date;
 	time_t t;
 	time(&t);
 	date = ctime(&t);
 	sscanf(date,"%[^\n]",date);
-	snprintf(query,255,"INSERT INTO temperatures VALUES ('%s','%s','%s','%d')",prefix,
+	snprintf(query,LINE_SIZE,"INSERT INTO temperatures VALUES ('%s','%s','%s','%d')",prefix,
 			date,data,status);
 	if (mysql_query(connect,query)){ //return true if get an error.
 		printf("%s\n",mysql_error(connect));
