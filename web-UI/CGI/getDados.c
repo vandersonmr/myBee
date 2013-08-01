@@ -18,7 +18,7 @@ int main()
 {
     printf("Content-Type: text/html;charset=us-ascii\n\n");
  
-    int connected = connectDatabase(USER,PASSWORD,DATABASE,SERVER);
+    int connected = connectDatabase();
 
     Data* data = malloc(sizeof(Data)*75);
     int numrows;
