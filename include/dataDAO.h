@@ -10,13 +10,14 @@
 typedef struct Data{
 	char* fromNode;
 	int temperature;
+	int status;
 	char* time;
 }Data;
 
 MYSQL* connect;
 
 int connectDatabase(char*,char*,char*,char*);
-void saveData(char*,char*);
+void saveData(char*,char*,int);
 int loadLastsDatas(Data*,int);
 void closeConnection();
 
