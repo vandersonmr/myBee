@@ -1,4 +1,3 @@
-/* Clock code */
 function timeControl(){
 	this.getTime = function(){
 		var today=new Date()
@@ -28,9 +27,7 @@ function timeControl(){
 		setInterval(function(){ func.updateClock() },500)
 	}
 }
-/* ---------------------------*/
 
-/* Plot Graph code */
 function nodeGraphManager(name){
 	this.name = name
 	this.data = []
@@ -87,23 +84,47 @@ function nodeGraphManager(name){
  
 }
 
-var temperatures = [], totalPoints = 100;
+var graphList = {}
+
+function insertIndex(stack){
+	var res = []
+	var i = 0
+	for(var j=0; j < stack.length; j++)
+		res.push([++i, stack.pop()])
+	return res
+}
+
 function parseData(input) {
-	if(temperatures.length > 0)
-		temperatures = temperatures.splice(1)
+	var temperatures = {}
 
 	var rows = input.split("<br>");
-	for(var captura=1; captura < rows.length; ++captura){
-		var temp = rows[captura].split("&")[2]
 
-		temperatures.push(temp)
-
+	for(var captura=1; captura < rows.length-1; ++captura){	
+		var row = rows[captura].split("&")
+		var nodeName = row[0].replace(/#/g,"").replace(" ","")
+                              .replace("\n","node").replace("[","").replace("]","")
+		var time = row[1]
+		var tempValue = row[2]
+		
+		if(temperatures[nodeName] == undefined){
+			temperatures[nodeName] = []
+			i=0
+		}
+	
+		temperatures[nodeName].push(tempValue)
 	}
+	
+	return temperatures
+}
 
-	var res = [];
-	for (var i = 0; i < temperatures.length; ++i)
-		res.push([i, temperatures.pop()])
-			return res
+function plotData(data){
+	window.teste = data
+	for(var node in data){
+			if (graphList[node] == undefined)
+				graphList[node] = new nodeGraphManager(node)
+			graphList[node].setData(insertIndex(data[node]))
+			graphList[node].update()
+	}
 }
 
 function showTooltip(x, y, contents) {
@@ -125,22 +146,15 @@ function update() {
 	var input
 	$.get('cgi-bin/getDados').success(
 			function(data){	
-				var node = window.node
-				node.setNodeStatus(data.split("<br>")[0])
-				node.setData(parseData(data))
-				node.update()
+				var res = parseData(data);
+				plotData(res);
 			});
 
 	setTimeout(update, updateInterval)
 }
-/* ---------------------------------------*/
 
-/* Main */
 jQuery(document).ready(new function () {
 		var tc = new timeControl()
 		tc.startClockUpdate()
-		var node1 = new nodeGraphManager("graph")
-		var node1 = new nodeGraphManager("graph2")
-		window.node = node1
 		update()
 });

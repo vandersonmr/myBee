@@ -16,12 +16,8 @@ cgi:
 	sudo cp web-UI/*.js /var/www/
 	sudo cp web-UI/*.css /var/www/
 	sudo cp web-UI/getDados /usr/lib/cgi-bin/ 
-
+	sudo chmod 777 /usr/lib/cgi-bin/getDados
 clear:
 	rm -f client;\
 	rm -f servidor;\
 	rm -f web-UI/getDados;
-	
-
-
-
