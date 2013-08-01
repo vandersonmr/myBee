@@ -14,9 +14,22 @@
 #include "hdr/repa.h"
 #include "hdr/linkedlist.h"
 
+#define LOW_TEMPERATURE 30
+#define HIGH_TEMPERATURE 45
+
 pthread_t thread;
 
 bool terminated; 
+
+void checkTemperature(char* data, int* status){
+	if (atoi(data) < LOW_TEMPERATURE)
+	 	*status = 1;
+	else if	(atoi(data) > HIGH_TEMPERATURE)
+		*status = 2;
+	else
+		*status = 0;
+
+}
 
 void* handle_message(void* param) {
 	ssize_t read_len = 0;
@@ -31,8 +44,10 @@ void* handle_message(void* param) {
 		read_len = repa_timed_recv(interest, data, prefix_addr, (long int)1E9);
 		if (read_len > 0) {
 			repa_print_prefix(prefix_addr, prefix);
-			saveData(prefix,data);
-			printf("Message: \"%s\" Prefix: %s\n",data,prefix);
+			int status;
+			checkTemperature(data,&status);
+			saveData(prefix,data,status);
+			printf("Message: \"%s\" Status: \"%d\" Prefix: %s\n",data,status,prefix);
 		}
 
 		// Free msg
