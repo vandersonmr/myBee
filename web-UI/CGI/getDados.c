@@ -2,19 +2,14 @@
 #include "dataDAO.h"
 #include <stdlib.h>
 
-char* getStatus(Data* temperatures,int numrows){
-    char* status = malloc(100*sizeof(char));
-    status = "OK";
-    return status;
-}
-
 void printTemperatures(Data* temperature,int numrows){
     int i;
-    for(i=0; i < numrows; i++){
-        printf("%s & %s & %d<br>\n",
+	for(i=0; i < numrows; i++){
+        printf("%s & %s & %d & %d<br>\n",
 	    	temperature[i].fromNode,
             temperature[i].time,
-            temperature[i].temperature); 
+            temperature[i].temperature,
+			temperature[i].status); 
     }
  
 }
@@ -28,11 +23,9 @@ int main()
     Data* data = malloc(sizeof(Data)*75);
     int numrows;
     if(connected == 0){
-	numrows = loadLastsDatas(data,75);
+		numrows = loadLastsDatas(data,75);
     }
 
-    printf("%s <br>\n",getStatus(data,numrows));
-    
     printTemperatures(data,numrows);
     
     closeConnection();  
