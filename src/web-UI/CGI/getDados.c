@@ -18,13 +18,13 @@ int main()
 {
     printf("Content-Type: text/html;charset=us-ascii\n\n");
  
-    int connected = connectDatabase();
+    if (!connectDatabase())
+		return EXIT_FAILURE;
 
     Data* data = malloc(sizeof(Data)*75);
     int numrows;
-    if(connected == 0){
-		numrows = loadLastsDatas(data,75);
-    }
+    
+	numrows = loadLastsDatas(data,75);
 
     printTemperatures(data,numrows);
     
