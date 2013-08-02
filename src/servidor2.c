@@ -66,7 +66,7 @@ int main(void) {
 	char *interest, *data;
 	char *dummy = NULL;
 
-	if (connectDatabase() == 1){
+	if (!connectDatabase()){
 		return EXIT_FAILURE;
 	}
 
@@ -88,7 +88,7 @@ int main(void) {
 	while(true);
 
 	terminated = true;
-	mysql_close(connect);
+	closeConnection();
 	repa_close();
 	pthread_join(thread, NULL);
 	exit(EXIT_SUCCESS);
