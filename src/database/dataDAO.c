@@ -34,9 +34,9 @@ void getConfData(char* server, char* user, char* pass, char* db){
 int connectDatabase(){
 	connect=mysql_init(NULL);
 
-	if(!connect){
-		fprintf(stderr,"Inicialização no Mysql falhou.");
-		return 1;
+	if(connect == NULL){
+		fprintf(stderr,"Inicialização no Mysql falhou.\n");
+		return 0;
 	}
 
 	char *server = (char*)malloc(LINE_SIZE*sizeof(char));
@@ -45,20 +45,26 @@ int connectDatabase(){
 	char *db = (char*)malloc(LINE_SIZE*sizeof(char));
 
 	getConfData(server,user,pass,db);
+	
+	connect = mysql_real_connect(connect,server,user,pass,db,0,NULL,0);
 
-	connect=mysql_real_connect(connect,server,user,pass,db,0,NULL,0);
+	if (strlen(server) == 0 && strlen(user) == 0 &&
+			strlen(pass) == 0 && strlen(db) == 0){
+		fprintf(stderr,"Dado vazio.\n");
+		connect = NULL;
+	}
 
 	free(server);
 	free(user);
 	free(pass);
 	free(db);
 
-	if(!connect){
-		fprintf(stderr,"Impossível se conectar.");
-		return 1;
+	if(connect == NULL){
+		fprintf(stderr,"Impossível se conectar.\n");
+		return 0;
 	}
 
-	return 0;
+	return 1;
 }
 
 
