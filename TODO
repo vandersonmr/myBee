@@ -1,8 +1,8 @@
 0.1b (28/07/2013)
 Client
-    - Client suporte para varios nodes. (Vanderson)
-    - Client add mostrar com mouse as temperaturas. (Vanderson)
-    - Client suporte aos status do GetDados. (Vanderson)
+    - Client suporte para varios nodes. (Vanderson). DONE.
+    - Client add mostrar com mouse as temperaturas. (Vanderson) DONE.
+    - Client suporte aos status do GetDados. (Vanderson) 
 Servidor
     - GetDados suporte para varios nodes. (Vanderson)
     - GetDados: ML (João)

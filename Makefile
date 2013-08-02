@@ -1,34 +1,35 @@
 ARCH=$(shell uname -p)
 CC=gcc
+SRC=./src
 CFLAGS=-O0 -g -w
-LDrepa= -Irepa/ -lpthread repa/build/lib.linux-$(ARCH)-2.7/repa.so -lpython2.7
+LDrepa= -I$(SRC)/repa/ -lpthread $(SRC)/repa/build/lib.linux-$(ARCH)-2.7/repa.so -lpython2.7
 LDmysql= -I/usr/include/mysql/ -lmysqlclient 
-HEADERS= -Iinclude/
+HEADERS= -I$(SRC)/include/
 
 all: repad servidor client cgi
 
 repad:
-	cd ./repa;\
+	cd ./$(SRC)/repa;\
 	python setup.py build;\
-	cd ..;
+	cd ../..;
 
 servidor: repad
-	$(CC) servidor2.c database/dataDAO.c $(LDrepa) $(LDmysql) -o servidor $(CFLAGS) $(HEADERS)
+	$(CC) $(SRC)/servidor2.c $(SRC)/database/dataDAO.c $(LDrepa) $(LDmysql) -o servidor $(CFLAGS) $(HEADERS)
 
 client: repad 
-	$(CC) client2.c -o  client $(CFLAGS) $(LDrepa)
+	$(CC) $(SRC)/client2.c -o  client $(CFLAGS) $(LDrepa)
 
 cgi:
-	$(CC) web-UI/CGI/getDados.c database/dataDAO.c $(LDmysql) -o web-UI/getDados $(CFLAGS) $(HEADERS) 
+	$(CC) $(SRC)/web-UI/CGI/getDados.c $(SRC)/database/dataDAO.c $(LDmysql) -o $(SRC)/web-UI/getDados $(CFLAGS) $(HEADERS) 
 
 install:
-	sudo cp ./web-UI/*.html /var/www/
-	sudo cp ./web-UI/*.css /var/www/
-	sudo cp ./web-UI/*.js /var/www/	
-	sudo cp ./web-UI/getDados /usr/lib/cgi-bin/ 
+	sudo cp ./$(SRC)/web-UI/*.html /var/www/
+	sudo cp ./$(SRC)/web-UI/*.css /var/www/
+	sudo cp ./$(SRC)/web-UI/*.js /var/www/	
+	sudo cp ./$(SRC)/web-UI/getDados /usr/lib/cgi-bin/ 
 	sudo chmod 777 /usr/lib/cgi-bin/getDados
 
 clear:
 	rm -f client;\
 	rm -f servidor;\
-	rm -f web-UI/getDados;
+	rm -f $(SRC)/web-UI/getDados;
