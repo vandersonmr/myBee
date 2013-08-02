@@ -2,7 +2,7 @@
 #define DATADAO_H
 #include "mysql/mysql.h"
 
-#define PATH_CONF "database/db.conf"
+#define PATH_CONF "src/database/db.conf"
 #define LINE_SIZE 255
 
 typedef struct Data{
