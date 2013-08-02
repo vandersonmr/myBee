@@ -17,7 +17,7 @@ servidor: repad
 	$(CC) $(SRC)/servidor2.c $(SRC)/database/dataDAO.c $(LDrepa) $(LDmysql) -o servidor $(CFLAGS) $(HEADERS)
 
 client: repad 
-	$(CC) $(SRC)/client2.c -o  client $(CFLAGS) $(LDrepa)
+	$(CC) $(SRC)/client2.c -o  client $(CFLAGS) $(LDrepa) -lm
 
 cgi:
 	$(CC) $(SRC)/web-UI/CGI/getDados.c $(SRC)/database/dataDAO.c $(LDmysql) -o $(SRC)/web-UI/getDados $(CFLAGS) $(HEADERS) 
@@ -26,7 +26,9 @@ install:
 	sudo cp ./$(SRC)/web-UI/*.html /var/www/
 	sudo cp ./$(SRC)/web-UI/*.css /var/www/
 	sudo cp ./$(SRC)/web-UI/*.js /var/www/	
-	sudo cp ./$(SRC)/web-UI/getDados /usr/lib/cgi-bin/ 
+	sudo cp ./$(SRC)/web-UI/getDados /usr/lib/cgi-bin/
+	sudo mkdir -p /usr/lib/cgi-bin/config/
+	sudo cp ./config/db.conf /usr/lib/cgi-bin/config/ 
 	sudo chmod 777 /usr/lib/cgi-bin/getDados
 
 clear:
