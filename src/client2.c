@@ -6,9 +6,11 @@
 #include <time.h>
 
 int last = 35;
+double i = 0;
 void getTemperature(char* data){
 	srand(time(NULL));
-	last += rand() % 4 - 1;
+	i += 0.1;
+	last = (sin(i)*10+25) + rand() % 5 - 1;
 	sprintf(data,"%d", last);
 	strcat(data," graus celcius.");
 }
