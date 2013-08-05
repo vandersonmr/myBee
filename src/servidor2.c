@@ -24,7 +24,9 @@ pthread_t thread;
 bool terminated; 
 
 int checkTemperature(char* data){
-	return testData(NULL);
+	Data* data1 = (Data*) malloc(sizeof(Data));
+	data1->temperature = atoi(data);
+	return testData(data1);
 }
 
 void* handle_message(void* param) {

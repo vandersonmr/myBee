@@ -21,7 +21,7 @@ servidor.o:
 	$(CCPP) -c $(SRC)/servidor2.c -o servidor.o $(CFLAGS) $(HEADERS)  
 
 servidor: repad dataDAO.o servidor.o machineLearning.o
-	$(CCPP) servidor.o dataDAO.o $(SRC)/machineLearning/machineLearning.o $(LDrepa) $(LDmysql) $(HEADERS) -o servidor 
+	$(CCPP) servidor.o dataDAO.o $(SRC)/machineLearning/*.o $(LDrepa) $(LDmysql) $(HEADERS) -o servidor 
 	
 client: repad 
 	$(CC) $(SRC)/client2.c -o  client $(HEADERS) $(CFLAGS) $(LDrepa) -lm
