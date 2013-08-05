@@ -24,7 +24,7 @@ int main()
     Data* data = malloc(sizeof(Data)*75);
     int numrows;
     
-	numrows = loadLastsDatas(data,75);
+    numrows = loadLastsDatas(data,75);
 
     printTemperatures(data,numrows);
     

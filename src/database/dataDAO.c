@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include "dataDAO.h" 
 #include <time.h>
+#include <cstdlib>
+#include <cstring>
+
+MYSQL* connection;
 
 void getConfData(char* server, char* user, char* pass, char* db){
 	FILE *fp = fopen(PATH_CONF,"r");
@@ -32,9 +36,9 @@ void getConfData(char* server, char* user, char* pass, char* db){
 }
 
 int connectDatabase(){
-	connect=mysql_init(NULL);
+	connection=mysql_init(NULL);
 
-	if(connect == NULL){
+	if(connection == NULL){
 		fprintf(stderr,"Inicialização no Mysql falhou.\n");
 		return 0;
 	}
@@ -46,12 +50,12 @@ int connectDatabase(){
 
 	getConfData(server,user,pass,db);
 	
-	connect = mysql_real_connect(connect,server,user,pass,db,0,NULL,0);
+	connection = mysql_real_connect(connection,server,user,pass,db,0,NULL,0);
 
 	if (strlen(server) == 0 && strlen(user) == 0 &&
 			strlen(pass) == 0 && strlen(db) == 0){
 		fprintf(stderr,"Dado vazio.\n");
-		connect = NULL;
+		connection = NULL;
 	}
 
 	free(server);
@@ -59,7 +63,7 @@ int connectDatabase(){
 	free(pass);
 	free(db);
 
-	if(connect == NULL){
+	if(connection == NULL){
 		fprintf(stderr,"Impossível se conectar.\n");
 		return 0;
 	}
@@ -77,8 +81,8 @@ void saveData(char *prefix, char *data, int status){
 	sscanf(date,"%[^\n]",date);
 	snprintf(query,LINE_SIZE,"INSERT INTO temperatures VALUES ('%s','%s','%s','%d')",prefix,
 			date,data,status);
-	if (mysql_query(connect,query)){ //return true if get an error.
-		printf("%s\n",mysql_error(connect));
+	if (mysql_query(connection,query)){ //return true if get an error.
+		printf("%s\n",mysql_error(connection));
 	}
 }
 
@@ -90,9 +94,9 @@ int loadLastsDatas(Data* data,int q){
 	char* queryWithOutQ = "select * from temperatures order by Date desc limit 0,%d;";
 	char query[60];
 	snprintf(query,60,queryWithOutQ,q-1);
-	mysql_query(connect,query);
+	mysql_query(connection,query);
 
-	res_set = mysql_store_result(connect);
+	res_set = mysql_store_result(connection);
 
 	unsigned int numrows = mysql_num_rows(res_set);
 
@@ -109,5 +113,5 @@ int loadLastsDatas(Data* data,int q){
 }
 
 void closeConnection(){
-	mysql_close(connect);
+	mysql_close(connection);
 }

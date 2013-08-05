@@ -1,19 +1,24 @@
 CC=g++
-CFLAGS=-O0
-dataDAO= -I../include/
-INCLUDES=-I./ $(dataDAO) ./dlib/all/source.cpp
-LIBS= -lpthread -lX11
+CFLAGS=-O3 
+dataDAO= -I../include/ 
+INCLUDES=-I./ $(dataDAO)
 
-all: krls kcentroid limit
+all: krls kcentroid limit machineLearning
+
+machineLearning:
+	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o machineLearning.o machineLearning.cpp 
 
 kcentroid:
-	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) kcentroid.cpp -o kcentroid
+	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o kcentroid.o kcentroid.cpp
+
 krls:
-	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) krls_ex.cpp -o krls_ex 
+	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o krls_ex.o krls_ex.cpp
+
 limit:
-	$(CC)  $(dataDAO) limit.cpp -o limit 
+	$(CC)  $(dataDAO) -c -o limit.o limit.cpp
 
 clear:
-	rm -f limit
-	rm -f krls_ex
-	rm -f kcentroid
+	rm -f limit.o
+	rm -f krls_ex.o
+	rm -f kcentroid.o
+	rm -f machineLearning.o

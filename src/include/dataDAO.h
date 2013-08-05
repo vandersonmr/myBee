@@ -12,11 +12,10 @@ typedef struct Data{
 	char* time;
 }Data;
 
-MYSQL* connect;
 
 void getConfData(char*, char*, char*, char*);
-int connectDatabase();
-void saveData(char*,char*,int);
+extern int connectDatabase();
+extern void saveData(char*,char*,int);
 int loadLastsDatas(Data*,int);
 void closeConnection();
 

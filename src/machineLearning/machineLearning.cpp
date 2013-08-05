@@ -1,6 +1,7 @@
-#include <dataDAO.h>
+#include "dataDAO.h"
 
 using namespace std;
-using namespace dlib;
 
-
+int testData(Data* data){
+	return 0;
+}

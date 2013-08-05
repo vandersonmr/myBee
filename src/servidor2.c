@@ -10,6 +10,8 @@
 #include <errno.h>
 #include <pthread.h>
 #include <mysql.h>
+
+#include "machineLearning.h"
 #include "dataDAO.h"
 #include "hdr/repa.h"
 #include "hdr/linkedlist.h"
@@ -21,14 +23,8 @@ pthread_t thread;
 
 bool terminated; 
 
-void checkTemperature(char* data, int* status){
-	if (atoi(data) < LOW_TEMPERATURE)
-	 	*status = 1;
-	else if	(atoi(data) > HIGH_TEMPERATURE)
-		*status = 2;
-	else
-		*status = 0;
-
+int checkTemperature(char* data){
+	return testData(NULL);
 }
 
 void* handle_message(void* param) {
@@ -45,7 +41,7 @@ void* handle_message(void* param) {
 		if (read_len > 0) {
 			repa_print_prefix(prefix_addr, prefix);
 			int status;
-			checkTemperature(data,&status);
+			status = checkTemperature(data);
 			saveData(prefix,data,status);
 			printf("Message: \"%s\" Status: \"%d\" Prefix: %s\n",data,status,prefix);
 		}
