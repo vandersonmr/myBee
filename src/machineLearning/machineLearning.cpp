@@ -5,6 +5,5 @@ using namespace std;
 
 int testData(Data* data){
 	int resLimit = testLimit(data);
-	
 	return resLimit;
 }
