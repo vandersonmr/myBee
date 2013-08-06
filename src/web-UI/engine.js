@@ -102,7 +102,7 @@ function insertIndex(stack){
 
 function parseData(input) {
 	var temperatures = {}
-
+	
 	var rows = input.split("<br>");
 	for(var captura=1; captura < rows.length-1; ++captura){	
 		var row = rows[captura].split("&")
@@ -110,13 +110,14 @@ function parseData(input) {
                               .replace("\n","node").replace("[","").replace("]","")
 		var time = row[1]
 		var tempValue = row[2]
-		
+		var stats = row[3];	
+	
 		if(temperatures[nodeName] == undefined){
 			temperatures[nodeName] = []
 			i=0
 		}
 	
-		temperatures[nodeName].push([tempValue,time])
+		temperatures[nodeName].push([tempValue,time,stats])
 	}
 	
 	return temperatures
@@ -129,6 +130,7 @@ function plotData(data){
 				graphList[node] = new nodeGraphManager(node)
 			var tempData = insertIndex(data[node])
 			graphList[node].setData(tempData[0],tempData[1])
+			graphList[node].setNodeStatus(data[node].pop()[2]);
 			graphList[node].update()
 	}
 }
