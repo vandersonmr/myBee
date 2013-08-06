@@ -28,6 +28,10 @@ function timeControl(){
 	}
 }
 
+function getStatusMsg(statusID){
+	return statusMsg[statusID]
+}
+
 function nodeGraphManager(name){
 	this.name = name
 	this.data = []
@@ -57,7 +61,7 @@ function nodeGraphManager(name){
 	
 	this.setNodeStatus = function(nodeStatus){
 		this.nodeStatus = nodeStatus
-		$("#status").html(nodeStatus)
+		$("#status").html(getStatusMsg(nodeStatus))
 	}
 		
 	this.update = function(){
@@ -97,7 +101,7 @@ function insertIndex(stack){
 		time.push(temp[1]);
 		res.push([i++, temp[0]])
 	}
-	return [res,time];
+	return [res,time]
 }
 
 function parseData(input) {
@@ -110,7 +114,7 @@ function parseData(input) {
                               .replace("\n","node").replace("[","").replace("]","")
 		var time = row[1]
 		var tempValue = row[2]
-		var stats = row[3];	
+		var stats = row[3]	
 	
 		if(temperatures[nodeName] == undefined){
 			temperatures[nodeName] = []
@@ -130,7 +134,7 @@ function plotData(data){
 				graphList[node] = new nodeGraphManager(node)
 			var tempData = insertIndex(data[node])
 			graphList[node].setData(tempData[0],tempData[1])
-			graphList[node].setNodeStatus(data[node].pop()[2]);
+			graphList[node].setNodeStatus(data[node].pop()[2])
 			graphList[node].update()
 	}
 }
@@ -145,17 +149,17 @@ function showTooltip(x, y, contents) {
 		padding: "2px",
 		"background-color": "#fee",
 		opacity: 0.80
-	}).appendTo("body").fadeIn(200);
+	}).appendTo("body").fadeIn(200)
 }
 
-var updateInterval = 500;
+var updateInterval = 500
 
 function update() {
 	var input
 	$.get('cgi-bin/getDados').success(
 			function(data){	
-				var res = parseData(data);
-				plotData(res);
+				var res = parseData(data)
+				plotData(res)
 			});
 
 	setTimeout(update, updateInterval)

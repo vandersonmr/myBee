@@ -1,0 +1,4 @@
+var statusMsg = {
+	0: "OK",
+	1: "Temperatura fora dos limites adequados."
+}
