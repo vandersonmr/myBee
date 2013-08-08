@@ -3,6 +3,7 @@
 #include <time.h>
 #include <cstdlib>
 #include <cstring>
+#include <stdlib.h>
 
 MYSQL* connection;
 
@@ -72,15 +73,10 @@ int connectDatabase(){
 }
 
 
-void saveData(char *prefix, char *data, int status){
+void saveData(char *prefix, char *data,char* time, int status){
 	char query[LINE_SIZE];
-	char *date;
-	time_t t;
-	time(&t);
-	date = ctime(&t);
-	sscanf(date,"%[^\n]",date);
 	snprintf(query,LINE_SIZE,"INSERT INTO temperatures VALUES ('%s','%s','%s','%d')",prefix,
-			date,data,status);
+			time,data,status);
 	if (mysql_query(connection,query)){ //return true if get an error.
 		printf("%s\n",mysql_error(connection));
 	}

@@ -51,7 +51,9 @@ function nodeGraphManager(name){
 					points:{show:true}},
 				       grid: {
 					hoverable: true,
-					clickable: true}
+					clickable: true},
+				       xaxis:{
+					tickSize: 100}
 				      })
 	window.teste = this.plot
 	this.setData = function(data, time)	{
@@ -107,35 +109,39 @@ function insertIndex(stack){
 function parseData(input) {
 	var temperatures = {}
 	
-	var rows = input.split("<br>");
-	for(var captura=1; captura < rows.length-1; ++captura){	
-		var row = rows[captura].split("&")
+	var rows = input.split("<br>")
+	for(var captura = 1; captura < rows.length-1; captura++){
+		var row = rows[captura].replace(/\n/g,"").split("&")
 		var nodeName = row[0].replace(/#/g,"").replace(" ","")
                               .replace("\n","node").replace("[","").replace("]","")
 		var time = row[1]
 		var tempValue = row[2]
 		var stats = row[3]	
-	
 		if(temperatures[nodeName] == undefined){
 			temperatures[nodeName] = []
 			i=0
 		}
-	
+
 		temperatures[nodeName].push([tempValue,time,stats])
 	}
-	
+
 	return temperatures
 }
 
 function plotData(data){
 	window.teste = data
 	for(var node in data){
+			if(data[node].length == 0)
+				continue
 			if (graphList[node] == undefined)
 				graphList[node] = new nodeGraphManager(node)
+			
+			graphList[node].setNodeStatus(data[node].pop()[2]
+                                                .replace(" ",""))
 			var tempData = insertIndex(data[node])
 			graphList[node].setData(tempData[0],tempData[1])
-			graphList[node].setNodeStatus(data[node].pop()[2])
 			graphList[node].update()
+			
 	}
 }
 
@@ -152,13 +158,14 @@ function showTooltip(x, y, contents) {
 	}).appendTo("body").fadeIn(200)
 }
 
-var updateInterval = 500
+var updateInterval = 1000
 
 function update() {
 	var input
 	$.get('cgi-bin/getDados').success(
 			function(data){	
 				var res = parseData(data)
+				window.test1 = data;
 				plotData(res)
 			});
 

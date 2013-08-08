@@ -10,7 +10,7 @@ double i = 0;
 void getTemperature(char* data){
 	srand(time(NULL));
 	i += 0.1;
-	last = (sin(i)*10+25) + rand() % 5 - 1;
+	last = (sin(i)*10+26) + rand() % 5 - 1;
 	sprintf(data,"%d", last);
 	strcat(data," graus celcius.");
 }
@@ -45,7 +45,7 @@ int main(){
 	while (true){
 		getTemperature(data);
 		sendMessage(data);
-		sleep(4);
+		sleep(5);
 	}
 	free(interest);
 	free(data);

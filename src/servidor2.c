@@ -23,10 +23,20 @@ pthread_t thread;
 
 bool terminated; 
 
-int checkTemperature(char* data){
+int checkTemperature(char* data,char* time){
 	Data* data1 = (Data*) malloc(sizeof(Data));
+	data1->time = time;
 	data1->temperature = atoi(data);
 	return testData(data1);
+}
+
+char* getTime(){
+        char *date;
+        time_t t;
+        time(&t);
+        date = ctime(&t);
+        sscanf(date,"%[^\n]",date);
+	return date;
 }
 
 void* handle_message(void* param) {
@@ -41,10 +51,11 @@ void* handle_message(void* param) {
 		data = (char*)malloc(1500*sizeof(char));
 		read_len = repa_timed_recv(interest, data, prefix_addr, (long int)1E9);
 		if (read_len > 0) {
+			char* time = getTime();
 			repa_print_prefix(prefix_addr, prefix);
 			int status;
-			status = checkTemperature(data);
-			saveData(prefix,data,status);
+			status = checkTemperature(data,time);
+			saveData(prefix,data,time,status);
 			printf("Message: \"%s\" Status: \"%d\" Prefix: %s\n",data,status,prefix);
 		}
 

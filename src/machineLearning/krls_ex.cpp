@@ -15,9 +15,6 @@ krls<kernel_type> krlsTest(kernel_type(accuracy),0.001);
 
 
 int i=0;
-int convertTimeToInt(char* time){
-	return i++; 
-}
 
 void insertData(Data* data){
 	sample_type m;

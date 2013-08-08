@@ -1,4 +1,6 @@
 var statusMsg = {
 	0: "OK",
-	1: "Temperatura fora dos limites adequados."
+	1: "Aviso nível 2: Temperatura fora dos limites adequados.",
+	2: "Aviso nível 1: Temperatura fora da média.",
+	3: "Aviso nível 3: Temperatura fora da média e dos limites."
 }
