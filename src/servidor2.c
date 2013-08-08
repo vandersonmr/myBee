@@ -16,9 +16,6 @@
 #include "hdr/repa.h"
 #include "hdr/linkedlist.h"
 
-#define LOW_TEMPERATURE 30
-#define HIGH_TEMPERATURE 45
-
 pthread_t thread;
 
 bool terminated; 
@@ -31,11 +28,11 @@ int checkTemperature(char* data,char* time){
 }
 
 char* getTime(){
-        char *date;
-        time_t t;
-        time(&t);
-        date = ctime(&t);
-        sscanf(date,"%[^\n]",date);
+	char *date;
+	time_t t;
+	time(&t);
+	date = ctime(&t);
+	sscanf(date,"%[^\n]",date);
 	return date;
 }
 
@@ -88,7 +85,7 @@ int main(void) {
 
 	strcpy(interest, "server");
 	repa_register_interest(interest); 
-		
+
 	pthread_create(&thread, NULL, handle_message, NULL);
 	prefix = repa_node_address();
 	repa_print_prefix(prefix, cprefix);
