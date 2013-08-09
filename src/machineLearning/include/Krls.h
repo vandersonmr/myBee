@@ -5,7 +5,7 @@
 class Krls: public ManipulateData{
 	protected:
 		krls<kernel_type> krlsTest;
-		double convertTimeToSeconds(char*);
+		int convertTimeToSeconds(char*);
 		void insertData(Data*);
 		int estimate(Data*);
 	
