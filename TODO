@@ -1,20 +1,8 @@
-0.1b (28/07/2013)
-Client
-    - Client suporte para varios nodes. (Vanderson). DONE.
-    - Client add mostrar com mouse as temperaturas. (Vanderson) DONE.
-    - Client suporte aos status do GetDados. (Vanderson) 
-Servidor
-    - GetDados suporte para varios nodes. (Vanderson)
-    - GetDados: ML (João)
-        * > < temperatura normal.
-        * Usar algoritmos de ML para detectar anomalias.
-            - Linear
-            - Histograma
-                - Escolher e aprender a usar alguma biblioteca ML C++.
-        * Em tempos em tempos treinar os algoritmos (Threads?)
-        * Enviar essas análises para o client
-
-Futuro Framework
-    -
-    -
-    -
+***** Coisas a serem feitas
+	* Adicionar o algoritmo de ML pra 10 últimos dados.
+	* Arrumar BUG no plotData | engine.js
+	* Colocar getDados para imprimir os 100 ultimos de cada node e não somentos os
+		100 últimos
+	* Adicionar threads no servidor. ML consome muita CPU (Tentar melhorar isso também)!
+	* Melhorar sincronia entre temperatura e tempo.
+	* Colocar cores e alertas melhores no JS.
