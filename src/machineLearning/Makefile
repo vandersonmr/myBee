@@ -3,7 +3,7 @@ CFLAGS=-O3
 dataDAO= -I../include/ 
 INCLUDES=-I./ $(dataDAO) -g
 
-all: limit KCentroid Krls machineLearning ManipulateData
+all: limit KCentroid Krls Rvm machineLearning ManipulateData
 
 machineLearning:
 	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o machineLearning.o machineLearning.cpp 
@@ -16,6 +16,9 @@ Krls:
 
 limit:
 	$(CC)  $(dataDAO) -c -o limit.o limit.cpp
+
+Rvm:
+	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o Rvm.o Rvm.cpp
 
 ManipulateData:
 	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o ManipulateData.o ManipulateData.cpp

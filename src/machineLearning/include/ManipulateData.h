@@ -3,8 +3,6 @@
 
 #include <iostream>
 #include <vector>
-#include <stdio.h>
-
 #include <dlib/svm.h>
 #include <dlib/statistics.h>
 #include "dataDAO.h"
@@ -14,6 +12,7 @@ using namespace dlib;
 
 #define ACCURACY 0.1
 #define sizeOfKnow 1000
+#define LIMIT 3
 
 class ManipulateData{
 	protected:
@@ -22,6 +21,8 @@ class ManipulateData{
 		bool load;
 		void checkLoad();
 		void loadData();
+		double convertTimeToSeconds(char*);
+		virtual void fillData(Data*,int);
 		virtual void insertData(Data*){} 
 		virtual int estimate(Data*){ return 0;}
 	

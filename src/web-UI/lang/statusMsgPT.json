@@ -6,5 +6,13 @@ var statusMsg = {
 	4: "Aviso nível 4: Temperatura fora da esperada",
 	5: "Aviso nível 5: Temperatura fora da esperada e dos limites.",
 	6: "Aviso nível 6: Temperatura fora da esperada e da média.",
-	7: "Aviso nível 7: Temperatura fora da esperada, da média e dos limites."
+	7: "Aviso nível 7: Temperatura fora da esperada, da média e dos limites.",
+	8: "Aviso nível 8: Temperatura fora da estimada.",
+	9: "Aviso nível 9: Temperatura fora da estimada e dos limites.",
+	10: "Aviso nível 10: Temperatura fora da estimada e da média.",
+	11: "Aviso nível 11: Temperatura fora da estimada, da média e dos limites.",
+	12: "Aviso nível 12: Temperatura fora da estimada e da esperada.",
+	13: "Aviso nível 13: Temperatura fora da estimada, da esperada e dos limites.",
+	14: "Aviso nível 14: Temperatura fora da estimada, da esperada e da média.",
+	15: "Aviso nível 15: Temperatura fora da estimada, esperada, média e dos limites."
 }
