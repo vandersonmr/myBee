@@ -82,14 +82,10 @@ void saveData(char *prefix, char *data,char* time, int status){
 	}
 }
 
-
-int loadLastsDatas(Data* data,int q){
+int load(Data* data,char* query){
 	MYSQL_RES *res_set;
 	MYSQL_ROW row;
 
-	char* queryWithOutQ = "select * from temperatures order by Date desc limit 0,%d;";
-	char query[60];
-	snprintf(query,60,queryWithOutQ,q-1);
 	mysql_query(connection,query);
 
 	res_set = mysql_store_result(connection);
@@ -105,7 +101,21 @@ int loadLastsDatas(Data* data,int q){
 		i++;
 	}
 
-	return numrows;
+	return numrows;	
+}
+
+int loadLastsDatas(Data* data,int q){
+	char* queryWithOutQ = "select * from temperatures order by Date desc limit 0,%d;";
+	char query[60];
+        snprintf(query,60,queryWithOutQ,q-1);
+	return load(data,query);
+}
+
+int loadLastsDatasByMinutes(Data* data,int minutes){
+	char* queryWithOutQ = "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from temperatures) as t where t.Time > NOW() - INTERVAL %d MINUTE;";
+	char query[170];
+        snprintf(query,170,queryWithOutQ,minutes-1);
+	return load(data,query);
 }
 
 void closeConnection(){

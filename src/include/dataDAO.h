@@ -11,6 +11,7 @@ typedef struct Data{
 	char* time;
 }Data;
 
+int loadLastsDatasByMinutes(Data*,int);
 void getConfData(char*, char*, char*, char*);
 extern int connectDatabase();
 extern void saveData(char*,char*,char*,int);
