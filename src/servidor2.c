@@ -91,7 +91,7 @@ int main(void) {
 	repa_print_prefix(prefix, cprefix);
 	printf("NodePrefix: %d %s\n", prefix, cprefix);
 
-	while(true);
+	while(true) sleep(1);
 
 	terminated = true;
 	closeConnection();

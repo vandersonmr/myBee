@@ -40,6 +40,22 @@ install:
 	sudo cp ./config/db.conf /usr/lib/cgi-bin/config/ 
 	sudo chmod 777 /usr/lib/cgi-bin/getDados
 	
+init:
+	@echo "Iniciando repd..." 
+	@sudo ./repd/repd-$(ARCH);\
+	if [ $$? -eq 0 ]; then\
+		echo "Sucesso.";\
+		else echo "Falha.";\
+		fi;
+
+kill:
+	@echo "Fechando programa..."
+	@ps -e | grep repd-$(ARCH) | sudo -s kill $$(awk '{print $$1}');\
+	if [ $$? -eq 0 ]; then\
+		echo "Programa fechado.";\
+		else echo "Programa inexistente";\
+		fi;
+
 machineLearning.o:
 	cd ./$(SRC)/machineLearning;\
 	make;\
