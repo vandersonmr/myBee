@@ -1,6 +1,5 @@
 #include "include/Rvm.h"
 
-Rvm Rvm::rvmControl;
 
 Rvm::Rvm() : ManipulateData() {
 	rvmTest.set_epsilon(0.001);

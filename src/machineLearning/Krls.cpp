@@ -1,6 +1,5 @@
 #include "include/Krls.h"
 
-Krls Krls::krlsControl;
 
 Krls::Krls() : krlsTest(kernel_type(ACCURACY),0.0001), ManipulateData(){}
 

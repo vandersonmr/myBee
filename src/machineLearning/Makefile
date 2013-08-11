@@ -1,12 +1,12 @@
-CC=g++
-CFLAGS=-O3 
-dataDAO= -I../include/ 
+CC=clang++
+CFLAGS=-std=c++11 -O3
+dataDAO= -I../include/
 INCLUDES=-I./ $(dataDAO) -g
 
 all: limit KCentroid Krls Rvm machineLearning ManipulateData
 
 machineLearning:
-	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o machineLearning.o machineLearning.cpp 
+	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o machineLearning.o machineLearning.cpp
 
 KCentroid:
 	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o KCentroid.o KCentroid.cpp

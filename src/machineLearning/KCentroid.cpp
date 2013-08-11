@@ -1,13 +1,12 @@
 /*
    The kcentroid object is an implementation of an algorithm that recursively
-   computes the centroid (i.e. average) of a set of points. 
+   computes the centroid (i.e. average) of a set of points.
 
    For another example: http://dlib.net/kcentroid_ex.cpp.html
    */
 
 #include "include/KCentroid.h"
 
-KCentroid KCentroid::kcentroidControl;
 
 KCentroid::KCentroid() : kcentroidTest(kernel_type(ACCURACY),0.005, 30), ManipulateData(){}
 
