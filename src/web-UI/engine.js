@@ -29,7 +29,11 @@ function timeControl(){
 }
 
 function getStatusMsg(statusID){
-	return statusMsg[statusID]
+	if(statusID == 0){
+		return "<div style=\"color:blue\">"+statusMsg[statusID]+"</div>"
+	}else{
+		return "<div style=\"color:red\">"+statusMsg[statusID]+"</div>"
+	}
 }
 
 function nodeGraphManager(name){
@@ -41,7 +45,7 @@ function nodeGraphManager(name){
 	$("#GraphsGrid").append("<div class=\"graph\">"+
         						"<h2>Node: "+name+"</h2>"+
                 	"<div id=\""+name+"\"  style=\"width:600px;height:300px;float:left\"></div>"+
-                        "<h3>Status: <br> <div id=\"status\" style=\"color:blue\">"+this.nodeStatus+"</div></h3>" + 
+                        "<h3>Status: <br> <div id=\"status\"><div style=\"color:blue\">"+this.nodeStatus+"</div></div></h3>" + 
                 	"</div>"+
         		"</div>")
 
