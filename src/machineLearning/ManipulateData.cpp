@@ -8,8 +8,8 @@ void ManipulateData::checkLoad(){
 }
 
 void ManipulateData::loadData(){
-	Data* data = (Data*) malloc(sizeof(Data)*sizeOfKnow);
-	int numrows = loadLastsDatas(data,sizeOfKnow);
+	Data* data;
+	int numrows = loadLastsDatas(&data,sizeOfKnow);
 	for(int i=0;i<numrows;i++){
 		insertData(&data[i]);
 	}
