@@ -21,10 +21,10 @@ int main()
     if (!connectDatabase())
 		return EXIT_FAILURE;
 
-    Data* data = malloc(sizeof(Data)*75);
+    Data* data;
     int numrows;
     
-    numrows = loadLastsDatas(data,75);
+    numrows = loadLastsDatasByMinutes(&data,10);
 
     printTemperatures(data,numrows);
     

@@ -21,8 +21,8 @@ double ManipulateData::convertTimeToSeconds(char* time){
 }
 
 void ManipulateData::loadData(){
-	Data* data = (Data*) malloc(sizeof(Data)*sizeOfKnow);
-	int numrows = loadLastsDatas(data,sizeOfKnow);
+	Data* data;
+	int numrows = loadLastsDatas(&data,sizeOfKnow);
 	fillData(data,numrows);
 }
 
