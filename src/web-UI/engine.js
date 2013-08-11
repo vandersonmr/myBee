@@ -71,7 +71,7 @@ function nodeGraphManager(name){
 	}
 		
 	this.update = function(){
-		this.plot.setData( [this.data] )
+		this.plot.setData([this.data])
 		this.plot.setupGrid()
 		this.plot.draw()
 	}
@@ -101,20 +101,26 @@ var graphList = {}
 function insertIndex(stack){
 	var res = []
 	var time = []
+	var stats = []
 	var i = 0
-	for(var j=0; j < stack.length; j++){
+	var size = stack.length
+	for(var j=0; j < size; j++){
 		var temp = stack.pop();
+		stats.push(temp[2])
 		time.push(temp[1]);
 		res.push([i++, temp[0]])
 	}
-	return [res,time]
+	return [res,time,stats]
 }
 
 function parseData(input) {
 	var temperatures = {}
 	
+	if (input.length == 0)
+		return temperatures
+
 	var rows = input.split("<br>")
-	for(var captura = 1; captura < rows.length-1; captura++){
+	for(var captura = 0; captura < rows.length-1; captura++){
 		var row = rows[captura].replace(/\n/g,"").split("&")
 		var nodeName = row[0].replace(/#/g,"").replace(" ","")
                               .replace("\n","node").replace("[","").replace("]","")
@@ -123,26 +129,22 @@ function parseData(input) {
 		var stats = row[3]	
 		if(temperatures[nodeName] == undefined){
 			temperatures[nodeName] = []
-			i=0
 		}
 
 		temperatures[nodeName].push([tempValue,time,stats])
 	}
-
 	return temperatures
 }
 
 function plotData(data){
-	window.teste = data
 	for(var node in data){
 			if(data[node].length == 0)
 				continue
 			if (graphList[node] == undefined)
-				graphList[node] = new nodeGraphManager(node)
-			
-			graphList[node].setNodeStatus(data[node].pop()[2]
-                                                .replace(" ",""))
+				graphList[node] = new nodeGraphManager(node);
+		
 			var tempData = insertIndex(data[node])
+			graphList[node].setNodeStatus(tempData[2].pop().replace(" ",""))
 			graphList[node].setData(tempData[0],tempData[1])
 			graphList[node].update()
 			
@@ -169,7 +171,6 @@ function update() {
 	$.get('cgi-bin/getDados').success(
 			function(data){	
 				var res = parseData(data)
-				window.test1 = data;
 				plotData(res)
 			});
 
