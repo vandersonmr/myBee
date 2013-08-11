@@ -62,8 +62,10 @@ public class MonitorCliente {
 		closeRepa();
 	}
 
+	int i = 0;
 	private String getTemperature() {
-		return String.valueOf((int) (Math.random() * 100)) + " graus celcius.";
+		i+=0.1;
+		return String.valueOf((int) ((Math.sin(i)*10+26) + Math.random() * 5 - 1) + " graus celcius.");
 	}
 
 	private void sendMsgToServer() {
