@@ -21,7 +21,6 @@ class Rvm: public ManipulateData{
 	public:
 		Rvm();
 		~Rvm(){}
-		static Rvm rvmControl;
 
 };
 

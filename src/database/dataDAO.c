@@ -105,10 +105,10 @@ int load(Data** data,char* query){
 	return numrows;	
 }
 
-int loadLastsDatas(Data** data,int q){
-	char* queryWithOutQ = "select * from temperatures order by Date desc limit 0,%d;";
-	char query[60];
-        snprintf(query,60,queryWithOutQ,q-1);
+int loadLastsDatas(Data** data,int q, char* prefix){
+	char* queryWithOutQ = "select * from temperatures where Prefix like '%s' order by Date desc limit 0,%d;";
+	char query[100];
+    snprintf(query,100,queryWithOutQ,prefix,q-1);
 	return load(data,query);
 }
 
