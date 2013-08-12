@@ -12,7 +12,6 @@ class Krls: public ManipulateData{
 	public:
 		Krls();
 		~Krls(){}
-		static Krls krlsControl;
 };
 
 

@@ -1,4 +1,4 @@
-CC=clang++
+CC=g++
 CFLAGS=-std=c++11 -O3
 dataDAO= -I../include/
 INCLUDES=-I./ $(dataDAO) -g

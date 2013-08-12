@@ -11,7 +11,7 @@ void Rvm::fillData(Data* data, int numrows){
 		return;
 	}
 
-	for (int i = numrows - 1; i > numrows - AMOUNT; i--){
+	for (int i = numrows - 1; i >= numrows - AMOUNT; i--){
 		insertData(&data[i]);
 	}
 	trainData();
