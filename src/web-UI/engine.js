@@ -40,6 +40,7 @@ function nodeGraphManager(name){
 	this.name = name
 	this.data = []
 	var times = []
+	var stats = []
 	this.nodeStatus = "OK"
 
 	$("#GraphsGrid").append("<div class=\"graph\">"+
@@ -60,9 +61,10 @@ function nodeGraphManager(name){
 					tickSize: 100}
 				      })
 	window.teste = this.plot
-	this.setData = function(data, time)	{
+	this.setData = function(data, time, stat){
 		this.data = data
 		times = time
+		stats = stat
 	}
 	
 	this.setNodeStatus = function(nodeStatus){
@@ -85,7 +87,8 @@ function nodeGraphManager(name){
 				var x = item.datapoint[0],
 				y = item.datapoint[1];
 				showTooltip(item.pageX, item.pageY,
-				     "Data: "+ times[x] + "<br> Temperatura: " + y + "º célcius");
+				     "Data: "+ times[x] + "<br> Temperatura: " + y + "º célcius"
+					 + "<br> Status: " + stats[x]);
 			}
 		} else {
 			$("#tooltip").remove();
@@ -144,8 +147,8 @@ function plotData(data){
 				graphList[node] = new nodeGraphManager(node);
 		
 			var tempData = insertIndex(data[node])
-			graphList[node].setNodeStatus(tempData[2].pop().replace(" ",""))
-			graphList[node].setData(tempData[0],tempData[1])
+			graphList[node].setNodeStatus(tempData[2][tempData[2].length-1].replace(" ",""))
+			graphList[node].setData(tempData[0],tempData[1],tempData[2])
 			graphList[node].update()
 			
 	}

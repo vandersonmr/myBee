@@ -20,9 +20,10 @@ pthread_t thread;
 
 bool terminated; 
 
-int checkTemperature(char* data,char* time){
+int checkTemperature(char* prefix, char* data,char* time){
 	Data* data1 = (Data*) malloc(sizeof(Data));
 	data1->time = time;
+	data1->fromNode = prefix;
 	data1->temperature = atoi(data);
 	return testData(data1);
 }
@@ -40,7 +41,7 @@ void* handle_message(void* param) {
 	ssize_t read_len = 0;
 	char *interest, *data;
 	prefix_addr_t prefix_addr;
-	char prefix[20];
+	char* prefix = (char*)malloc(sizeof(char)*255);
 
 	terminated = false;
 	while (!terminated) {
@@ -51,7 +52,7 @@ void* handle_message(void* param) {
 			char* time = getTime();
 			repa_print_prefix(prefix_addr, prefix);
 			int status;
-			status = checkTemperature(data,time);
+			status = checkTemperature(prefix,data,time);
 			saveData(prefix,data,time,status);
 			printf("Message: \"%s\" Status: \"%d\" Prefix: %s\n",data,status,prefix);
 		}
@@ -60,6 +61,8 @@ void* handle_message(void* param) {
 		free(interest);
 		free(data);
 	}
+
+	free(prefix);
 
 	pthread_exit(NULL);
 	return 0;

@@ -13,7 +13,6 @@ class KCentroid: public ManipulateData{
 	public:
 		KCentroid();
 		~KCentroid(){}
-		static KCentroid kcentroidControl;
 };
 
 #endif

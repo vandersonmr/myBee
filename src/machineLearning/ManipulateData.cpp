@@ -1,9 +1,9 @@
 #include "include/ManipulateData.h"
 
-void ManipulateData::checkLoad(){
+void ManipulateData::checkLoad(char* nodeName){
 	if(!load){
 		load = true;
-		loadData();
+		loadData(nodeName);
 	}
 }
 
@@ -20,9 +20,9 @@ double ManipulateData::convertTimeToSeconds(char* time){
 	return seconds % 314;// (((2*pi)/0.1)*5)
 }
 
-void ManipulateData::loadData(){
+void ManipulateData::loadData(char* nodeName){
 	Data* data;
-	int numrows = loadLastsDatas(&data,sizeOfKnow);
+	int numrows = loadLastsDatas(&data,sizeOfKnow,nodeName);
 	fillData(data,numrows);
 }
 
@@ -32,7 +32,7 @@ void ManipulateData::fillData(Data* data, int numrows){
 	}
 }
 
-int ManipulateData::testData(Data* data){
-	checkLoad();
+int ManipulateData::testData(Data* data, char* nodeName){
+	checkLoad(nodeName);
 	return estimate(data);
 }
