@@ -18,9 +18,9 @@ int testData(Data* data){
 		Nodes[nodeName] = new Node();
 
 	Node* node = Nodes[nodeName];
-	int resKCentroid = node->kcentroidControl.testData(data);
-	int resKrls = node->krlsControl.testData(data);
-	int resRvm = node->rvmControl.testData(data);
+	int resKCentroid = node->kcentroidControl.testData(data,data->fromNode);
+	int resKrls = node->krlsControl.testData(data,data->fromNode);
+	int resRvm = node->rvmControl.testData(data,data->fromNode);
 	
 	return resLimit | resKCentroid | resKrls | resRvm;
 }

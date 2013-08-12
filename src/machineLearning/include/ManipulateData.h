@@ -19,8 +19,8 @@ class ManipulateData{
 		typedef matrix<double,1,1> sample_type; // 1x1 [temp]
 		typedef radial_basis_kernel<sample_type> kernel_type;
 		bool load;
-		void checkLoad();
-		void loadData();
+		void checkLoad(char*);
+		void loadData(char*);
 		double convertTimeToSeconds(char*);
 		virtual void fillData(Data*,int);
 		virtual void insertData(Data*){} 
@@ -29,7 +29,7 @@ class ManipulateData{
 	public:	
 		ManipulateData(){ load = false;}
 		virtual ~ManipulateData(){}
-		int testData(Data*);
+		int testData(Data*,char*);
 };
 
 
