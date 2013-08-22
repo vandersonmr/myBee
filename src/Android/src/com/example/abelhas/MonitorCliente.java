@@ -7,9 +7,10 @@ import android.util.Log;
 import ufrj.coppe.lcp.repa.PrefixAddress;
 import ufrj.coppe.lcp.repa.RepaMessage;
 import ufrj.coppe.lcp.repa.RepaSocket;
+import ufrj.coppe.lcp.repa.RepaSocketException;
 
 public class MonitorCliente {
-	private RepaSocket rpa = RepaSocket.getRepaSocket();
+	private RepaSocket rpa = new RepaSocket();
 	private Thread sendMsg;
 	private Handler handler;
 	private Message message = new Message();
@@ -17,7 +18,7 @@ public class MonitorCliente {
 	private void log(String s){
 		message = new Message();
 		message.obj = s;
-		handler.sendMessage(message);
+		handler.sendMessage(message);	
 	}
 	
 	public MonitorCliente(Handler handler) {
@@ -53,8 +54,13 @@ public class MonitorCliente {
 		}
 	}
 
-	private void closeRepa() {
-		rpa.repaClose();
+	private void closeRepa(){
+		try {
+			rpa.repaClose();
+		} catch (RepaSocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void close(){
