@@ -3,31 +3,31 @@ CC=gcc
 CCPP=g++
 SRC=./src
 CFLAGS=-O0 -g -w
-LDrepa= -lpthread $(SRC)/repa/build/lib.linux-$(ARCH)-2.7/repa.so -lpython2.7
+SHAREDOBJ= ./radnet-desktop-$(ARCH)/libs/librepa_$(ARCH).so
+LDrepa= -pthread -lpthread $(SHAREDOBJ) -lpython2.7
 LDmysql=  -lmysqlclient 
-HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I$(SRC)/repa/
+HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
 
-all: repad servidor client cgi clear.o
-
-repad:
-	cd ./$(SRC)/repa;\
-	python setup.py build;\
-	cd ../..;
+all: servidor client cgi clear.o
 
 dataDAO.o:
 	$(CCPP) -c $(SRC)/database/dataDAO.c -o dataDAO.o $(CFLAGS) $(HEADERS) -fpermissive 
 
 servidor.o: 
-	$(CCPP) -c $(SRC)/servidor2.c -o servidor.o $(CFLAGS) $(HEADERS)  
+	$(CCPP) -c $(SRC)/servidor2.c -o servidor.o $(CFLAGS) $(HEADERS)
 
-servidor: repad dataDAO.o servidor.o machineLearning.o
+servidor: dataDAO.o servidor.o machineLearning.o
 	$(CCPP) servidor.o dataDAO.o $(SRC)/machineLearning/*.o $(LDrepa) $(LDmysql) $(HEADERS) -o servidor 
 	
-client: repad 
-	$(CC) $(SRC)/client2.c -o  client $(HEADERS) $(CFLAGS) $(LDrepa) -lm
+client:
+	$(CC) $(SRC)/client2.c -o client $(CFLAGS) $(LDrepa) $(HEADERS) -lm
 
 cgi:
 	$(CCPP) $(SRC)/web-UI/CGI/getDados.c $(SRC)/database/dataDAO.c $(LDmysql) -o $(SRC)/web-UI/getDados $(CFLAGS) $(HEADERS) -fpermissive 
+
+install-lib:
+	sudo cp $(SHAREDOBJ) /usr/local/lib
+	sudo ldconfig
 
 install:
 	sudo mkdir -p /var/www/lang
@@ -42,7 +42,7 @@ install:
 	
 init:
 	@echo "Iniciando repd..." 
-	@sudo ./repd/repd-$(ARCH);\
+	@sudo ./repd/repad_$(ARCH);\
 	if [ $$? -eq 0 ]; then\
 		echo "Sucesso.";\
 		else echo "Falha.";\
@@ -50,7 +50,7 @@ init:
 
 kill:
 	@echo "Fechando programa..."
-	@ps -e | grep repd-$(ARCH) | sudo -s kill $$(awk '{print $$1}');\
+	@ps -e | grep repad_$(ARCH) | sudo -s kill $$(awk '{print $$1}');\
 	if [ $$? -eq 0 ]; then\
 		echo "Programa fechado.";\
 		else echo "Programa inexistente";\

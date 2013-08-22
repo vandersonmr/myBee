@@ -18,7 +18,9 @@
 
 pthread_t thread;
 
-bool terminated; 
+bool terminated;
+
+repa_sock_t sock;
 
 int checkTemperature(char* prefix, char* data,char* time){
 	Data* data1 = (Data*) malloc(sizeof(Data));
@@ -47,7 +49,7 @@ void* handle_message(void* param) {
 	while (!terminated) {
 		interest = (char*)malloc(255*sizeof(char));
 		data = (char*)malloc(1500*sizeof(char));
-		read_len = repa_timed_recv(interest, data, prefix_addr, (long int)1E9);
+		read_len = repa_timed_recv(sock,interest, data, prefix_addr, (long int)1E9);
 		if (read_len > 0) {
 			char* time = getTime();
 			repa_print_prefix(prefix_addr, prefix);
@@ -79,18 +81,15 @@ int main(void) {
 		return EXIT_FAILURE;
 	}
 
-	if (repa_open() < 0) {
-		printf("Error open repa (Error No: %d \"%s\").\n", errno, strerror(errno));
-		return EXIT_FAILURE;
-	}
+	sock = repa_open();
 
 	interest = (char*)malloc(255*sizeof(char));
 
 	strcpy(interest, "server");
-	repa_register_interest(interest); 
+	repa_register_interest(sock,interest); 
 
 	pthread_create(&thread, NULL, handle_message, NULL);
-	prefix = repa_node_address();
+	prefix = repa_get_node_address();
 	repa_print_prefix(prefix, cprefix);
 	printf("NodePrefix: %d %s\n", prefix, cprefix);
 
@@ -98,7 +97,7 @@ int main(void) {
 
 	terminated = true;
 	closeConnection();
-	repa_close();
+	repa_close(sock);
 	pthread_join(thread, NULL);
 	exit(EXIT_SUCCESS);
 }
