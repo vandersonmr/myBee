@@ -1,17 +1,14 @@
 package com.example.abelhas;
 
-import java.net.SocketException;
-
-import ufrj.coppe.lcp.repa.RepaAndroid;
-import ufrj.coppe.lcp.repa.RepaSocket;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 
+@SuppressLint("HandlerLeak")
 public class MainActivity extends Activity {
 
 	private MonitorCliente monitor;
@@ -38,7 +35,6 @@ public class MainActivity extends Activity {
 	                setLog((String)msg.obj);
 	            }
 	        };
-
 	        monitor = new MonitorCliente(handler);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
