@@ -3,7 +3,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <time.h>
+
+repa_sock_t sock;
 
 int last = 35;
 double i = 0;
@@ -20,7 +23,7 @@ void sendMessage(char* data){
 	strcpy(interest,"server");
 	size_t data_len = strlen(data);
 	if (data_len > 0) {
-		repa_send(interest, data, data_len, 0);
+		repa_send(sock, interest, data, data_len, 0);
 		printf("Message sent I: \"%s\" D: \"%s\"\n", interest, data);
 	}
 	free(interest);
@@ -29,18 +32,14 @@ void sendMessage(char* data){
 int main(){
 	char *interest,*data;
 
-	//Abre conexão
-	if(repa_open() < 0){
-		printf("Error open repa");
-		return 1;
-	}
+	sock = repa_open();
 
 	//Aloca espaço para registrar endereço e dados para transmissão
 	interest = (char*)malloc(255*sizeof(char));
 	data = (char*)malloc(1500*sizeof(char));
 
 	strcpy(interest,"client");
-	repa_register_interest(interest); // Registra o interesse
+	repa_register_interest(sock,interest); // Registra o interesse
 
 	while (true){
 		getTemperature(data);
@@ -49,5 +48,6 @@ int main(){
 	}
 	free(interest);
 	free(data);
+	repa_close(sock);
 	return 0;
 }
