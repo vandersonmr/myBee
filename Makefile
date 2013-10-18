@@ -1,4 +1,4 @@
-ARCH=x86
+ARCH=$(shell uname -m)
 CC=gcc
 CCPP=g++
 SRC=./src
