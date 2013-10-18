@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <signal.h>
-#include <stdio.h> 
+#include <stdio.h>
 #include <errno.h>
 #include <pthread.h>
 #include <mysql.h>
@@ -86,11 +86,10 @@ int main(void) {
 	interest = (char*)malloc(255*sizeof(char));
 
 	strcpy(interest, "server");
-	repa_register_interest(sock,interest); 
+	repa_register_interest(sock,interest);
 
 	pthread_create(&thread, NULL, handle_message, NULL);
 	prefix = repa_get_node_address();
-	repa_print_prefix(prefix, cprefix);
 	printf("NodePrefix: %d %s\n", prefix, cprefix);
 
 	while(true) sleep(1);

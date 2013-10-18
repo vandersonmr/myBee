@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 #include "hdr/linkedlist.h"
@@ -21,8 +22,8 @@ void dll_insert_before_node(struct dllist* list, struct dll_node *lnode, struct 
 	}
 }
 
-void dll_remove_node(struct dllist* list, struct dll_node *lnode) {
-	if (lnode == NULL) return;
+struct dll_node* dll_remove_node(struct dllist* list, struct dll_node *lnode) {
+	if (lnode == NULL) return NULL;
 
 	if (list != NULL) {
 		if(lnode->prev == NULL)
@@ -36,7 +37,11 @@ void dll_remove_node(struct dllist* list, struct dll_node *lnode) {
 			lnode->next->prev = lnode->prev;
 
 		list->num_elements--;
+
+		return lnode;
 	}
+
+	return NULL;
 }
 
 struct dll_node* dll_pop_back_node(struct dllist* list) {

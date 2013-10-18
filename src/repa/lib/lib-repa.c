@@ -1,11 +1,25 @@
-/*
- * lib-repa.c
+/**
+ * Lib-Repa
+ *   This is the Repa API implementation, this code is used to communicate
+ *   with the Repad Daemon.
  *
  *  Created on: 20/06/2011
  *      Author: Héberte Fernandes de Moraes
+ *
+ *  Modified on 14/01/2013 by Michael Douglas Barreto e Silva
+ *  		To: Include various sockets, comments, consts,
+ *  			list nodes in network and local socket not blocking...)
+ *  Modified again on 10/04/2013 by Héberte
+ *  		To: Change the RepaMessage structure to get both
+ *  			source and destination prefix's and added a new
+ *  			field to say if the message is S2D or IG.
+ *  Modified again on 19/04/2013 by Héberte
+ *  		To: Added two socket for connect to daemon
+ *  			Change socket type from int to sock_t
  */
 
 #include <stdio.h>
+#include <getopt.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
@@ -14,11 +28,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <sched.h>
-#include <pthread.h>
-#include <semaphore.h>
-
 #include <sys/socket.h>
+
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/select.h>
 
 #include <linux/in.h>
 #include <linux/if_ether.h>
@@ -27,31 +41,24 @@
 #include <errno.h>
 #include <time.h>
 
-#define DEBUG 1
+#include "hdr/repa.h"
+#include "hdr/repa-header.h"
+#include "hdr/util.h"
+#include "hdr/linkedlist.h"
+#include "hdr/hashmap.h"
 
 #if defined ANDROID && defined DEBUG
 #include <android/log.h>
-#endif
-
-#include "hdr/repa.h"
-#include "hdr/util.h"
-#include "hdr/linkedlist.h"
-
-int sock = -1; /* Socket of application */
-struct dllist* list_app_interests; /* List app's interest */
-
-pthread_t thread; /* Thread to receive messages and put in buffer list */
-bool terminated = false; /* Used in loop of thread */
-bool thread_is_running = false; // Indicate if repa_recv_from daemon is running
-prefix_addr_t node_add = 0;
-
-u_int16_t node_id = 0;
-u_int32_t total_nodes = 0;
-struct dllist *node_list = NULL;
-
-#if defined ANDROID && defined DEBUG
 const char* TAG = "LIBREPA";
 #endif
+
+hashmap* hash_app_interests = NULL;
+
+prefix_addr_t repa_node_addr = 0;
+
+uint16_t node_id = 0;
+uint32_t total_nodes = 0;
+struct dllist *node_list = NULL;
 
 /* Controls Interests */
 #define NUM_CONTROL_INTERESTS 3
@@ -60,165 +67,73 @@ const char* TAG = "LIBREPA";
 #define CONTROL_INTERESTS_PONG		2
 const char *repa_control_interests[] = {"repad://timestamp", "repad://ping", "repad://pong"};
 
-typedef struct {
-	struct dllist *list_msgs; /* List received messages */
-	bool wait_mutex;
-	pthread_mutex_t mutex; /* Mutex to control access for shared memory */
-    sem_t empty;  /* Indicates how many empty positions the buffer has */
-    sem_t full;  /* Indicates how many full positions the buffer has */
-} message_buffer_t;
+// returns "select" function
+#define SELECT_TIMEOUT				0
+#define SELECT_ERROR				-1
 
-message_buffer_t msgs_buff;
-
-
-#define REPA_MSG_LEN	1500 - sizeof(struct repahdr)
-
-/**
- * TODO List:
- * - Create a receive unblockeable
- * - Test...
- */
-
-/*
- * Thread to receive messages from REPAD daemon
- * and put in a list of messages (list_msgs_received)
- */
-void* repa_recv_from_daemon(void* parameter) {
-	message_t *msg;
-	u_int8_t interest_len = 0;
-	u_int16_t data_len = 0;
-	prefix_addr_t prefix_addr;
-
-#if defined ANDROID && defined DEBUG
-	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv_from_daemon: Init repa_recv_from_daemon\n");
+#if __WORDSIZE == 64
+uint64_t sock_hash_fn(key in) {
+#else
+uint32_t sock_hash_fn(key in) {
 #endif
+	static repa_sock_t *sock = NULL;
+	static uint64_t a = 0;
 
-	ssize_t read_len = 0;
-	char buffer[BUFFER_LEN], interest[BUFFER_LEN], data[BUFFER_LEN];
+	sock = (repa_sock_t*)in;
+	a = (((uint64_t)sock->sock_recv) << 32) || ((uint64_t)sock->sock_send);
 
-	if (sock < 0) {
-		errno = ENOTSOCK;
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv_from_daemon: socket is not open\n");
+	a = (a+0x7ed55d16) + (a<<12);
+	a = (a^0xc761c23c) ^ (a>>19);
+	a = (a+0x165667b1) + (a<<5);
+	a = (a+0xd3a2646c) ^ (a<<9);
+	a = (a+0xfd7046c5) + (a<<3);
+	a = (a^0xb55a4f09) ^ (a>>16);
+
+#if __WORDSIZE == 64
+	return a;
+#else
+	return (uint32_t)a;
 #endif
-		return (void*)(-1);
-	}
-
-	thread_is_running = true;
-	while (!terminated) {
-		bzero(buffer, BUFFER_LEN);
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv_from_daemon: waiting a message\n");
-#endif
-		if ((read_len = recvfrom(sock, buffer, BUFFER_LEN, 0, NULL, NULL)) < 0) { // If erros ocurrs
-			printf("[LibRepa] ERROR: librepa->recv_from_daemon, exit thread!\n");
-#if defined ANDROID && defined DEBUG
-			__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv_from_daemon: ERROR: librepa->recv_from_daemon, exit thread!\n");
-#endif
-			terminated = true;
-			sem_post(&msgs_buff.full); /* Increment the number of messages to release repa_recv */
-			pthread_exit(NULL);
-			return (void*)(-1);
-		}
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv_from_daemon: receive a message\n");
-#endif
-
-		msg_deserialize(buffer, prefix_addr, interest_len, interest, data_len, data);
-		interest[interest_len] = '\0';
-		data[data_len] = '\0';
-
-		if (interest_len == 0)
-			continue;
-
-		// Initialize the new message received
-		msg = (message_t*)malloc(sizeof(message_t));
-		bzero(msg, sizeof(message_t));
-		msg->data_len = data_len;
-		msg->data = (void*)malloc(data_len+1);
-		memcpy(msg->data, data, data_len);
-		{
-			char *aux = (char*)msg->data;
-			aux[data_len] = '\0';
-		}
-
-		msg->interest = (char*)malloc((interest_len+1)*sizeof(char));
-		memcpy(msg->interest, interest, interest_len);
-		msg->interest[interest_len] = '\0';
-
-		msg->prefix_addr = prefix_addr;
-
-		/* Producer messages, enter in critical region */
-		sem_wait(&msgs_buff.empty); /* Lock empty semaphore if have empty space */
-		if (terminated) {
-#if defined ANDROID && defined DEBUG
-			__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv_from_daemon: application finished\n");
-#endif
-			return (void*)(-1);
-		}
-
-		msgs_buff.wait_mutex = true;
-		pthread_mutex_lock(&msgs_buff.mutex); /* Lock the buffer */
-		if (msgs_buff.wait_mutex) {
-			msgs_buff.wait_mutex = false;
-			dll_push_back(msgs_buff.list_msgs, msg); // Append message in list
-		}
-		pthread_mutex_unlock(&msgs_buff.mutex); /* Unlock the buffer */
-		sem_post(&msgs_buff.full); /* Increment the number of messages */
-
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv_from_daemon: msg added in buffer\n");
-#endif
-		/* Exit critical region */
-	}
-
-#if defined ANDROID && defined DEBUG
-	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv_from_daemon: ending\n");
-#endif
-
-	thread_is_running = false;
-	pthread_exit(NULL);
-	return (void*)(0);
 }
 
-/*
- * Open a socket to talk with REPAD daemon
+void list_del_fn(val value) {
+	dll_destroy(value);
+}
+
+/**
+ * Open a socket to talk with REPAD daemon (create socket with REPAD daemon)
+ *
+ *  .:*@*:. It's very important use this command before use
+ *  a repad daemon calls like: repa_send, repa_receive, register_interest...
+ *
+ * Return:
+ * 		A sock_t struct with two sockets if ok
+ * 		if a error occur return a this errors:
+ * 			ERROR_CREATE_SOCKET,ERROR_CREATE_HASHMAP
+ * 			ERROR_CONNECT_SOCKET,ERROR_SEND_SOCKET
+ * 			ERROR_RECVFROM_SOCKET
  */
-int repa_open() {
-	char buffer;
+repa_sock_t repa_open() {
 	size_t size = 0;
-	pthread_attr_t attr;
-	struct sched_param sched_param;
+	repa_sock_t *sock;
 	struct sockaddr serv_name;
+	struct dllist* listAux = NULL;
 
 #if defined ANDROID && defined DEBUG
 	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_open: init\n");
 #endif
 
-	// repa_open has been called
-	if (sock > 0 && thread_is_running) {
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_open: has been called\n");
-#endif
-		return 0;
-	}
-
-	// Initialize msgs_buff
-	// Create a buffer list of messages received an interests
-	dll_create(list_app_interests);
-	dll_create(msgs_buff.list_msgs);
-
-	pthread_mutex_init(&msgs_buff.mutex, NULL); // Initialize mutex
-	sem_init(&msgs_buff.empty, 0, MAX_BUFFER_MSG); // Initialize empty with MAX_BUFFER_MSG
-	sem_init(&msgs_buff.full, 0, 0); // Initialize full is 0 saying have no messages in buffer
-	msgs_buff.wait_mutex = false;
+	sock = calloc(1, sizeof(repa_sock_t));
 
 	// Open unix raw socket
-	if ((sock = socket(AF_LOCAL, SOCK_SEQPACKET, 0)) < 0) {
+	if ((sock->sock_send = socket(AF_LOCAL, SOCK_SEQPACKET, 0)) < 0) {
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_open: error in create socket\n");
 #endif
-		return -1;
+		sock->sock_send = -1;
+		sock->sock_recv = -1;
+		sock->error = ERROR_CREATE_SOCKET;
+		return *sock;
 	}
 
 #if defined ANDROID && defined DEBUG
@@ -231,34 +146,96 @@ int repa_open() {
 	strcpy(serv_name.sa_data, REPA_SCK_NAME);
 	size = (offsetof(struct sockaddr, sa_data) + strlen(serv_name.sa_data) + 1);
 
-	if (connect(sock, (struct sockaddr *)&serv_name, size) < 0) {
+	if (connect(sock->sock_send, (struct sockaddr *)&serv_name, size) < 0) {
 #if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_open: error in connect\n");
+		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_open: ERROR in connect function\n");
 #endif
-		return -1;
+		close(sock->sock_send);
+		sock->sock_send = -1;
+		sock->sock_recv = -1;
+		sock->error = ERROR_CONNECT_SOCKET;
+		return *sock;
 	}
 
-	// Request address from daemon
-	buffer = TMSG_ASK_ADDR;
-	send(sock, &buffer, 1, 0); // Ask node address
-	size = recvfrom(sock, &node_add, sizeof(prefix_addr_t), 0, NULL, NULL); // Receive node address
+	/* Receive the new socket and prefix address from daemon */
+	{
+		struct msghdr msg;
+		struct iovec iov;
 
-	// Start thread to receive messages from repad
-	terminated = false;
-	thread_is_running = false;
+		union {
+			struct cmsghdr cmsg;
+			char control[CMSG_SPACE(sizeof(int))];
+		} control_un;
 
-	/* Create threads */
-	sched_param.sched_priority = 10;
+		msg.msg_control = control_un.control;
+		msg.msg_controllen = sizeof(control_un.control);
 
-	pthread_attr_init(&attr);
-	pthread_attr_setschedparam(&attr, &sched_param);
-	pthread_create(&thread, &attr, repa_recv_from_daemon, (void*)0); /* Receive message from repad daemon */
+		msg.msg_name = NULL;
+		msg.msg_namelen = 0;
 
+		// Receive node address
+		iov.iov_base = &repa_node_addr;
+		iov.iov_len = sizeof(prefix_addr_t);
+		msg.msg_iov = &iov;
+		msg.msg_iovlen = 1;
+
+		if (recvmsg(sock->sock_send, &msg, 0) <= 0) {
 #if defined ANDROID && defined DEBUG
-	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_open: start thread repa_recv_from_daemon\n");
+			__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_open: ERROR in recvmsg() function on receive new socket\n");
 #endif
+			close(sock->sock_send);
+			sock->sock_send = -1;
+			sock->sock_recv = -1;
+			sock->error = ERROR_RECV_SOCKET;
+			return *sock;
+		}
 
-	return 0;
+		struct cmsghdr *cmsg_ptr;
+		if (((cmsg_ptr = CMSG_FIRSTHDR(&msg)) != NULL) && (cmsg_ptr->cmsg_len == CMSG_LEN(sizeof(int)))) {
+			if (cmsg_ptr->cmsg_level != SOL_SOCKET && cmsg_ptr->cmsg_type != SCM_RIGHTS) {
+#if defined ANDROID && defined DEBUG
+				__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_open: ERROR in recvmsg() function: receive wrong cmsghdr\n");
+#endif
+				close(sock->sock_send);
+				sock->sock_send = -1;
+				sock->sock_recv = -1;
+				sock->error = ERROR_RECV_SOCKET;
+				return *sock;
+			}
+			memcpy(&sock->sock_recv, CMSG_DATA(cmsg_ptr), sizeof(int));
+		} else {
+#if defined ANDROID && defined DEBUG
+			__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_open: ERROR in recvmsg() function: descriptor was not passed\n");
+#endif
+			close(sock->sock_send);
+			sock->sock_send = -1;
+			sock->sock_recv = -1;
+			sock->error = ERROR_RECV_SOCKET;
+			return *sock;
+		}
+	}
+
+	// Create hasmap interests
+	if(hash_app_interests == NULL) {
+		hash_app_interests = mk_hmap(sock_hash_fn,int_eq_fn,list_del_fn);
+	}
+
+	dll_create(listAux);
+
+	if(!hmap_add(hash_app_interests, sock,listAux)) {
+		close(sock->sock_send);
+		close(sock->sock_recv);
+		sock->sock_send = -1;
+		sock->sock_recv = -1;
+		sock->error = ERROR_CREATE_HASHMAP;
+		return *sock;
+	}
+
+	#if defined ANDROID && defined DEBUG
+		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_open: socket open successfully\n");
+	#endif
+
+	return *sock;
 }
 
 long app_node_cmp(void *a, void *b, size_t size) {
@@ -270,357 +247,206 @@ long app_node_cmp(void *a, void *b, size_t size) {
 	return (prefix_diff == 0 ? pid_diff : prefix_diff);
 }
 
-void usage(const char* application) {
-	printf("Usage: %s [OPTION]\n\n" \
-			"\t-n\t\t indicates a total number of nodes running this application in network\n" \
-			"\t-h\t\t show this message\n", application);
-}
+/**
+ * Close communication with REPAD service and clean
+ * unregister all interest used by application and
+ * close socket
+ *
+ * Parameter:
+ * 		sock_t sock: the opened socket with daemon
+ *
+ *  .:*@*:. It's very important use this command before
+ *  finish application
+ */
+void repa_close(repa_sock_t sock) {
+	repa_unregister_all(sock);
 
-int repa_init(repa_environment_t *env, int argc, char **argv) {
-	bool set_total_nodes = false, terminated = false;
-	pid_t process_id;
-	prefix_addr_t source_address;
-	app_node_t *new_app_node, *myself;
-	struct dll_node *tmp_node;
-	char buffer[BUFFER_LEN], interest[255];
-	char *application_name, repa_control_init[255], repa_control_initiated[255];
+	/* Shutdown all possibilities of communication: read or write.
+	 * This will unblock all recvfrom calls. I hope so.
+	 */
+	shutdown(sock.sock_recv, SHUT_RDWR);
+	close(sock.sock_recv);
+	shutdown(sock.sock_send, SHUT_RDWR);
+	close(sock.sock_send);
 
-	struct dll_node *aux = NULL;
-
-	if (env == NULL) {
-		printf("[LibRepa] Environment is NULL!\n");
-		return -1; // Error, enviroment not created
-	}
-
-	if (sock < 0) {
-		printf("[LibRepa] repa_open is not called!\n");
-		return -1; // Error, repa_open is not callled
-	}
-
-	application_name = strrchr(argv[0],'/');
-	if (application_name[0] == '/')	application_name++;
-
-	// Manipulate args
-	int c;
-	opterr = 0;
-	while ((c = getopt(argc, argv, "n:")) != -1) {
-		switch (c) {
-		case 'n':
-			total_nodes = (u_int32_t)atoi(optarg);
-			set_total_nodes = true;
-			break;
-		case 'h':
-			usage(application_name);
-			exit(0);
-			break;
-		}
-	}
-
-	if (!set_total_nodes) {
-		printf("[LibRepa] In this case -n option is mandatory!\n");
-		exit(0);
-	}
-
-
-	/* Checks if there are registered interests and temporarily unregister them */
-	if (list_app_interests != NULL) {
-		if (list_app_interests->num_elements > 0) {
-			for (aux = list_app_interests->head; aux != NULL; ) {
-				bzero(buffer, BUFFER_LEN);
-				buffer[0] = TMSG_INTEREST_UNREG; /* Put a type of message */
-				strcpy(buffer+1, (char*)aux->data);
-				send(sock, buffer, BUFFER_LEN, 0);
-			}
-		}
-	}
-
-	// Register interest in this application_repa_init
-	sprintf(repa_control_init, "%s_%d_repa_init", application_name, total_nodes);
-	repa_register_interest(repa_control_init);
-	sprintf(repa_control_initiated, "%s_%d_repa_initiated", application_name, total_nodes);
-	repa_register_interest(repa_control_initiated);
-	process_id = getpid();
-
-	// Create node list
-	dll_create(node_list);
-
-	// Add this app_node in list
-	myself = (app_node_t*)malloc(sizeof(app_node_t));
-	myself->pid = process_id;
-	myself->prefix = node_add;
-	myself->completed = false;
-	dll_sorted_insert(node_list, myself, sizeof(app_node_t), app_node_cmp);
-
-	// Send a ping message
-	sprintf(buffer, "ping-%d", process_id);
-	repa_send(repa_control_init, buffer, strlen(buffer), 0);
-
-	// Wait for response
-	while (!terminated) {
-		if (repa_timed_recv(interest, buffer, source_address, (long int)1E9) < 0) { // Wait 1000 milliseconds
-			sprintf(buffer, "ping-%d", process_id);
-			repa_send(repa_control_init, buffer, strlen(buffer), 0);
-		} else {
-			new_app_node = (app_node_t*)malloc(sizeof(app_node_t));
-			new_app_node->pid = atoi(buffer+5);
-			new_app_node->prefix = source_address;
-			new_app_node->completed = false;
-
-			tmp_node = dll_has_data(node_list, new_app_node, sizeof(app_node_t), app_node_cmp);
-			if (tmp_node == NULL) {
-				tmp_node = dll_sorted_insert(node_list, new_app_node, sizeof(app_node_t), app_node_cmp);
-			} else {
-				free(new_app_node);
-			}
-
-			if (strncmp(buffer, "ping", MIN(strlen(buffer),4)) == 0) {
-				sprintf(buffer, "pong-%d", process_id);
-				repa_send(repa_control_init, buffer, strlen(buffer), 0);
-			} else if (strncmp(buffer, "comp", MIN(strlen(buffer),4)) == 0) {
-				if (tmp_node != NULL) {
-					((app_node_t*)tmp_node->data)->completed = true;
-				}
-			}
-
-			terminated = true;
-			for (aux = node_list->head; aux != NULL; aux = aux->next) {
-				new_app_node = (app_node_t*) aux->data;
-				terminated &= new_app_node->completed;
-			}
-
-			if (node_list->num_elements >= total_nodes) {
-				myself->completed = true;
-				sprintf(buffer, "comp-%d", process_id);
-				repa_send(repa_control_initiated, buffer, strlen(buffer), 0);
-			}
-		}
-	}
-
-	for (aux = node_list->head; aux != NULL; aux = aux->next) {
-		new_app_node = (app_node_t*) aux->data;
-		if (node_add == new_app_node->prefix && process_id == new_app_node->pid) {
-			break;
-		} else {
-			node_id++;
-		}
-	}
-
-	if (env != NULL) {
-		env->node_id = node_id;
-		env->total_nodes = total_nodes;
-		sprintf(env->s_node_id, "%d", node_id);
-	}
-
-	/*******************************************************************************/
-	/* For test */
-//	printf("[DEBUG][LibRepa] AppNodeList [%d]:\n", node_id);
-//	for (aux = node_list->head; aux != NULL; aux = aux->next) {
-//		new_app_node = (app_node_t*) aux->data;
-//		printf("\t %d - %d\n", new_app_node->prefix, new_app_node->pid);
-//	}
-	/*******************************************************************************/
-
-	bzero(interest, 255);
-	bzero(buffer, BUFFER_LEN);
-	if (node_id == 0) {
-		repa_send(repa_control_initiated, "ok", 2, 0);
-	} else {
-		int result;
-		do {
-			result = repa_timed_recv(interest, buffer, source_address, (long int)1E9);
-		} while ((strcmp(repa_control_initiated, interest) != 0) && (result >=0));
-	}
-
-	/* Unregister interest in this application_repa_init */
-	repa_unregister_interest(repa_control_init);
-	/* Unregister interest in this application_repa_initiated */
-	repa_unregister_interest(repa_control_initiated);
-
-	/* Re-registers interests unregister previously */
-	if (list_app_interests != NULL) {
-		if (list_app_interests->num_elements > 0) {
-			for (aux = list_app_interests->head; aux != NULL; ) {
-				bzero(buffer, BUFFER_LEN);
-				buffer[0] = TMSG_INTEREST_REG; /* Put a type of message */
-				strcpy(buffer+1, (char*)aux->data);
-				send(sock, buffer, BUFFER_LEN, 0);
-			}
-		}
-	}
-
-	return 0;
-}
-
-void repa_clear_buffer() {
-	pthread_mutex_lock(&msgs_buff.mutex); /* Lock the buffer */
-
-	dll_destroy_all(msgs_buff.list_msgs);
-	msgs_buff.list_msgs = NULL;
-	dll_create(msgs_buff.list_msgs);
-	sem_init(&msgs_buff.full, 0, 0); // Initialize full with 0 indicating have no messages in buffer
-
-	if (msgs_buff.wait_mutex) {
-		sem_init(&msgs_buff.empty, 0, MAX_BUFFER_MSG-1); // Initialize empty with MAX_BUFFER_MSG - 1
-	} else {
-		sem_init(&msgs_buff.empty, 0, MAX_BUFFER_MSG); // Initialize empty with MAX_BUFFER_MSG
-	}
-	msgs_buff.wait_mutex = false;
-	pthread_mutex_unlock(&msgs_buff.mutex); /* Unlock the buffer */
-}
-
-void repa_close() {
-	struct dll_node *aux, *tmp;
-	message_t *msg;
-
-	terminated = true;
-	repa_unregister_all();
-	close(sock);
-	sock = -1;
-
-	// Clear message buffer
-	for (aux = msgs_buff.list_msgs->head; aux != NULL; ) { /* Iterate in Interest list */
-		if (aux != NULL) {
-			dll_remove_node(msgs_buff.list_msgs, aux);
-			tmp = aux;
-			aux = aux->next;
-			msg = (message_t*)tmp->data;
-			if (msg != NULL) {
-				if (msg->interest != NULL) free(msg->interest);
-				if (msg->data != NULL) free(msg->data);
-			}
-			if (tmp->data != NULL) free(tmp->data);
-			if (tmp != NULL) free(tmp);
-		}
-	}
-
-	dll_destroy(list_app_interests);
-	dll_destroy(msgs_buff.list_msgs);
-	list_app_interests = NULL;
-	msgs_buff.list_msgs = NULL;
+	sock.ref_count = 0;
+	sock.error = 0;
 
 #if defined ANDROID && defined DEBUG
-	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_close: closing socket...\n");
+	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_close: closed socket\n");
 #endif
-
-	// Release semaphores
-	sem_post(&msgs_buff.empty);
-	sem_post(&msgs_buff.full);
 }
 
-prefix_addr_t repa_node_address() {
-	return node_add;
-}
-
-/*
- * Register a interest of application
+/**
+ * Return prefix address this node
+ *
+ * Return:
+ * 		Node Prefix Address
  */
-int repa_register_interest(const char* interest) {
+prefix_addr_t repa_get_node_address() {
+	return repa_node_addr;
+}
+
+/**
+ * Register a interest of application
+ *
+ * Parameters:
+ * 		sock_t sock: the opened socket with daemon
+ * 		const char* interest : interest to register
+ *
+ * Return:
+ * 		OK if not a error occur
+ * 		if a error occur return a this errors:
+ * 			ERROR_NOT_OPEN_SOCKET,ERROR_SEND_SOCKET
+ */
+int repa_register_interest(repa_sock_t sock, const char* interest) {
+	uint8_t interest_len = 0;
 	char *interest_reg;
 	char buffer[BUFFER_LEN];
 
-	if (sock < 0) {
+	struct dllist* listAux = NULL;
+
+#if defined ANDROID && defined DEBUG
+		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_register_interest: register starting...\n");
+#endif
+	if ((sock.sock_recv < 0) || (sock.sock_send < 0)) {
 		errno = ENOTSOCK;
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_register_interest: ERROR: socket is not open\n");
 #endif
-		return -1;
+		sock.error = ERROR_NOT_OPEN_SOCKET;
+		return ERROR_NOT_OPEN_SOCKET;
 	}
 
 	if (interest != NULL) {
-		if (dll_has_data(list_app_interests, interest, strlen(interest), str_eq_cmp) == NULL) { /* If interest is not found */
-			bzero(buffer, BUFFER_LEN);
-			buffer[0] = TMSG_INTEREST_REG; /* Put a type of message */
-			strcpy(buffer+1, interest);
+		listAux = hmap_get(hash_app_interests, &sock);
+		interest_len = strlen(interest);
 
-			if (strlen(interest) > 0) {
-				if (send(sock, buffer, BUFFER_LEN, 0) < 0) {
+		if (interest_len > 0) {
+			if (dll_has_data(listAux, interest, interest_len, str_eq_cmp) == NULL) { /* If interest is not found */
+				buffer[0] = TMSG_INTEREST_REG; /* Put a type of message */
+				strcpy(buffer+1, interest);
+				buffer[interest_len+2] = '\0';
+
+				if (send(sock.sock_send, buffer, interest_len+2, 0) < 0) {
 #if defined ANDROID && defined DEBUG
 					__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_register_interest: ERROR in communicate with repad\n");
 #endif
-					return -1;
 				}
 #if defined ANDROID && defined DEBUG
 				__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_register_interest: interest \"%s\" registered\n", interest);
 #endif
 				interest_reg = strdup(interest);
-				interest_reg[strlen(interest)] = '\0';
-				dll_append(list_app_interests, interest_reg);
+				interest_reg[interest_len] = '\0';
+				dll_append(listAux, interest_reg);
 			}
 		}
 	}
 
-	return 0;
+	return OK;
 }
 
-/* Unregister a interest of application */
-int repa_unregister_interest(const char* interest) {
+/**
+ * Unregister a interest of application
+ *
+  * Parameters:
+ * 		sock_t sock: the opened socket with daemon
+ * 		const char* interest : interest to unregister
+ *
+ * Return:
+ * 		OK if not a error occur
+ * 		if a error occur return a this errors:
+ * 			ERROR_NOT_OPEN_SOCKET,ERROR_SEND_SOCKET
+ */
+int repa_unregister_interest(repa_sock_t sock, const char* interest) {
+	uint8_t interest_len = 0;
 	char buffer[BUFFER_LEN];
-	struct dll_node* aux;
 
-	if (sock < 0) {
+	struct dll_node* aux;
+	struct dllist* listAux;
+
+	if ((sock.sock_recv < 0) || (sock.sock_send < 0)) {
 		errno = ENOTSOCK;
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_unregister_interest: ERROR: socket is not open\n");
 #endif
-		return -1;
+		sock.error = ERROR_NOT_OPEN_SOCKET;
+		return ERROR_NOT_OPEN_SOCKET;
 	}
 
 	if (interest != NULL) {
-		aux = dll_has_data(list_app_interests, interest, strlen(interest), str_eq_cmp); /* Search Interest in list */
-		if (aux != NULL) {
-			bzero(buffer, BUFFER_LEN);
-			buffer[0] = TMSG_INTEREST_UNREG; /* Put a type of message */
-			strcpy(buffer+1, interest);
-			if (strlen(interest) > 0) {
-				if (send(sock, buffer, BUFFER_LEN, 0) < 0) {
+		listAux = hmap_get(hash_app_interests, &sock);
+		interest_len = strlen(interest);
+
+		if (interest_len > 0) {
+			aux = dll_has_data(listAux, interest, interest_len, str_eq_cmp); /* Search Interest in list */
+			if (aux != NULL) {
+				buffer[0] = TMSG_INTEREST_UNREG; /* Put a type of message */
+				strcpy(buffer+1, interest);
+				buffer[interest_len+2] = '\0';
+
+				if (send(sock.sock_send, buffer, interest_len+2, 0) < 0) {
 #if defined ANDROID && defined DEBUG
 					__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_unregister_interest: ERROR in communicate with daemon\n");
 #endif
-					return -1;
 				}
-			}
 #if defined ANDROID && defined DEBUG
-			__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_unregister_interest: interest \"%s\" unregistered\n", interest);
+				__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_unregister_interest: interest \"%s\" unregistered\n", interest);
 #endif
-			dll_remove_node(list_app_interests, aux);
-			if (aux->data != NULL) free(aux->data);
-			if (aux != NULL) free(aux);
+				dll_remove_node(listAux, aux);
+				if (aux->data != NULL) free(aux->data);
+				if (aux != NULL) free(aux);
+			}
 		}
 	}
 
-	return 0;
+	return OK;
 }
 
-/* Unregister all interest of application */
-int repa_unregister_all() {
+/**
+ * Unregister all interest of application
+ *
+ * Parameters:
+ * 		sock_t sock: the opened socket with daemon
+ *
+ * Return:
+ * 		OK if not a error occur
+ * 		if a error occur return a this errors:
+ * 			ERROR_NOT_OPEN_SOCKET,ERROR_SEND_SOCKET
+ */
+int repa_unregister_all(repa_sock_t sock) {
+	uint8_t interest_len = 0;
 	char buffer[BUFFER_LEN];
 	struct dll_node *aux, *tmp;
+	struct dllist* listAux;
 
-	if (sock < 0) {
+	if ((sock.sock_recv < 0) || (sock.sock_send < 0)) {
 		errno = ENOTSOCK;
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_unregister_all: ERROR: socket is not open\n");
 #endif
-		return -1;
+		sock.error = ERROR_NOT_OPEN_SOCKET;
+		return ERROR_NOT_OPEN_SOCKET;
 	}
 
-	for (aux = list_app_interests->head; aux != NULL; ) { /* Iterate in Interest list */
+	listAux = hmap_get(hash_app_interests, &sock);
+	buffer[0] = TMSG_INTEREST_UNREG;
+	for (aux = listAux->head; aux != NULL; ) { /* Iterate in Interest list */
 		if (aux != NULL) {
-			bzero(buffer, BUFFER_LEN);
-			buffer[0] = TMSG_INTEREST_UNREG;
+			interest_len = strlen(aux->data);
 			strcpy(buffer+1, (char*)aux->data);
-			if (strlen(aux->data) > 0) {
-				if (send(sock, buffer, BUFFER_LEN, 0) < 0) {
+			buffer[interest_len+2] = '\0';
+			if (interest_len > 0) {
+				if (send(sock.sock_send, buffer, interest_len+2, 0) < 0) {
 #if defined ANDROID && defined DEBUG
 					__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_unregister_all: ERROR in communicate with daemon\n");
 #endif
-					return -1;
 				}
 #if defined ANDROID && defined DEBUG
 				__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_unregister_all: interest \"%s\" unregistered\n", (char*)aux->data);
 #endif
 			}
-			dll_remove_node(list_app_interests, aux);
+			dll_remove_node(listAux, aux);
 			tmp = aux;
 			aux = aux->next;
 			if (tmp->data != NULL) free(tmp->data);
@@ -628,35 +454,47 @@ int repa_unregister_all() {
 		}
 	}
 
-	return 0;
+	return OK;
 }
 
-/*
+/**
  * Send a message of interest
- * Parameter are a interest, data, data_len, prefix_address
+ *
+ * Parameters:
+ * 		sock_t sock: the opened socket with daemon
+ * 		const char* interest : interest to send message
+ * 		const void *data : any data (max: len(data)+len(interest) <= ~1500)
+ * 		const size_t data_len : size data
+ * 		const prefix_addr_t dst_addr : destination address prefix
+ *		bool hide_interest : hide interest (its not appear in list interests network)
  *
  * Return:
  * 		N if ok, where N is a number of bytes sent
- * 		-1 if error
- *
+ * 		if a error occur return a this errors:
+ * 			ERROR_NOT_OPEN_SOCKET,ERROR_NULL_DATA
+ * 			ERROR_TOO_LONG_MESSAGE,ERROR_SEND_SOCKET
+ * 			ERROR_SEND_SOCKET
  */
-ssize_t __repa_send(const char *interest, const void *data, const size_t data_len, const prefix_addr_t dst_addr, bool hide_interest) {
-	ssize_t ret = 0;
-	u_int8_t interest_len = 0;
-	u_int16_t aux_data_len = 0;
+ssize_t __repa_send(repa_sock_t sock, const char *interest, const void *data,
+		const size_t data_len, const prefix_addr_t dst_address, bool hide_interest) {
+	ssize_t result = 0;
+	uint8_t interest_len = 0;
+	uint16_t aux_data_len = 0;
 	size_t buffer_len;
+	prefix_addr_t src_address = 0;
 	char buffer[BUFFER_LEN];
 
 #if defined ANDROID && defined DEBUG
 	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_send: init\n");
 #endif
 
-	if (sock < 0) {
+	if ((sock.sock_recv < 0) || (sock.sock_send < 0)) {
 		errno = ENOTSOCK;
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_send: ERROR: socket is not open\n");
 #endif
-		return -1;
+		sock.error = ERROR_NOT_OPEN_SOCKET;
+		return ERROR_NOT_OPEN_SOCKET;
 	}
 
 	if (data == NULL) { /* Not a data message */
@@ -664,240 +502,303 @@ ssize_t __repa_send(const char *interest, const void *data, const size_t data_le
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_send: ERROR: no data to send\n");
 #endif
-		return -3;
+		return ERROR_NULL_DATA;
 	}
 
 	buffer_len = 0;
-	bzero(buffer, BUFFER_LEN);
 	interest_len = strlen(interest);
 	aux_data_len = (data_len == 0 ? strlen((char*)data) : data_len);
 
-	if (aux_data_len + interest_len > REPA_MSG_LEN) { /* Message too long */
+	if (aux_data_len + interest_len > REPA_PACKET_LEN) { /* Message too long */
 		errno = EMSGSIZE;
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_send: ERROR: message too long\n");
 #endif
-		return -2;
+		return ERROR_TOO_LONG_MESSAGE;
 	}
 
 	/* Mount a message to send to REPAD daemon */
 	/* Put message type */
-	if (hide_interest) buffer[0] = TMSG_SEND_HIDE; /* The interest is hide */
-	else buffer[0] = TMSG_SEND; /* The interest is visible by every node */
-	msg_serialize(buffer+1, buffer_len, dst_addr, interest_len, interest, aux_data_len, data);
+	buffer[0] = (hide_interest ? TMSG_SEND_HIDE /* The interest is hide */: TMSG_SEND /* The interest is visible by every node */);
+	msg_serialize(buffer+1, buffer_len, dst_address, src_address, interest_len, interest, aux_data_len, data);
 
-	if ((ret = send(sock, buffer, buffer_len+1, 0)) < 0) { // Send buffer_len + 1 because of message's type
+	if ((result = send(sock.sock_send, buffer, buffer_len+1, 0)) < 0) { // Send buffer_len + 1 because of message's type
 		errno = ESTRPIPE; /* Streams pipe error */
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_send: ERROR in communicate with daemon\n");
 #endif
-		return -1;
+		return ERROR_SEND_SOCKET;
 	}
 #if defined ANDROID && defined DEBUG
 	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_send: message sent\n");
 #endif
 
-	return ret;
+	return result;
 }
 
-/*
- * Receive a message
+/**
+ * Receive a message of interest
  *
  * Parameters:
- * 		Interest, Data and Source Address of received message
+ * 		sock_t sock: the opened socket with daemon
+ *		char *interest : return interest from message
+ *		void *data : return data from message
+ *		prefix_addr_t *src_addr : source address prefix
  *
  * Return:
  * 		length of data received
- * 		-1 if error
- *
+ * 		if a error occur return a this errors:
+ * 			ERROR_NOT_OPEN_SOCKET,ERROR_NULL_INTEREST
+ * 			ERROR_NULL_DATA,ERROR_RECVFROM_SOCKET
+ * 			ERROR_NULL_RECEIVED_INTEREST
  */
-ssize_t __repa_recv(char *interest, void *data, prefix_addr_t *src_addr) {
-	message_t *msg;
-	ssize_t length;
+ssize_t __repa_recv(repa_sock_t sock, char *interest, void *data, prefix_addr_t *src_address, prefix_addr_t *dst_address) {
+	uint8_t interest_len = 0;
+	uint16_t data_len = 0;
+	prefix_addr_t dst_prefix;
+	ssize_t read_len = 0;
+	char buffer[BUFFER_LEN];
 
 #if defined ANDROID && defined DEBUG
 	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: init\n");
 #endif
 
-	if (sock < 0) {
+	if ((sock.sock_recv < 0) || (sock.sock_send < 0)) {
 		errno = ENOTSOCK;
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: ERROR: socket is not open\n");
 #endif
-		return -1;
+		sock.error = ERROR_NOT_OPEN_SOCKET;
+		return ERROR_NOT_OPEN_SOCKET;
 	}
 
 	if (interest == NULL) {
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: ERROR: interest is null\n");
-#endif
-		return -1;
+		#if defined ANDROID && defined DEBUG
+				__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: ERROR: interest is null\n");
+		#endif
+		return ERROR_NULL_INTEREST;
 	}
 
 	if (data == NULL) {
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: ERROR: data is null\n");
-#endif
-		return -1;
+		#if defined ANDROID && defined DEBUG
+				__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: ERROR: data is null\n");
+		#endif
+		return ERROR_NULL_DATA;
 	}
 
-	// Get a message from buffer
-	sem_wait(&msgs_buff.full);  /* Lock full semaphore if not zero */
-	if (terminated) return -1;
+	#if defined ANDROID && defined DEBUG
+			__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: waiting a message\n");
+	#endif
 
-	pthread_mutex_lock(&msgs_buff.mutex); /* Lock the buffer */
-	msg = dll_pop_front(msgs_buff.list_msgs); // Get a first message in buffer list
-	pthread_mutex_unlock(&msgs_buff.mutex); /* Unlock the buffer */
 
-	sem_post(&msgs_buff.empty); /* Increments semaphore for # of empty */
+	if ((read_len = recv(sock.sock_recv, buffer, BUFFER_LEN, 0)) <= 0) { // If error ocurrs
+		#if defined ANDROID && defined DEBUG
+			__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: ERROR: recv call!\n");
+		#endif
+		return ERROR_RECVFROM_SOCKET;
+	}
+	#if defined ANDROID && defined DEBUG
+			__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: receive a message\n");
+	#endif
 
-	if (msg == NULL) {
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: ERROR: socket breakdown\n");
-#endif
-		return -1;
+	msg_deserialize(buffer, dst_prefix, *src_address, interest_len, interest, data_len, data);
+	interest[interest_len] = '\0';
+	((char*)data)[data_len] = '\0';
+
+	if (interest_len == 0) {
+		return ERROR_NULL_RECEIVED_INTEREST; // INTEREST NULL
 	}
 
-	length = msg->data_len;
-
-	// Copy message to user parameter
-	strcpy(interest, msg->interest);
-	interest[strlen(msg->interest)] = '\0';
-
-	memcpy(data, msg->data, msg->data_len);
-	{
-		char *aux = (char*)data;
-		aux[msg->data_len] = '\0';
+	if (dst_address != NULL) {
+		memcpy(dst_address, &dst_prefix, sizeof(prefix_addr_t));
 	}
 
-	if (src_addr != NULL)
-		memcpy(src_addr, &msg->prefix_addr, sizeof(prefix_addr_t));
+	#if defined ANDROID && defined DEBUG
+		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: return a new message\n");
+	#endif
 
-#if defined ANDROID && defined DEBUG
-	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_recv: return a message\n");
-#endif
-
-	// Free message
-	if (msg->interest != NULL) free(msg->interest);
-	if (msg->data != NULL) free(msg->data);
-	if (msg != NULL) free(msg);
-
-	return length;
+	return data_len;
 }
 
-/*
- * Wait some nanoseconds to receive a message
+/**
+ * Wait abstime microseconds to receive a message of interest
+ * If timeout return ERROR_TIMEOUT_RECEIVE!
+ *
+ * Parameters:
+ * 		sock_t sock: the opened socket with daemon
+ *		char *interest : return interest from message
+ *		void *data : return data from message
+ *		prefix_addr_t *src_addr : source address prefix
+ *		const long int microseconds : waiting for X microseconds a message
  *
  * Return:
- * 		length of data received
- * 		-1 if error
+ * 		length of data received if a message is received
+ * 		if a error occur return a this errors:
+ * 			ERROR_NOT_OPEN_SOCKET,ERROR_NULL_INTEREST
+ * 			ERROR_NULL_DATA,ERROR_RECVFROM_SOCKET
+ * 			ERROR_NULL_RECEIVED_INTEREST,ERROR_TIMEOUT_RECEIVE // time out
+ * 			ERROR_SELECT_DESCRIPTOR
  */
 
 #ifndef CLOCK_REALTIME
 #define CLOCK_REALTIME		0
 #endif
 
-#if !defined __timespec_defined && !defined _STRUCT_TIMESPEC
-#define _STRUCT_TIMESPEC
-#define __timespec_defined	1
-struct timespec {
-	__time_t tv_sec;		/* Seconds.  */
-	long int tv_nsec;		/* Nanoseconds.  */
-};
-#endif
+ssize_t __repa_timed_recv(repa_sock_t sock, char *interest, void *data, prefix_addr_t *src_address,
+		prefix_addr_t *dst_address, long int microseconds) {
+	uint8_t interest_len = 0;
+	uint16_t data_len = 0;
+	prefix_addr_t dst_prefix;
+	ssize_t read_len = 0;
+	char buffer[BUFFER_LEN];
 
-ssize_t __repa_timed_recv(char *interest, void *data, prefix_addr_t *src_addr, const long int nanoseconds) {
-	message_t *msg;
-	ssize_t length;
-	struct timespec abs_timeout;
+	fd_set read_fds;
+	int result_select;
 
-	if (clock_gettime(CLOCK_REALTIME, &abs_timeout) == -1) {
-		printf("[LibRepa] ERROR: Can't clock_gettime (Error No: %d \"%s\")\n", errno, strerror(errno));
-	}
-
-	{
-		long int nsec = abs_timeout.tv_nsec + (nanoseconds%(long int)1E9);
-		long int sec = abs_timeout.tv_sec + (nanoseconds/(long int)1E9);
-		sec += nsec/(long int)1E9;
-		nsec = nsec%(long int)1E9;
-		abs_timeout.tv_nsec = nsec;
-		abs_timeout.tv_sec = sec;
-	}
+	struct timeval timev = {
+		.tv_sec = (microseconds/(long int)1E6),
+		.tv_usec = (microseconds%(long int)1E6)
+	};
 
 #if defined ANDROID && defined DEBUG
 	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: init\n");
 #endif
 
-	if (sock < 0) {
+	if ((sock.sock_recv < 0) || (sock.sock_send < 0)) {
 		errno = ENOTSOCK;
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: ERROR: socket is not open\n");
 #endif
-		return -1;
+		sock.error = ERROR_NOT_OPEN_SOCKET;
+		return ERROR_NOT_OPEN_SOCKET;
 	}
 
 	if (interest == NULL) {
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: ERROR: interest is null\n");
 #endif
-		return -1;
+		return ERROR_NULL_INTEREST;
 	}
 
 	if (data == NULL) {
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: ERROR: data is null\n");
 #endif
-		return -1;
+		return ERROR_NULL_DATA;
 	}
-
-	// Get a message from buffer or wait abstime until return error
-	if (sem_timedwait(&msgs_buff.full, &abs_timeout) == -1) {  /* If not a new messages, wait */
-//		printf("[LibRepa] ERROR: sem_timedwait Acquiring has_messages (Error No: %d \"%s\")\n", errno, strerror(errno));
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: ERROR: Acquiring has_messages (Error No: %d \"%s\")\n", errno, strerror(errno));
-#endif
-		return -2;
-	}
-	if (terminated) return -1;
-
-	pthread_mutex_lock(&msgs_buff.mutex); /* Lock the buffer */
-	msg = dll_pop_front(msgs_buff.list_msgs); // Get a first message in buffer list
-	pthread_mutex_unlock(&msgs_buff.mutex); /* Unlock the buffer */
-
-	sem_post(&msgs_buff.empty); /* Increments semaphore for # of empty */
-
-	length = msg->data_len;
-
-	// Copy message to user parameter
-	strcpy(interest, msg->interest);
-
-	memcpy(data, msg->data, msg->data_len);
-	{
-		char *aux = (char*)data;
-		aux[msg->data_len] = '\0';
-	}
-
-	if (src_addr != NULL)
-		memcpy(src_addr, &msg->prefix_addr, sizeof(prefix_addr_t));
 
 #if defined ANDROID && defined DEBUG
-	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: return  a message\n");
+	__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: waiting a message\n");
 #endif
 
-	// Free message
-	if (msg->interest != NULL) free(msg->interest);
-	if (msg->data != NULL) free(msg->data);
-	if (msg != NULL) free(msg);
+	// Set up the file descriptor set.
+	FD_ZERO(&read_fds); // Clear all bits in the "read_fds" bitmap
+	FD_SET(sock.sock_recv, &read_fds); // Mark the sock(th) position in "read_fds" bitmap
 
-	return length;
+	// Wait until timeout or data received.
+	// select (number of file descriptor, read_bitmap, write_bitmap, error_bitmap, time)
+	result_select = select(sock.sock_recv+1, &read_fds, NULL, NULL, &timev);
+	if (result_select == SELECT_TIMEOUT) { // Select Timeout
+#if defined ANDROID && defined DEBUG
+		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: WARNING: timeout\n");
+#endif
+		return ERROR_TIMEOUT_RECEIVE;
+	} else if (result_select == SELECT_ERROR) { // Select Error
+#if defined ANDROID && defined DEBUG
+		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: ERROR: select error (Error No: %d \"%s\")\n", errno, strerror(errno));
+#endif
+		return ERROR_SELECT_DESCRIPTOR;
+	} else if (FD_ISSET(sock.sock_recv, &read_fds)) { // Socket is ready to read
+		if ((read_len = recv(sock.sock_recv, buffer, BUFFER_LEN, 0)) <= 0) { // Test if error occurs on recvfrom
+#if defined ANDROID && defined DEBUG
+			__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: ERROR: recvfrom!\n");
+#endif
+			return ERROR_RECVFROM_SOCKET;
+		}
+#if defined ANDROID && defined DEBUG
+		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: receive a message\n");
+#endif
+
+		msg_deserialize(buffer, dst_prefix, *src_address, interest_len, interest, data_len, data);
+		interest[interest_len] = '\0';
+		((char*)data)[data_len] = '\0';
+
+		if (interest_len == 0) {
+			return ERROR_NULL_RECEIVED_INTEREST; // INTEREST NULL
+		}
+
+		if (dst_address != NULL) {
+			memcpy(dst_address, &dst_prefix, sizeof(prefix_addr_t));
+		}
+
+#if defined ANDROID && defined DEBUG
+		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_timed_recv: return  a message\n");
+#endif
+
+		return data_len;
+	}
+
+	return ERROR_UNKNOWN_SOCKET; // unknown socket
 }
 
-int repa_get_interest_in_network(struct dllist *list) {
-	int s = -1;
+/**
+ * Get a list of interest registered in daemon
+ * return the interests in list passed by parameter
+ *
+ * Parameters:
+ * 		sock_t sock: the opened socket with daemon
+ * 		struct dllist *list : return list of interest
+ *
+ * Return:
+ * 		OK if not a error occur
+ * 		if a error occur return a this errors:
+ * 			ERROR_NULL_LIST
+ */
+int repa_get_interests_registered(repa_sock_t sock, struct dllist *list) {
+	uint32_t i;
+
+	struct dll_node *itemList;
+	struct dllist* listAux;
+
+	if (list == NULL) {
+#if defined ANDROID && defined DEBUG
+		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_interests_registered: list is null\n");
+#endif
+		return ERROR_NULL_LIST;
+	}
+
+	listAux = hmap_get(hash_app_interests, &sock);
+	if(listAux != NULL) {
+		itemList = listAux->head;
+		for(i = 0; i < listAux->num_elements; i++) {
+			dll_append(list, itemList->data);
+			itemList = itemList->next;
+		}
+	}
+
+	return OK;
+}
+
+/**
+ * Get a list of interest collected by daemon in NETWORK
+ * return the interests in list passed by parameter
+ *
+ * Parameters:
+ * 		sock_t sock: the opened socket with daemon
+ * 		struct dllist *list : return list of interest
+ *
+ * Return:
+ * 		OK if not a error occur
+ * 		if a error occur return a this errors:
+ * 			ERROR_NULL_LIST,
+ * 			ERROR_SEND_SOCKET,
+ *  		ERROR_RECVFROM_SOCKET
+ */
+int repa_get_interest_in_network(const repa_sock_t sock, struct dllist *list) {
 	ssize_t size = 0;
-	u_int8_t num_interests = 0, aux;
-	u_int16_t data_pos = 0;
-	struct sockaddr saddr;
+	uint8_t num_interests = 0, aux;
+	uint16_t data_pos = 0;
+
 	char buffer[BUFFER_LEN];
 	char *interest = NULL;
 
@@ -905,43 +806,24 @@ int repa_get_interest_in_network(struct dllist *list) {
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_interest_in_network: list is null\n");
 #endif
-		return (-1);
+		return ERROR_NULL_LIST;
 	}
 
-	// Open unix raw socket
-	if ((s = socket(AF_LOCAL, SOCK_SEQPACKET, 0)) < 0) {
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_interest_in_network: error in create socket\n");
-#endif
-		return -1;
-	}
-
-	// Connect with repad (daemon)
-	bzero(&saddr, sizeof(struct sockaddr));
-	saddr.sa_family = AF_LOCAL;
-	strcpy(saddr.sa_data, REPA_SCK_NAME);
-	size = (offsetof(struct sockaddr, sa_data) + strlen(saddr.sa_data) + 1);
-
-	if (connect(s, (struct sockaddr*)&saddr, size) < 0) {
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_interest_in_network: error in connect\n");
-#endif
-		return -1;
-	}
-
-	// Request address from daemon
+	// Request the list of interest from daemon
 	buffer[0] = TMSG_GET_INTERESTS;
-	if (send(s, &buffer, 1, 0) < 0) {
+	if (send(sock.sock_send, &buffer, 1, 0) < 0) {
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_interest_in_network: error in send\n");
 #endif
-		return -1; // Ask for interests
+		return ERROR_SEND_SOCKET; // Ask for interests
 	}
-	if ((size = recvfrom(s, buffer, BUFFER_LEN, 0, NULL, NULL)) < 0) {
+	/* Wait for response by the same socket asked, because the application
+	 * can be using the repa_recv function and the answer can goes to there */
+	if ((size = recv(sock.sock_send, buffer, BUFFER_LEN, 0)) < 0) {
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_interest_in_network: error in recvfrom\n");
 #endif
-		return -1; // Receive list of interests
+		return ERROR_RECVFROM_SOCKET; // Receive list of interests
 	}
 
 	// Mount a list
@@ -953,16 +835,29 @@ int repa_get_interest_in_network(struct dllist *list) {
 		dll_append(list, interest);
 	}
 
-	close(s);
-	return 0;
+	return OK;
 }
 
-int repa_get_nodes_in_network(struct dllist *list) {
-	int s = -1;
+/**
+ * Get a list of nodes collected by daemon
+ * return the nodes' prefix in list passed by parameter
+ *
+ * Parameters:
+ * 		sock_t sock: the opened socket with daemon
+ * 		struct dllist *list : return list of nodes
+ *
+ * Return:
+ * 		OK if not a error occur
+ * 		if a error occur return a this errors:
+ * 			ERROR_NULL_LIST,
+ * 			ERROR_SEND_SOCKET,
+ * 			ERROR_RECVFROM_SOCKET
+ */
+int repa_get_nodes_in_network(const repa_sock_t sock, struct dllist *list) {
 	ssize_t size = 0;
-	u_int8_t num_nodes = 0, aux;
-	u_int16_t data_pos = 0;
-	struct sockaddr saddr;
+	uint8_t num_nodes = 0, aux;
+	uint16_t data_pos = 0;
+
 	char buffer[BUFFER_LEN];
 	prefix_addr_t *prefix;
 
@@ -970,43 +865,24 @@ int repa_get_nodes_in_network(struct dllist *list) {
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_nodes_in_network: list is null\n");
 #endif
-		return (-1);
-	}
-
-	// Open unix raw socket
-	if ((s = socket(AF_LOCAL, SOCK_SEQPACKET, 0)) < 0) {
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_nodes_in_network: error in create socket\n");
-#endif
-		return -1;
-	}
-
-	// Connect with repad (daemon)
-	bzero(&saddr, sizeof(struct sockaddr));
-	saddr.sa_family = AF_LOCAL;
-	strcpy(saddr.sa_data, REPA_SCK_NAME);
-	size = (offsetof(struct sockaddr, sa_data) + strlen(saddr.sa_data) + 1);
-
-	if (connect(s, (struct sockaddr*)&saddr, size) < 0) {
-#if defined ANDROID && defined DEBUG
-		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_nodes_in_network: error in connect\n");
-#endif
-		return -1;
+		return ERROR_NULL_LIST;
 	}
 
 	// Request address from daemon
 	buffer[0] = TMSG_GET_NODES;
-	if (send(s, &buffer, 1, 0) < 0) {
+	if (send(sock.sock_send, &buffer, 1, 0) < 0) {
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_nodes_in_network: error in send\n");
 #endif
-		return -1; // Ask for interests
+		return ERROR_SEND_SOCKET; // Ask for interests
 	}
-	if ((size = recvfrom(s, buffer, BUFFER_LEN, 0, NULL, NULL)) < 0) {
+	/* Wait for response by the same socket asked, because the application
+	 * can be using the repa_recv function and the answer can goes to there */
+	if ((size = recv(sock.sock_send, buffer, BUFFER_LEN, 0)) < 0) {
 #if defined ANDROID && defined DEBUG
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "repa_get_nodes_in_network: error in recvfrom\n");
 #endif
-		return -1; // Receive list of interests
+		return ERROR_RECVFROM_SOCKET; // Receive list of interests
 	}
 
 	// Mount a list
@@ -1019,6 +895,5 @@ int repa_get_nodes_in_network(struct dllist *list) {
 		dll_append(list, prefix);
 	}
 
-	close(s);
-	return 0;
+	return OK;
 }
