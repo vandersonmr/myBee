@@ -13,7 +13,7 @@ repaModule = Extension('repa',
 							   'util/hashmap.c'])
 
 setup (name = 'RepaModule',
-       version = '0.2.4',
+       version = '0.2.5',
        description = 'This is a REP API package for Python',
        author = 'Heberte Fernandes de Moraes',
        author_email = 'heberte@ufjr.br',

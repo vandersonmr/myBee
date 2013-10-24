@@ -2,9 +2,10 @@
  * util.c
  *
  *  Created on: 26/07/2011
- *      Author: heberte
+ *      Author: Héberte Fernandes de Moraes
  */
 
+#include <time.h>
 #include <math.h>
 #include <string.h> /* for str* and mem* functions */
 
@@ -27,6 +28,10 @@
 #include <sys/socket.h>
 
 #include <linux/if_ether.h>
+
+#ifdef ANDROID
+#include <android/log.h>
+#endif
 
 #include "hdr/linkedlist.h"
 #include "hdr/util.h"
@@ -55,9 +60,8 @@ const char* TMSG_types_messages[] = {
 
 
 void repa_print_interests(struct dllist *list_interests) {
+	int64_t now, diff;
 	struct dll_node *aux;
-	struct timeval time_now;
-	uint64_t time, diff;
 	struct interest *interest;
 
 	if (list_interests == NULL) {
@@ -65,38 +69,35 @@ void repa_print_interests(struct dllist *list_interests) {
 		return;
 	}
 
-	gettimeofday(&time_now, NULL);
-	time = (time_now.tv_sec*1E6) + time_now.tv_usec;
+	now = get_nanoseconds();
 
 	repad_printf(LOG_INFO, "Interest in network: %d\n", list_interests->num_elements);
 	for (aux = list_interests->head; aux != NULL; aux = aux->next) {
 		interest = (struct interest*)aux->data;
-		diff = time - interest->timestamp;
-		repad_printf(LOG_INFO, "\t%s\t\t%ld.%ld\n", interest->interest, diff/1000000, diff%1000000);
+		diff = now - interest->timestamp;
+		repad_printf(LOG_INFO, "\t%s\t\t%lldns\n", interest->interest, diff);
 	}
 }
 
 void repa_print_nodes(struct dllist *list_nodes) {
-	struct dll_node *aux;
-	struct timeval time_now;
-	uint64_t time, diff;
-	struct node *node;
+	int64_t now, diff;
 	char prefix[20];
+	struct node *node;
+	struct dll_node *aux;
 
 	if (list_nodes == NULL) {
 		repad_printf(LOG_INFO, "No node in network\n");
 		return;
 	}
 
-	gettimeofday(&time_now, NULL);
-	time = (time_now.tv_sec*1E6) + time_now.tv_usec;
+	now = get_nanoseconds();
 
 	repad_printf(LOG_INFO, "Nodes in network: %d\n", list_nodes->num_elements);
 	for (aux = list_nodes->head; aux != NULL; aux = aux->next) {
 		node = (struct node*)aux->data;
-		diff = time - node->timestamp;
+		diff = now - node->timestamp;
 		repa_print_prefix(node->prefix, prefix);
-		repad_printf(LOG_INFO, "\t%s -> %d\t\t%ld.%ld\n", prefix, node->prefix, diff/1000000, diff%1000000);
+		repad_printf(LOG_INFO, "\t%s -> %d\t\t%lldns\n", prefix, node->prefix, diff);
 	}
 }
 
@@ -120,7 +121,7 @@ void repa_print_statistics(bool verbose, uint32_t address, statistics_t *statist
 			repad_printf(LOG_INFO, "\tMessage Sent Collaborative: %d\n", statistics->qtyMessageSentCollaborative);
 
 			repad_printf(LOG_INFO, "\tMean HTL: %d\n", statistics->meanHtl);
-			repad_printf(LOG_INFO, "\tMean Latency: %lld\n", statistics->meanLatency);
+			repad_printf(LOG_INFO, "\tMean Latency: %lldns\n", statistics->meanLatency);
 			repad_printf(LOG_INFO, "\tMean Propagation Time: %lld\n", statistics->meanPropagationTime);
 
 			repad_printf(LOG_INFO, "\tMean HTL for all messages: %d\n", statistics->meanHtlForAll);
@@ -159,10 +160,11 @@ float rand_gauss(float m, float s) { /* mean m, standard deviation s */
 }
 
 /* Return 1 if the difference is negative, otherwise 0.  */
-int timeval_subtract(struct timeval *result, struct timeval *t2, struct timeval *t1) {
-	long int diff = (t2->tv_usec + 1000000 * t2->tv_sec) - (t1->tv_usec + 1000000 * t1->tv_sec);
-	result->tv_sec = diff / 1000000;
-	result->tv_usec = diff % 1000000;
+long int timeval_subtract(struct timeval *result, struct timeval *t2, struct timeval *t1) {
+	long int diff = (t2->tv_usec + USEC_PER_SEC*t2->tv_sec)
+			- (t1->tv_usec + USEC_PER_SEC*t1->tv_sec);
+	result->tv_sec = diff / USEC_PER_SEC;
+	result->tv_usec = diff % USEC_PER_SEC;
 
 	return (diff<0);
 }
@@ -204,7 +206,7 @@ pid_t* find_pid_by_name(const char* pidName) {
 
 		/* Buffer should contain a string like "Name:   binary_name" */
 		sscanf(buffer, "%*s %s", name);
-		if (strcmp(name, pidName) == 0) {
+		if (strncmp(name, pidName, MIN(strlen(name), strlen(pidName))) == 0) {
 			if (pidList == NULL) {
 				pidList = malloc(sizeof(pid_t));
 			} else {
@@ -224,91 +226,147 @@ pid_t* find_pid_by_name(const char* pidName) {
 		/* If we found nothing and they were trying to kill "init",
 		 * guess PID 1 and call it good...  Perhaps we should simply
 		 * exit if /proc isn't mounted, but this will do for now. */
-		pidList = realloc( pidList, sizeof(pid_t));
+		pidList = realloc(pidList, sizeof(pid_t));
 		pidList[0] = 1;
 	} else {
-		pidList = realloc( pidList, sizeof(pid_t));
+		pidList = realloc(pidList, sizeof(pid_t));
 		pidList[0] = -1;
 	}
 	return pidList;
 }
 
+#ifdef USE_LOG
 static FILE *repad_out = NULL;
+#endif
 
-int open_repad_out() {
+int open_repad_out(bool terminal, const char* repad_log_file) {
+#ifdef USE_LOG
 	int ret = 0;
 
-	repad_out = fopen("/dev/repad.log", "w+");
+	if (terminal) {
+		repad_out = stdout;
+	} else {
+		if (repad_log_file != NULL) {
+			repad_out = fopen(repad_log_file, "w+");
+		}
+	}
 	ret = (repad_out != NULL);
 
+#ifdef SYSLOG
+#	ifndef ANDROID
+     openlog (repa_application_name, LOG_PID, LOG_DAEMON);
+#	endif
+#endif
+
 	return ret;
+#else
+	return 0;
+#endif
 }
 
 int close_repad_out() {
+#ifdef USE_LOG
 	int ret = 0;
 
 	if (repad_out != NULL) {
 		ret = fclose(repad_out);
 	}
 
+#ifdef SYSLOG
+#	ifndef ANDROID
+	closelog();
+#	endif
+#endif
+
 	return ret;
+#else
+	return 0;
+#endif
 }
 
-inline uint64_t get_microseconds() {
+inline int64_t get_microseconds() {
 	struct timeval time;
 	gettimeofday(&time, NULL);
-	return time.tv_sec * 1E6 + time.tv_usec; // Convert to microseconds
+	return (int64_t)(((int64_t)time.tv_sec*USEC_PER_SEC)
+			+ (int64_t)time.tv_usec); // Convert to microseconds
 }
 
-inline uint64_t get_formated_time(char *time_formated) {
-	register uint64_t time = get_microseconds();
-	uint64_t hour = time/3600E6; time -= hour*3600E6;
-	uint64_t minute = time/60E6; time -= minute*60E6;
-	uint64_t second = time/1E6; time -= second*1E6;
+inline int64_t get_nanoseconds() {
+	struct timespec time;
+	clock_gettime(CLOCK_REALTIME, &time);
+	return (int64_t)(((int64_t)time.tv_sec*NSEC_PER_SEC)
+			+ (int64_t)time.tv_nsec); // Convert to nanoseconds
+}
 
-	sprintf(time_formated, "%02"PRIu64":%02"PRIu64":%02"PRIu64".%"PRIu64, hour%24, minute, second, time);
+inline void get_formated_time(size_t size, char *time_formated) {
+	struct timeval tv;
+	struct timezone tz;
+	struct tm * timeinfo;
 
-	return time;
+	gettimeofday(&tv,&tz);
+	timeinfo = localtime (&tv.tv_sec);
+	sprintf(time_formated, "%02d:%02d:%02d.%06ldus", timeinfo->tm_hour,
+			timeinfo->tm_min, timeinfo->tm_sec, tv.tv_usec);
 }
 
 int repad_printf(int priority, const char *format, ...) {
+#ifdef USE_LOG
 	char new_format[255], time_formated[50];
 	va_list ap;
 	int result = 0;
-	va_start (ap, format);
-	get_formated_time(time_formated);
-	sprintf(new_format, "[%s] %s", time_formated, format);
-#ifdef DEBUG_TERM
-	result = vfprintf(stdout, new_format, ap);
-#endif
 	if (repad_out != NULL) {
+		get_formated_time(50, time_formated);
+		sprintf(new_format, "[%s] %s", time_formated, format);
+
 		switch (priority) {
 			case LOG_INFO:
 			case LOG_ERR:
 			case LOG_ALERT:
 			case LOG_WARNING:
+				va_start (ap, format);
 				result = vfprintf(repad_out, new_format, ap);
 				fflush(repad_out);
+				va_end (ap);
 				break;
 			case LOG_DEBUG:
 #ifdef DEBUG
+				va_start (ap, format);
 				result = vfprintf(repad_out, new_format, ap);
 				fflush(repad_out);
+				va_end (ap);
 #endif
 				break;
 			default:
 				break;
 		}
 	}
-#ifdef LOG
-	vsyslog(priority, new_format, ap);
-#endif
+#ifdef SYSLOG
+#	ifdef ANDROID
+#		ifdef DEBUG
+	if (priority != LOG_DEBUG) {
+#		endif
+		va_start (ap, format);
+		if (priority == LOG_INFO) __android_log_vprint(ANDROID_LOG_INFO, repa_application_name, format, ap);
+		if (priority == LOG_DEBUG) __android_log_vprint(ANDROID_LOG_DEBUG, repa_application_name, format, ap);
+		va_end (ap);
+#		ifdef DEBUG
+	}
+#		endif
+
+#	else
+	va_start (ap, format);
+	vsyslog(priority, format, ap);
 	va_end (ap);
+#	endif
+#endif
 	return result;
+#else
+	return 0;
+#endif
 }
 
 void repad_print_mem(const char *data, size_t data_len) {
-#ifdef DEBUG
+#if defined(DEBUG) && defined(USE_LOG)
 	if (repad_out != NULL) {
 		register uint32_t i;
 		for (i = 0; i < data_len-1; ++i) {
@@ -321,7 +379,7 @@ void repad_print_mem(const char *data, size_t data_len) {
 }
 
 void repad_print_char(const char *data, size_t data_len) {
-#ifdef DEBUG
+#if defined(DEBUG) && defined(USE_LOG)
 	if (repad_out != NULL) {
 		register uint32_t i;
 		for (i = 0; i < data_len-1; ++i) {

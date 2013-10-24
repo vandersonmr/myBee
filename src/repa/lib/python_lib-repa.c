@@ -29,6 +29,7 @@ static PyObject* repaClose(PyObject* self, PyObject *args) {
 		repa_close(sock);
 	} else {
 		PyErr_SetString(RepaError, "Error on read parameters");
+		return NULL;
 	}
 
 	Py_RETURN_NONE;
@@ -59,13 +60,13 @@ static char repaSend_docs[] = "repaSend(sock, 'interest', 'data', data_size, pre
 		"prefix is zero)\n";
 static PyObject* repaSend(PyObject* self, PyObject* args) {
 	repa_sock_t sock;
-	prefix_addr_t prefix;
-	int buffer_size, result;
+	prefix_addr_t prefix = 0;
+	Py_ssize_t buffer_size, result;
 	const char *interest, *buffer;
 
     /* Wait for two strings and two integers */
     /* Python call is: f(sock, 'interest', 'data', data_size, prefix) */
-	if (PyArg_ParseTuple(args, "(ii)ssii", &sock.sock_send, &sock.sock_recv, &interest, &buffer, &buffer_size, &prefix)) {
+	if (PyArg_ParseTuple(args, "(ii)ss#|i", &sock.sock_send, &sock.sock_recv, &interest, &buffer, &buffer_size, &prefix)) {
 		result = repa_send(sock, interest, buffer, buffer_size, prefix);
 	} else {
         PyErr_SetString(RepaError, "Error on read parameters");
@@ -80,13 +81,13 @@ static char repaSendHidden_docs[] = "repaSendHidden(sock, 'interest', 'data', da
 		"prefix is zero). But in this case the interest is not showed on other nodes\n";
 static PyObject* repaSendHidden(PyObject* self, PyObject* args) {
 	repa_sock_t sock;
-	prefix_addr_t prefix;
-	int buffer_size, result;
+	prefix_addr_t prefix = 0;
+	Py_ssize_t buffer_size, result;
 	const char *interest, *buffer;
 
 	/* Wait for two strings and two integers */
 	/* Python call is: f('interest', 'data', prefix) */
-	if (PyArg_ParseTuple(args, "(ii)ssii", &sock.sock_send, &sock.sock_recv, &interest, &buffer, &buffer_size, &prefix)) {
+	if (PyArg_ParseTuple(args, "(ii)ss#|i", &sock.sock_send, &sock.sock_recv, &interest, &buffer, &buffer_size, &prefix)) {
 		result = repa_send_hidden(sock, interest, buffer, buffer_size, prefix);
     } else {
     	PyErr_SetString(RepaError, "Error on read parameters");
@@ -201,7 +202,7 @@ static PyObject* getInterestsRegistered(PyObject* self, PyObject* args) {
 			}
 		}
 
-		dll_destroy_all(list); // Destroy the linkedlist
+		dll_destroy(list); // Destroy the linkedlist
 	} else {
 		PyErr_SetString(RepaError, "Error on read parameters");
 		return NULL;
@@ -263,11 +264,10 @@ static PyObject* repaRecv(PyObject* self, PyObject* args) {
 	}
 
 	if (buffer_size > 0) {
-		return Py_BuildValue("(ssii)", interest, buffer, buffer_size, prefix);
+		return Py_BuildValue("(ss#i)", interest, buffer, buffer_size, prefix);
 	}
 
-	PyErr_SetString(RepaError, "No messages received");
-	return NULL;
+	Py_RETURN_NONE;
 }
 
 static PyMethodDef repa_methods[] = {

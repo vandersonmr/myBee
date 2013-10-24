@@ -1,6 +1,7 @@
-#include <stdio.h>
-#include <string.h>
+#include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -8,6 +9,9 @@
 
 void dll_insert_before_node(struct dllist* list, struct dll_node *lnode, struct dll_node *before) {
 	if (list != NULL) {
+#ifdef DLL_THREAD_SAFE
+		sem_wait(&list->lock);
+#endif
 		lnode->next = before;
 		lnode->prev = before->prev;
 
@@ -19,6 +23,10 @@ void dll_insert_before_node(struct dllist* list, struct dll_node *lnode, struct 
 		list->num_elements++;
 		list->sorted = false;
 		before->prev = lnode;
+
+#ifdef DLL_THREAD_SAFE
+		sem_post(&list->lock);
+#endif
 	}
 }
 
@@ -26,6 +34,9 @@ struct dll_node* dll_remove_node(struct dllist* list, struct dll_node *lnode) {
 	if (lnode == NULL) return NULL;
 
 	if (list != NULL) {
+#ifdef DLL_THREAD_SAFE
+		sem_wait(&list->lock);
+#endif
 		if(lnode->prev == NULL)
 			list->head = lnode->next;
 		else
@@ -37,7 +48,9 @@ struct dll_node* dll_remove_node(struct dllist* list, struct dll_node *lnode) {
 			lnode->next->prev = lnode->prev;
 
 		list->num_elements--;
-
+#ifdef DLL_THREAD_SAFE
+		sem_post(&list->lock);
+#endif
 		return lnode;
 	}
 
@@ -70,12 +83,18 @@ void __dll_create(struct dllist** plist) {
 		list->head = NULL;
 		list->tail = NULL;
 		list->num_elements = 0;
+#ifdef DLL_THREAD_SAFE
+		sem_init(&list->lock, 0, 1);
+#endif
 		*plist = list;
 	}
 }
 
 struct dll_node* dll_append_node(struct dllist* list, struct dll_node *lnode) {
 	if (list != NULL) {
+#ifdef DLL_THREAD_SAFE
+		sem_wait(&list->lock);
+#endif
 		if(list->head == NULL) {
 			list->head = lnode;
 			lnode->prev = NULL;
@@ -89,6 +108,9 @@ struct dll_node* dll_append_node(struct dllist* list, struct dll_node *lnode) {
 		list->tail = lnode;
 		lnode->next = NULL;
 
+#ifdef DLL_THREAD_SAFE
+		sem_post(&list->lock);
+#endif
 		return lnode;
 	} else {
 		return NULL;
@@ -158,6 +180,9 @@ struct dll_node* __dll_has_data(struct dllist* list, void* data, size_t data_len
 
 void dll_insert_after_node(struct dllist* list, struct dll_node *lnode, struct dll_node *after) {
 	if (list != NULL) {
+#ifdef DLL_THREAD_SAFE
+		sem_wait(&list->lock);
+#endif
 		lnode->next = after->next;
 		lnode->prev = after;
 
@@ -169,6 +194,9 @@ void dll_insert_after_node(struct dllist* list, struct dll_node *lnode, struct d
 		list->num_elements++;
 		list->sorted = false;
 		after->next = lnode;
+#ifdef DLL_THREAD_SAFE
+		sem_post(&list->lock);
+#endif
 	}
 }
 
@@ -223,7 +251,9 @@ struct dll_node* dll_sorted_insert_node(struct dllist* list, struct dll_node* ln
 	struct dll_node* current;
 
 	if (list != NULL) {
-
+#ifdef DLL_THREAD_SAFE
+		sem_wait(&list->lock);
+#endif
 		if (list->head == NULL || eq_fn(list->head->data, lnode->data, data_len) >= 0) {
 			lnode->next = list->head;
 			list->head = lnode;
@@ -242,8 +272,9 @@ struct dll_node* dll_sorted_insert_node(struct dllist* list, struct dll_node* ln
 			list->tail = lnode;
 		}
 		list->num_elements++;
-
-
+#ifdef DLL_THREAD_SAFE
+		sem_post(&list->lock);
+#endif
 		return lnode;
 	} else {
 		return NULL;
@@ -268,7 +299,8 @@ void __dll_to_array(struct dllist* list, void ***array) {
 		int i;
 		struct dll_node *lnode;
 
-		*array = (void**)malloc(list->num_elements*sizeof(list->head->data)); // TODO: fix me, when the pointer is not a valid memory address
+		// TODO: fix me, when the pointer is not a valid memory address
+		*array = (void**)malloc(list->num_elements*sizeof(list->head->data));
 
 		for (lnode = list->head, i = 0; lnode != NULL; lnode = lnode->next, i++) {
 			(*array)[i] = lnode->data;

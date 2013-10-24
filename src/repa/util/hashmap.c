@@ -24,9 +24,6 @@
 #include "hdr/hashmap.h"
 #include <syslog.h>
 
-
-
-
 // hashmaps need a hash function, an equality function, and a destructor
 hashmap* mk_hmap(
 #if __WORDSIZE == 64
@@ -100,8 +97,9 @@ static void __oa_hmap_add(key_val_map* map, uint32_t capacity,
 		hash = (hash + 1) % capacity;
 	}
 
-	map[hash].k = (key)in_hash;
+	map[hash].k = in;
 	map[hash].v = out;
+	map[hash].h = in_hash;
 }
 
 bool __hmap_add(hashmap* hmap, const key in, val out) {
@@ -128,7 +126,7 @@ bool __hmap_add(hashmap* hmap, const key in, val out) {
 		static uint32_t it;
 		for (it=0; it < old_capacity; ++it) {
 			if (hmap->map[it].v != NULL) {
-				__oa_hmap_add(temp, hmap->capacity, node_hash_fn, hmap->map[it].k, hmap->map[it].v);
+				__oa_hmap_add(temp, hmap->capacity, hmap->hash_fn, hmap->map[it].k, hmap->map[it].v);
 			}
 		}
 		
@@ -160,7 +158,7 @@ val __hmap_get(hashmap* hmap, const key in) {
 	hash = in_hash % hmap->capacity;
 	
 	while (hmap->map[hash].v != NULL) {
-		if (hmap->eq_fn((key)in_hash, hmap->map[hash].k)) {
+		if (hmap->eq_fn(in, hmap->map[hash].k)) {
 		#ifdef HMAP_THREAD_SAFE
 			sem_post(&hmap->lock);
 		#endif			
@@ -189,7 +187,7 @@ bool __hmap_set(hashmap* hmap, const key in, val out) {
 	hash = in_hash % hmap->capacity;
 
 	while (hmap->map[hash].v != NULL) {
-		if (hmap->eq_fn((key)in_hash, hmap->map[hash].k)) {
+		if (hmap->eq_fn(in, hmap->map[hash].k)) {
 			if (hmap->del_fn != NULL)
 				hmap->del_fn(hmap->map[hash].v);
 			hmap->map[hash].v = out;
@@ -206,6 +204,69 @@ bool __hmap_set(hashmap* hmap, const key in, val out) {
 	sem_post(&hmap->lock);
 #endif
 	return false;
+}
+
+key_val_map __hmap_remove(hashmap* hmap, const key in) {
+	struct key_val_map map_remove = {.k=NULL,.v=NULL,.h=0};
+	uint32_t count = 0;
+#ifdef HMAP_THREAD_SAFE
+	sem_wait(&hmap->lock);
+#endif
+#if __WORDSIZE == 64
+	static uint64_t hash = 0, in_hash, hash_aux = 0;
+#else
+	static uint32_t hash = 0, in_hash, hash_aux = 0;
+#endif
+	in_hash = hmap->hash_fn(in);
+	hash = in_hash % hmap->capacity;
+
+	// Iterate on map to find the hash
+	while ((hmap->map[hash].v != NULL) &&
+			(!hmap->eq_fn(in, hmap->map[hash].k)) &&
+			(count < hmap->size)) {
+		hash = (hash + 1) % hmap->capacity;
+		count++; // Count is used to prevent loop
+	}
+
+	/*
+	 * Repositions the maps based on yours hashes
+	 */
+	if (hmap->map[hash].k != NULL && hmap->eq_fn(in, hmap->map[hash].k)) {
+		// Keep the map to remove
+		map_remove = hmap->map[hash];
+		// Put Null in the removed position
+		hmap->map[hash].k = NULL;
+		hmap->map[hash].v = NULL;
+		hmap->map[hash].h = 0;
+
+		// Repositions the next hashes
+		hash = (hash + 1) % hmap->capacity;
+		while (hmap->map[hash].v != NULL) {
+			hash_aux = (hmap->map[hash].h % hmap->capacity);
+
+			while (hash_aux != hash) {
+				if (hmap->map[hash_aux].v == NULL) {
+					hmap->map[hash_aux].k = hmap->map[hash].k;
+					hmap->map[hash_aux].v = hmap->map[hash].v;
+					hmap->map[hash_aux].h = hmap->map[hash].h;
+
+					hmap->map[hash].k = NULL;
+					hmap->map[hash].v = NULL;
+					hmap->map[hash].h = 0;
+					break;
+				}
+				hash_aux = (hash_aux+1) % hmap->capacity;
+			}
+			hash = (hash + 1) % hmap->capacity;
+		}
+		// Decrease hashmap size
+		hmap->size -= 1;
+	}
+
+#ifdef HMAP_THREAD_SAFE
+	sem_post(&hmap->lock);
+#endif
+	return map_remove;
 }
 
 #ifdef HMAP_MAKE_HASHFN
@@ -259,14 +320,15 @@ uint32_t str_hash_fn(const key string) {
 
 bool int_eq_fn(key a, key b) {
 #if __WORDSIZE == 64
-	return ((uint64_t) a) == ((uint64_t) b) ? true : false;
+	return ((uint64_t)a) == ((uint64_t)b);
 #else
-	return ((uint32_t) a) == ((uint32_t) b) ? true : false;
+	return ((uint32_t)a) == ((uint32_t)b);
 #endif
 
 }
 
 bool str_eq_fn(key a, key b) {
+	if (a == NULL || b == NULL) return false;
 	return (strcmp((const char*) a, (const char*)b) == 0);
 }
 #endif

@@ -14,6 +14,12 @@
 extern "C" {
 #endif
 
+#define DLL_THREAD_SAFE
+
+#ifdef DLL_THREAD_SAFE
+#include <semaphore.h>
+#endif
+
 struct dll_node {
 	void* data;
 	struct dll_node *next;
@@ -22,9 +28,12 @@ struct dll_node {
 
 struct dllist {
 	bool sorted;
-	u_int32_t num_elements;
+	uint32_t num_elements;
 	struct dll_node *head;
 	struct dll_node *tail;
+#ifdef DLL_THREAD_SAFE
+	sem_t lock;
+#endif
 };
 
 extern void __dll_create(struct dllist** plist);
@@ -52,7 +61,7 @@ extern void dll_destroy_all(void* list);
 extern struct dll_node* dll_append_node(struct dllist* list, struct dll_node* lnode);
 extern void dll_insert_after_node(struct dllist* list, struct dll_node* lnode, struct dll_node* after);
 extern void dll_insert_before_node(struct dllist* list, struct dll_node *lnode, struct dll_node *before);
-extern void dll_remove_node(struct dllist* list, struct dll_node* lnode);
+extern struct dll_node* dll_remove_node(struct dllist* list, struct dll_node* lnode);
 extern struct dll_node* dll_pop_back_node(struct dllist* list);
 extern struct dll_node* dll_pop_front_node(struct dllist* list);
 

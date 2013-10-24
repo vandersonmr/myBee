@@ -58,7 +58,6 @@ typedef struct app_node {
 extern uint16_t node_id;
 extern uint32_t total_nodes;
 extern struct dllist *node_list;
-
 /*****************************************************/
 
 
@@ -244,7 +243,8 @@ extern ssize_t __repa_timed_recv(const repa_sock_t sock, char *interest, void *d
  *  .:*@*:. It's very important use this command before
  *  finish application
  */
-extern void repa_close(const repa_sock_t sock);
+extern void __repa_close(repa_sock_t *sock);
+#define repa_close(sock) __repa_close(&sock)
 
 
 /*
