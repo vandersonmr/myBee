@@ -1,8 +1,8 @@
 ARCH=$(shell uname -m)
 CC=gcc
 CCPP=g++
-SRC=./src
-CFLAGS=-O0 -g -w
+SRC= ./src
+CFLAGS= -O0 -g -w
 SHAREDOBJ= repa.so
 LDrepa= -pthread -lpthread $(SHAREDOBJ) -lpython2.7
 LDmysql=  -lmysqlclient
@@ -68,6 +68,7 @@ repa:
 clear.o:
 	rm -f *.o
 	rm -f *.so
+
 clear: clear.o
 	rm -f client;\
 	rm -f servidor;\
