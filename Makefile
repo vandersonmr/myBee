@@ -63,7 +63,9 @@ repa:
 	sudo python setup.py install &&\
 	cd ./build/ &&\
 	cd $$(ls | egrep '^lib') &&\
-	cp repa.so ../../../../
+	cp repa.so ../../../../ &&\
+	sudo cp repa.so /usr/lib/ &&\
+	sudo ldconfig
 
 clear.o:
 	rm -f *.o
