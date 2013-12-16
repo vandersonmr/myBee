@@ -39,8 +39,8 @@ char* getTime(){
 	return date;
 }
 
-void* handle_message(void* param) {
-	ssize_t read_len = 0;
+void* handle_message(void*) {
+  ssize_t read_len = 0;
 	char *interest, *data;
 	prefix_addr_t prefix_addr;
 	char* prefix = (char*)malloc(sizeof(char)*255);
@@ -72,10 +72,8 @@ void* handle_message(void* param) {
 
 int main(void) {
 	prefix_addr_t prefix;
-	ssize_t data_len = 0;
 	char cprefix[20];
-	char *interest, *data;
-	char *dummy = NULL;
+	char *interest;
 
 	if (!connectDatabase()){
 		return EXIT_FAILURE;

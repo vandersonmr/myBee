@@ -9,7 +9,7 @@ MYSQL* connection;
 
 void getConfData(char* server, char* user, char* pass, char* db){
 	FILE *fp = fopen(PATH_CONF,"r");
-	if( fp != -1){
+	if(fp != NULL){
 		char *data, *type, *temp;
 		data = (char*)malloc(LINE_SIZE*sizeof(char));
 		type = (char*)malloc(LINE_SIZE*sizeof(char));
@@ -75,8 +75,8 @@ int connectDatabase(){
 
 void saveData(char *prefix, char *data,char* time, int status){
 	char query[LINE_SIZE];
-	snprintf(query,LINE_SIZE,"INSERT INTO temperatures VALUES ('%s','%s','%s','%d')",prefix,
-			time,data,status);
+	snprintf(query,LINE_SIZE,"INSERT INTO temperatures VALUES ('%s','%s','%s','%d')",
+          prefix,time,data,status);
 	if (mysql_query(connection,query)){ //return true if get an error.
 		printf("%s\n",mysql_error(connection));
 	}
@@ -106,14 +106,14 @@ int load(Data** data,char* query){
 }
 
 int loadLastsDatas(Data** data,int q, char* prefix){
-	char* queryWithOutQ = "select * from temperatures where Prefix like '%s' order by Date desc limit 0,%d;";
+	char* queryWithOutQ = (char *) "select * from temperatures where Prefix like '%s' order by Date desc limit 0,%d;";
 	char query[100];
     snprintf(query,100,queryWithOutQ,prefix,q-1);
 	return load(data,query);
 }
 
 int loadLastsDatasByMinutes(Data** data,int minutes){
-	char* queryWithOutQ = "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from temperatures) as t where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
+	char* queryWithOutQ = (char *) "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from temperatures) as t where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
 	char query[200];
         snprintf(query,200,queryWithOutQ,minutes-1);
 	return load(data,query);
