@@ -21,7 +21,6 @@ class ManipulateData{
 		bool load;
 		void checkLoad(char*);
 		void loadData(char*);
-		double convertTimeToSeconds(char*);
 		virtual void fillData(Data*,int);
 		virtual void insertData(Data*){} 
 		virtual int estimate(Data*){ return 0;}

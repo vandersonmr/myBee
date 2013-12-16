@@ -73,13 +73,24 @@ int connectDatabase(){
 }
 
 
-void saveData(char *prefix, char *data,char* time, int status){
+void saveData(char *prefix, char *data,double time2, int status){
 	char query[LINE_SIZE];
-	snprintf(query,LINE_SIZE,"INSERT INTO temperatures VALUES ('%s','%s','%s','%d')",
-          prefix,time,data,status);
-	if (mysql_query(connection,query)){ //return true if get an error.
-		printf("%s\n",mysql_error(connection));
-	}
+  char *date;
+  
+  time_t t;
+  time(&t);
+  date = ctime(&t);
+  sscanf(date,"%[^\n]",date);
+	
+  int temperature;
+  sscanf(data, "%*[^&]&value=%d",&temperature);
+
+  snprintf(query,LINE_SIZE,"INSERT INTO temperatures VALUES ('%s','%s','%d','%d')",
+          prefix,date,temperature,status);
+	
+  if (mysql_query(connection,query)) //return true if get an error.
+		printf("%s %lf\n",mysql_error(connection),time2);
+	
 }
 
 int load(Data** data,char* query){
@@ -98,7 +109,7 @@ int load(Data** data,char* query){
 		(*data)[i].temperature = atoi((char*)row[2]);
 		(*data)[i].status = atoi((char*)row[3]);
 		(*data)[i].fromNode = (char*) row[0];
-		(*data)[i].time = (char*) row[1];
+		(*data)[i].time = atof((char*) row[1]);
 		i++;
 	}
 
@@ -113,7 +124,7 @@ int loadLastsDatas(Data** data,int q, char* prefix){
 }
 
 int loadLastsDatasByMinutes(Data** data,int minutes){
-	char* queryWithOutQ = (char *) "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from temperatures) as t where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
+  char* queryWithOutQ = (char *) "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from temperatures) as t where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
 	char query[200];
         snprintf(query,200,queryWithOutQ,minutes-1);
 	return load(data,query);

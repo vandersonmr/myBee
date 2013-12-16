@@ -8,13 +8,13 @@ typedef struct Data{
 	char* fromNode;
 	int temperature;
 	int status;
-	char* time;
+	double time;
 }Data;
 
 int loadLastsDatasByMinutes(Data**,int);
 void getConfData(char*, char*, char*, char*);
 extern int connectDatabase();
-extern void saveData(char*,char*,char*,int);
+extern void saveData(char*,char*,double,int);
 int loadLastsDatas(Data**,int,char*);
 void closeConnection();
 

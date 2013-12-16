@@ -19,7 +19,7 @@ void Rvm::fillData(Data* data, int numrows){
 
 void Rvm::insertData(Data* data){
 	sample_type m;
-	m(0) = convertTimeToSeconds(data->time);
+	m(0) = data->time;
 	samples.push_back(m);
 	labels.push_back(data->temperature);
 }
@@ -41,7 +41,7 @@ void Rvm::pushNewData(Data* data, sample_type m){
 int Rvm::estimate(Data* data){
 	if (!load) return 0;
 	sample_type m;
-	m(0) = convertTimeToSeconds(data->time);
+	m(0) = data->time;
 	cout << "Rvm -> Estimate: " << rvmFunction(m) << endl;
 	cout << "Rvm -> Real: " << data->temperature << endl;
 	int status = abs(rvmFunction(m) - (double) data->temperature) > LIMIT? 8 : 0;

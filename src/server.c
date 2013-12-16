@@ -22,20 +22,17 @@ bool terminated;
 
 repa_sock_t sock;
 
-int checkTemperature(char* prefix, char* data,char* time){
+int checkTemperature(char* prefix, char* data,double time){
 	Data* data1 = (Data*) malloc(sizeof(Data));
 	data1->time = time;
 	data1->fromNode = prefix;
-	data1->temperature = atoi(data);
+  sscanf(data,"%*[^&]&value=%d",&data1->temperature);
 	return testData(data1);
 }
 
-char* getTime(){
-	char *date;
-	time_t t;
-	time(&t);
-	date = ctime(&t);
-	sscanf(date,"%[^\n]",date);
+double getTime(char* data){
+	double date;
+	sscanf(data,"%*[^?]?time=%lf&%*[^\n]",&date);
 	return date;
 }
 
@@ -51,7 +48,7 @@ void* handle_message(void*) {
 		data = (char*)malloc(1500*sizeof(char));
 		read_len = repa_timed_recv(sock,interest, data, prefix_addr, (long int)1E9);
 		if (read_len > 0) {
-			char* time = getTime();
+			double time = getTime(data);
 			repa_print_prefix(prefix_addr, prefix);
 			int status;
 			status = checkTemperature(prefix,data,time);
