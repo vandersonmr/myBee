@@ -1,8 +1,18 @@
 ***** Coisas a serem feitas
-	* Adicionar o algoritmo de ML pra 10 últimos dados.
-	* Arrumar BUG no plotData | engine.js
-	* Colocar getDados para imprimir os 100 ultimos de cada node e não somentos os
-		100 últimos
-	* Adicionar threads no servidor. ML consome muita CPU (Tentar melhorar isso também)!
-	* Melhorar sincronia entre temperatura e tempo.
-	* Colocar cores e alertas melhores no JS.
+  
+  - Até final de Janeiro fazer:
+
+    * Comentar código
+    * Melhorar nomes
+    * Criar testes
+  
+    - Usar NoSQL db ao invés do Mysql? 
+    - Trocar o sistema que imprime o gráfico de C para Node.js
+    - Apenas mostrar gráfico de nodes conectados
+    - Adicionar suporte a multiplos dados (temperatura, humidade, pressão)
+    
+   * Escrever relatório PIBIT.
+   * Testar alcance do wifi do raspberry
+  
+
+
