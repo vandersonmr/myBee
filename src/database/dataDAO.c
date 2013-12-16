@@ -73,7 +73,7 @@ int connectDatabase(){
 }
 
 
-void saveData(char *prefix, char *data,double time2, int status){
+void saveData(Data* data, int status){
 	char query[LINE_SIZE];
   char *date;
   
@@ -82,14 +82,11 @@ void saveData(char *prefix, char *data,double time2, int status){
   date = ctime(&t);
   sscanf(date,"%[^\n]",date);
 	
-  int temperature;
-  sscanf(data, "%*[^&]&value=%d",&temperature);
-
   snprintf(query,LINE_SIZE,"INSERT INTO temperatures VALUES ('%s','%s','%d','%d')",
-          prefix,date,temperature,status);
+          data->fromNode,date,data->temperature,status);
 	
   if (mysql_query(connection,query)) //return true if get an error.
-		printf("%s %lf\n",mysql_error(connection),time2);
+		printf("%s\n",mysql_error(connection));
 	
 }
 

@@ -7,6 +7,7 @@
 #include <time.h>
 
 repa_sock_t sock;
+char *nickname;
 
 /* Randomize a temperature based on the sin function */
 double timeNow = 0;
@@ -25,8 +26,8 @@ void getData(char* data) {
   // In this case is generate a randomic temperature
   int temperature = getTemperature();
 
-	sprintf(data,"temperature?time=%f&value=%d",
-          timeNow, temperature); 
+	sprintf(data,"temperature?time=%f&value=%d&nickname=%s",
+          timeNow, temperature, nickname); 
           // TimeNow is the same used to generate the temperature
 }
 
@@ -53,8 +54,15 @@ void generateData() {
 		sleep(1);
 	}
 }
-int main() {
+
+int main(int argc, char **argv) {
 	char *interest;
+  nickname = argv[argc-1];
+
+  if (nickname == 0 || argc == 1) {
+    printf("Formato incorreto! Tente ./client nomeDoNode\n");
+    exit(1);
+  }
 
 	sock = repa_open();
 
