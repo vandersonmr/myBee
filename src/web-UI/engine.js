@@ -1,9 +1,10 @@
-function timeControl(){
-	this.getTime = function(){
-		var today=new Date()
-		var h=today.getHours()
-		var m=today.getMinutes()
-		var s=today.getSeconds()
+/* timeControl is responsable for the clock */
+function timeControl() {
+	this.getTime = function() {
+		var today = new Date()
+		var h = today.getHours()
+		var m = today.getMinutes()
+		var s = today.getSeconds()
 
 		m=this.checkTime(m)
 		s=this.checkTime(s)
@@ -28,10 +29,12 @@ function timeControl(){
 	}
 }
 
+/* Get an statusID (Number) and return a html tag with a text that rigth 
+ * represent the status. */
 function getStatusMsg(statusID){
-	if(statusID == 0){
+	if(statusID == 0) { // If is a good status
 		return "<div style=\"color:blue\">"+statusMsg[statusID]+"</div>"
-	}else{
+	} else { 
 		return "<div style=\"color:red\">"+statusMsg[statusID]+"</div>"
 	}
 }
@@ -43,12 +46,15 @@ function nodeGraphManager(name){
 	var stats = []
 	this.nodeStatus = "OK"
 
-	$("#GraphsGrid").append("<div class=\"graph\">"+
-        						"<h2>Node: "+name+"</h2>"+
-                	"<div id=\""+name+"\"  style=\"width:600px;height:300px;float:left\"></div>"+
-                        "<h3>Status: <br> <div id=\"status\"><div style=\"color:blue\">"+this.nodeStatus+"</div></div></h3>" + 
-                	"</div>"+
-        		"</div>")
+	$("#GraphsGrid").append(
+            "<div class=\"graph\">"+
+        		  "<h2>Node: "+name+"</h2>"+
+              "<div id=\""+name+"\"  style=\"width:600px;height:300px;float:left\"></div>"+
+              "<h3>Status: <br> "+
+              "<div id=\"status"+name+"\">"+
+                  "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
+              "</div></h3>" + 
+            "</div>")
 
 	this.plot = $.plot("#"+name, [{data:[], label: name+" temp."}],
 			              {series: {
@@ -60,6 +66,7 @@ function nodeGraphManager(name){
 				       xaxis:{
 					tickSize: 100}
 				      })
+
 	window.teste = this.plot
 	this.setData = function(data, time, stat){
 		this.data = data
@@ -69,7 +76,7 @@ function nodeGraphManager(name){
 	
 	this.setNodeStatus = function(nodeStatus){
 		this.nodeStatus = nodeStatus
-		$("#status").html(getStatusMsg(nodeStatus))
+		$("#status"+this.name).html(getStatusMsg(nodeStatus))
 	}
 		
 	this.update = function(){

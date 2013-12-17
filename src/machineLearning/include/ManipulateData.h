@@ -12,7 +12,7 @@ using namespace dlib;
 
 #define ACCURACY 0.1
 #define sizeOfKnow 1000
-#define LIMIT 3
+#define LIMIT 5
 
 class ManipulateData{
 	protected:

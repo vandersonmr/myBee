@@ -2,7 +2,7 @@
 #define KCENTROID_H
 #include "ManipulateData.h"
 
-#define limit 0.92
+#define limit 1
 
 class KCentroid: public ManipulateData{
 	protected:

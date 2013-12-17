@@ -3,7 +3,7 @@
 
 #include "ManipulateData.h"
 
-#define AMOUNT 10
+#define AMOUNT 20
 
 class Rvm: public ManipulateData{
 	protected:

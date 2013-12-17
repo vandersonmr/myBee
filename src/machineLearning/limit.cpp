@@ -2,8 +2,8 @@
 
 using namespace std;
 
-#define UPPER_BOUND 39
-#define LOWER_BOUND 20
+#define UPPER_BOUND 40
+#define LOWER_BOUND 10
 
 int testLimit(Data* data){
 	double temp = data->temperature;
