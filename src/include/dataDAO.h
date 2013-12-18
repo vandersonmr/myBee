@@ -5,7 +5,8 @@
 #define LINE_SIZE 255
 
 typedef struct Data{
-	char* fromNode;
+	char* node;
+  char* nickname;
 	int temperature;
 	int status;
 	double time;

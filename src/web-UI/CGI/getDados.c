@@ -6,7 +6,7 @@ void printTemperatures(Data* temperature,int numrows) {
   int i;
 	for(i=0; i < numrows; i++) {
         printf("%s & %lf & %d & %d<br>\n",
-	    	      temperature[i].fromNode,
+	    	      temperature[i].nickname,
               temperature[i].time,
               temperature[i].temperature,
 			        temperature[i].status); 

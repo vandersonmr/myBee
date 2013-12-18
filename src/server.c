@@ -28,11 +28,12 @@ double getTime(char* data){
   return date;
 }
 
-Data* parseData(char* data){
+Data* parseData(char* data, char* prefix){
   Data* data1 = (Data*) malloc(sizeof(Data));
   data1->time = getTime(data);
-  data1->fromNode = (char*) malloc(strlen(data)*sizeof(char));
-  sscanf(data,"%*[^&]&value=%*d&nickname=%s",data1->fromNode);
+  data1->nickname = (char*) malloc(strlen(data)*sizeof(char));
+  data1->node = prefix;
+  sscanf(data,"%*[^&]&value=%*d&nickname=%s",data1->nickname);
   sscanf(data,"%*[^&]&value=%d&%*s",&data1->temperature);
   return data1;
 }
@@ -54,16 +55,15 @@ void* handle_message(void*) {
     read_len = repa_timed_recv(sock,interest, data, prefix_addr, (long int)1E9);
 
     if (read_len > 0) {
-      Data* dataStruct = parseData(data);
 
       repa_print_prefix(prefix_addr, prefix);
+      Data* dataStruct = parseData(data, prefix);
       
       int status;
       status = checkTemperature(dataStruct);
 
       saveData(dataStruct,status);
-      printf("Message: \"%s\" Status: \"%d\" Prefix: %s\n",data,status,dataStruct->fromNode);
-
+      printf("Message: \"%s\" Status: \"%d\" Prefix: %s\n",data,status,dataStruct->nickname);
 
     }
 
