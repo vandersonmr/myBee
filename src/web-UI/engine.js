@@ -47,7 +47,7 @@ function nodeGraphManager(name){
 	this.nodeStatus = "OK"
 
 	$("#GraphsGrid").append(
-            "<div class=\"graph\">"+
+            "<div id=\"g"+name+"\" class=\"graph\">"+
         		  "<h2>Node: "+name+"</h2>"+
               "<div id=\""+name+"\"  style=\"width:600px;height:300px;float:left\"></div>"+
               "<h3>Status: <br> "+
@@ -107,6 +107,18 @@ function nodeGraphManager(name){
 }
 
 var graphList = {}
+
+function clearEmptyGraphs() {
+  for (var index in graphList) {
+    if (graphList[index].data.length <= 1) {
+      $("#g"+index).hide();
+    } else {
+      $("#g"+index).show();
+    }
+  }
+}
+
+window.setInterval(clearEmptyGraphs,1500);
 
 function insertIndex(stack){
 	var res = []

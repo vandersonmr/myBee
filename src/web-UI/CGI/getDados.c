@@ -24,7 +24,7 @@ int main()
     Data* data;
     int numrows;
     
-    numrows = loadLastsDatasByMinutes(&data,10);
+    numrows = loadLastsDatasByMinutes(&data,2);
 
     printTemperatures(data,numrows);
     

@@ -114,20 +114,32 @@ int load(Data** data,char* query){
 	return numrows;	
 }
 
-int loadLastsDatas(Data** data,int q, char* prefix){
+int loadLastsDatas(Data** data,int q, char* prefix) {
 	char* queryWithOutQ = (char *) "select * from temperatures where Prefix like '%s' order by Date desc limit 0,%d;";
 	char query[100];
   snprintf(query,100,queryWithOutQ,prefix,q-1);
 	return load(data,query);
 }
 
-int loadLastsDatasByMinutes(Data** data,int minutes){
-  char* queryWithOutQ = (char *) "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from temperatures) as t where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
-	char query[200];
-  snprintf(query,200,queryWithOutQ,minutes-1);
+int loadLastsDatasByMinutes(Data** data,int minutes) {
+  char* queryWithOutQ = (char *) "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from temperatures) as t INNER JOIN nodesOnline ON t.nodeIP=nodesOnline.nodeID where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
+	char query[300];
+  snprintf(query,300,queryWithOutQ,minutes-1);
 	return load(data,query);
 }
 
-void closeConnection(){
+int clearNodesOnline() {
+  char* query = (char*) "delete from nodesOnline;";
+  return mysql_query(connection, query);
+}
+
+int insertNodeOnline(char* prefix) {
+  char* queryWithoutPrefix = (char*) "insert into nodesOnline values ('%s')";
+  char query[200];
+  snprintf(query,200, queryWithoutPrefix, prefix);
+  return mysql_query(connection, query);
+}
+
+void closeConnection() {
 	mysql_close(connection);
 }

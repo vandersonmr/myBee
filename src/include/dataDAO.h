@@ -18,5 +18,7 @@ extern int connectDatabase();
 extern void saveData(Data*,int);
 int loadLastsDatas(Data**,int,char*);
 void closeConnection();
+int clearNodesOnline();
+int insertNodeOnline(char*);
 
 #endif

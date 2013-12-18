@@ -42,6 +42,28 @@ int checkTemperature(Data* data){
   return testData(data);
 }
 
+void updateListOfNodesOnline() {
+  struct dllist *list = NULL;
+  struct dll_node *lnode = NULL;
+  char* prefix = (char*)malloc(sizeof(char)*255);
+
+  dll_create(list);
+  
+  repa_get_nodes_in_network(sock, list);
+
+  clearNodesOnline();
+  
+  repa_print_prefix(repa_get_node_address(),prefix);
+  insertNodeOnline(prefix);
+
+  for(lnode = list->head; lnode != NULL; lnode = lnode->next) {
+    repa_print_prefix((prefix_addr_t) lnode->data, prefix);
+    insertNodeOnline(prefix);
+  }
+  
+  dll_destroy(list);
+}
+
 void* handle_message(void*) {
   ssize_t read_len = 0;
   char *interest, *data;
@@ -64,7 +86,8 @@ void* handle_message(void*) {
 
       saveData(dataStruct,status);
       printf("Message: \"%s\" Status: \"%d\" Prefix: %s\n",data,status,dataStruct->nickname);
-
+      
+      updateListOfNodesOnline();
     }
 
     // Free msg
