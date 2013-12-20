@@ -204,3 +204,15 @@ jQuery(document).ready(new function () {
 		tc.startClockUpdate()
 		update()
 });
+
+$("#ltempoReal").click(function() {
+  $("#historico").hide();
+  $("#GraphsGrid").show();
+});
+
+$("#lhistorico").click(function() {
+  $("#GraphsGrid").hide();
+  $("#historico").show();
+});
+
+$("#historico").hide();
