@@ -57,7 +57,7 @@ void updateListOfNodesOnline() {
   insertNodeOnline(prefix);
 
   for(lnode = list->head; lnode != NULL; lnode = lnode->next) {
-    repa_print_prefix((prefix_addr_t) lnode->data, prefix);
+    repa_print_prefix((intptr_t) lnode->data, prefix);
     insertNodeOnline(prefix);
   }
   
