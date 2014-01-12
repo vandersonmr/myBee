@@ -1042,6 +1042,17 @@ namespace dlib
     !*/
 
 // ----------------------------------------------------------------------------------------
+
+    bool is_finite (
+        const matrix_exp& m
+    );
+    /*!
+        ensures
+            - returns true if all the values in m are finite values and also not any kind
+              of NaN value.
+    !*/
+
+// ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
 //                      Thresholding relational operators 
 // ----------------------------------------------------------------------------------------
@@ -1680,6 +1691,33 @@ namespace dlib
                         - R(r,c) == upper
                     - else if (m(r,c) < lower) then
                         - R(r,c) == lower
+                    - else
+                        - R(r,c) == m(r,c)
+    !*/
+
+// ----------------------------------------------------------------------------------------
+
+    const matrix_exp clamp (
+        const matrix_exp& m,
+        const matrix_exp& lower,
+        const matrix_exp& upper
+    );
+    /*!
+        requires
+            - m.nr() == lower.nr()
+            - m.nc() == lower.nc()
+            - m.nr() == upper.nr()
+            - m.nc() == upper.nc()
+            - m, lower, and upper all contain the same type of elements. 
+        ensures
+            - returns a matrix R such that:
+                - R::type == the same type that was in m
+                - R has the same dimensions as m
+                - for all valid r and c:
+                    - if (m(r,c) > upper(r,c)) then
+                        - R(r,c) == upper(r,c)
+                    - else if (m(r,c) < lower(r,c)) then
+                        - R(r,c) == lower(r,c)
                     - else
                         - R(r,c) == m(r,c)
     !*/

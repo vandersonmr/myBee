@@ -150,16 +150,23 @@ namespace dlib
                   and false otherwise.
         !*/
 
+        const feature_extractor_type& get_feature_extractor (
+        ) const;
+        /*!
+            ensures
+                - returns a const reference to the feature_extractor_type object used 
+                  internally for local feature extraction.  
+        !*/
+
         void copy_configuration(
             const feature_extractor_type& fe
         );
         /*!
             ensures
-                - Let BASE_FE denote the feature_extractor_type object used
-                  internally for local feature extraction.  Then this function
-                  performs BASE_FE.copy_configuration(fe)
-                  (i.e. this function allows you to configure the parameters of the 
-                  underlying feature extractor used by a scan_image_pyramid object)
+                - This function performs the equivalent of
+                  get_feature_extractor().copy_configuration(fe) (i.e. this function allows
+                  you to configure the parameters of the underlying feature extractor used
+                  by a scan_image_pyramid object)
         !*/
 
         void copy_configuration (
@@ -415,6 +422,8 @@ namespace dlib
                   sliding window location.  Note that this vector is added to psi.  Note
                   also that you must use get_full_object_detection() to convert a rect from
                   detect() into the needed full_object_detection.
+                - The dimensionality of the vector added to psi is get_num_dimensions().  This
+                  means that elements of psi after psi(get_num_dimensions()-1) are not modified.
                 - Since scan_image_pyramid is a sliding window classifier system, not all
                   possible rectangles can be output by detect().  So in the case where
                   obj.get_rect() could not arise from a call to detect(), this function

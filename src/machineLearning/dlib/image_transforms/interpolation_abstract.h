@@ -393,8 +393,7 @@ namespace dlib
             - The size of out_img is not modified.  I.e. 
                 - #out_img.nr() == out_img.nr()
                 - #out_img.nc() == out_img.nc()
-            - uses the interpolate_quadratic object to perform the necessary pixel 
-              interpolation.
+            - Uses the bilinear interpolation to perform the necessary pixel interpolation.
     !*/
 
 // ----------------------------------------------------------------------------------------
@@ -419,6 +418,31 @@ namespace dlib
             - #out_img.nc() == in_img.nc()
             - #out_img == a copy of in_img which has been flipped from left to right.  
               (i.e. it is flipped as if viewed though a mirror)
+    !*/
+
+// ----------------------------------------------------------------------------------------
+
+    template <
+        typename image_type
+        >
+    void add_image_left_right_flips (
+        dlib::array<image_type>& images,
+        std::vector<std::vector<rectangle> >& objects
+    );
+    /*!
+        requires
+            - image_type == is an implementation of array2d/array2d_kernel_abstract.h
+            - pixel_traits<typename image_type::type> is defined
+            - images.size() == objects.size()
+        ensures
+            - This function computes all the left/right flips of the contents of images and
+              then appends them onto the end of the images array.  It also finds the
+              left/right flips of the rectangles in objects and similarly appends them into
+              objects.  That is, we assume objects[i] is the set of bounding boxes in
+              images[i] and we flip the bounding boxes so that they still bound the same
+              objects in the new flipped images.
+            - #images.size() == images.size()*2
+            - #objects.size() == objects.size()*2
     !*/
 
 // ----------------------------------------------------------------------------------------

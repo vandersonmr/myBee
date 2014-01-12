@@ -18,6 +18,7 @@ set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
 #SET(Boost_USE_STATIC_LIBS OFF)
 #SET(Boost_USE_MULTITHREADED ON)
 #SET(Boost_USE_STATIC_RUNTIME OFF)
+set(Boost_NO_BOOST_CMAKE ON)
 
 FIND_PACKAGE(Boost 1.41.0 COMPONENTS python REQUIRED)
 FIND_PACKAGE(PythonLibs 2.6 REQUIRED)
@@ -38,10 +39,6 @@ endif()
 string(REPLACE "add_python_module" "" dlib_path ${CMAKE_CURRENT_LIST_FILE})
 include(${dlib_path}/cmake)
 
-# Make sure other python interfaces can #include the headers in
-# dclib/tools/python/src if they want to.
-INCLUDE_DIRECTORIES(${dlib_path}/../tools/python/src)
-
 # We put the extra _ on the end of the name just so it's possible to
 # have a module name of dlib and not get a conflict with the target named
 # dlib in ../dlib/cmake.  We use the target OUPUT_NAME property to ensure the
@@ -60,6 +57,7 @@ macro(add_python_module module_name module_sources )
       SET_TARGET_PROPERTIES( ${module_name}_
          PROPERTIES
          PREFIX ""
+         SUFFIX ".so"
          OUTPUT_NAME ${module_name}
          )
    endif()

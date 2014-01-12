@@ -29,10 +29,13 @@ namespace dlib
               row vectors.  In particular, we return a vector COR such that:
                 - COR.size() == L.nc()
                 - for all valid i:
-                    - COR(i) == the correlation coefficient between the following 
-                      sequence of paired numbers: (L(k,i), R(k,i)) for k: 0 <= k < L.nr().
+                    - COR(i) == the correlation coefficient between the following sequence
+                      of paired numbers: (L(k,i), R(k,i)) for k: 0 <= k < L.nr().
                       Therefore, COR(i) is a value between -1 and 1 inclusive where 1
-                      indicates perfect correlation and -1 perfect anti-correlation.
+                      indicates perfect correlation and -1 perfect anti-correlation.  Note
+                      that this function assumes the input data vectors have been centered
+                      (i.e. made to have zero mean).  If this is not the case then it will
+                      report inaccurate results.
     !*/
 
 // ----------------------------------------------------------------------------------------
@@ -91,6 +94,12 @@ namespace dlib
               function will deviate from compute_correlations(L*#Ltrans, R*#Rtrans).  This
               deviation can be used to check if the reduced rank approximation is working
               or you need to increase extra_rank.
+            - The dimensions of the output vectors produced by L*#Ltrans or R*#Rtrans are
+              ordered such that the dimensions with the highest correlations come first.
+              That is, after applying the transforms produced by cca() to a set of vectors
+              you will find that dimension 0 has the highest correlation, then dimension 1
+              has the next highest, and so on.  This also means that the list of numbers
+              returned from cca() will always be listed in decreasing order.
             - This function performs the ridge regression version of Canonical Correlation
               Analysis when regularization is set to a value > 0.  In particular, larger
               values indicate the solution should be more heavily regularized.  This can be

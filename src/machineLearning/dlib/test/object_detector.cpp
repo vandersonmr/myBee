@@ -379,11 +379,12 @@ namespace
         make_simple_test_data(images, object_locations);
 
         typedef hashed_feature_image<hog_image<3,3,1,4,hog_signed_gradient,hog_full_interpolation> > feature_extractor_type;
-        typedef scan_image_pyramid<pyramid_down, feature_extractor_type> image_scanner_type;
+        typedef scan_image_pyramid<pyramid_down<2>, feature_extractor_type> image_scanner_type;
         image_scanner_type scanner;
         const rectangle object_box = compute_box_dimensions(1,35*35);
         scanner.add_detection_template(object_box, create_grid_detection_template(object_box,2,2));
         setup_hashed_features(scanner, images, 9);
+        use_uniform_feature_weights(scanner);
         structural_object_detection_trainer<image_scanner_type> trainer(scanner);
         trainer.set_num_threads(4);  
         trainer.set_overlap_tester(test_box_overlap(0,0));
@@ -424,6 +425,7 @@ namespace
         typedef scan_image_boxes<feature_extractor_type> image_scanner_type;
         image_scanner_type scanner;
         setup_hashed_features(scanner, images, 9);
+        use_uniform_feature_weights(scanner);
         structural_object_detection_trainer<image_scanner_type> trainer(scanner);
         trainer.set_num_threads(4);  
         trainer.set_overlap_tester(test_box_overlap(0,0));
@@ -461,7 +463,7 @@ namespace
         make_simple_test_data(images, object_locations);
 
         typedef hashed_feature_image<hog_image<3,3,1,4,hog_signed_gradient,hog_full_interpolation> > feature_extractor_type;
-        typedef scan_image_pyramid<pyramid_down, feature_extractor_type> image_scanner_type;
+        typedef scan_image_pyramid<pyramid_down<2>, feature_extractor_type> image_scanner_type;
         image_scanner_type scanner;
         const rectangle object_box = compute_box_dimensions(1,35*35);
         std::vector<rectangle> mboxes;
@@ -472,6 +474,7 @@ namespace
         mboxes.push_back(centered_rect(0,0, mbox_size,mbox_size));
         scanner.add_detection_template(object_box, create_grid_detection_template(object_box,1,1), mboxes);
         setup_hashed_features(scanner, images, 9);
+        use_uniform_feature_weights(scanner);
         structural_object_detection_trainer<image_scanner_type> trainer(scanner);
         trainer.set_num_threads(4);  
         trainer.set_overlap_tester(test_box_overlap(0,0));
@@ -509,11 +512,12 @@ namespace
         make_simple_test_data(images, object_locations);
 
         typedef hashed_feature_image<fine_hog_image<3,3,2,4,hog_signed_gradient> > feature_extractor_type;
-        typedef scan_image_pyramid<pyramid_down, feature_extractor_type> image_scanner_type;
+        typedef scan_image_pyramid<pyramid_down<2>, feature_extractor_type> image_scanner_type;
         image_scanner_type scanner;
         const rectangle object_box = compute_box_dimensions(1,35*35);
         scanner.add_detection_template(object_box, create_grid_detection_template(object_box,2,2));
         setup_hashed_features(scanner, images, 9);
+        use_uniform_feature_weights(scanner);
         structural_object_detection_trainer<image_scanner_type> trainer(scanner);
         trainer.set_num_threads(4);  
         trainer.set_overlap_tester(test_box_overlap(0,0));
@@ -551,11 +555,12 @@ namespace
         make_simple_test_data(images, object_locations);
 
         typedef hashed_feature_image<poly_image<2> > feature_extractor_type;
-        typedef scan_image_pyramid<pyramid_down, feature_extractor_type> image_scanner_type;
+        typedef scan_image_pyramid<pyramid_down<2>, feature_extractor_type> image_scanner_type;
         image_scanner_type scanner;
         const rectangle object_box = compute_box_dimensions(1,35*35);
         scanner.add_detection_template(object_box, create_grid_detection_template(object_box,2,2));
         setup_hashed_features(scanner, images, 9);
+        use_uniform_feature_weights(scanner);
         structural_object_detection_trainer<image_scanner_type> trainer(scanner);
         trainer.set_num_threads(4);  
         trainer.set_overlap_tester(test_box_overlap(0,0));
@@ -593,7 +598,7 @@ namespace
         make_simple_test_data(images, object_locations);
 
         typedef hashed_feature_image<poly_image<2> > feature_extractor_type;
-        typedef scan_image_pyramid<pyramid_down_3_2, feature_extractor_type> image_scanner_type;
+        typedef scan_image_pyramid<pyramid_down<3>, feature_extractor_type> image_scanner_type;
         image_scanner_type scanner;
         const rectangle object_box = compute_box_dimensions(1,35*35);
         std::vector<rectangle> mboxes;
@@ -604,6 +609,7 @@ namespace
         mboxes.push_back(centered_rect(0,0, mbox_size,mbox_size));
         scanner.add_detection_template(object_box, create_grid_detection_template(object_box,2,2), mboxes);
         setup_hashed_features(scanner, images, 9);
+        use_uniform_feature_weights(scanner);
         structural_object_detection_trainer<image_scanner_type> trainer(scanner);
         trainer.set_num_threads(4);  
         trainer.set_overlap_tester(test_box_overlap(0,0));
@@ -641,12 +647,12 @@ namespace
         make_simple_test_data(images, object_locations);
 
         typedef nearest_neighbor_feature_image<poly_image<5> > feature_extractor_type;
-        typedef scan_image_pyramid<pyramid_down, feature_extractor_type> image_scanner_type;
+        typedef scan_image_pyramid<pyramid_down<2>, feature_extractor_type> image_scanner_type;
         image_scanner_type scanner;
 
         setup_grid_detection_templates(scanner, object_locations, 2, 2);
         feature_extractor_type nnfe;
-        pyramid_down pyr_down;
+        pyramid_down<2> pyr_down;
         poly_image<5> polyi;
         nnfe.set_basis(randomly_sample_image_features(images, pyr_down, polyi, 80));
         scanner.copy_configuration(nnfe);
@@ -691,7 +697,7 @@ namespace
         image_scanner_type scanner;
 
         feature_extractor_type nnfe;
-        pyramid_down pyr_down;
+        pyramid_down<2> pyr_down;
         poly_image<5> polyi;
         nnfe.set_basis(randomly_sample_image_features(images, pyr_down, polyi, 80));
         scanner.copy_configuration(nnfe);
@@ -731,7 +737,7 @@ namespace
         std::vector<std::vector<rectangle> > object_locations;
         make_simple_test_data(images, object_locations);
 
-        typedef scan_image_pyramid<pyramid_down_5_4, very_simple_feature_extractor> image_scanner_type;
+        typedef scan_image_pyramid<pyramid_down<5>, very_simple_feature_extractor> image_scanner_type;
         image_scanner_type scanner;
         const rectangle object_box = compute_box_dimensions(1,70*70);
         scanner.add_detection_template(object_box, create_grid_detection_template(object_box,2,2));
@@ -765,7 +771,7 @@ namespace
 
     class pyramid_down_funny : noncopyable
     {
-        pyramid_down pyr;
+        pyramid_down<2> pyr;
     public:
 
         template <typename T>

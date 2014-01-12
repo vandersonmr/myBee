@@ -6,6 +6,7 @@
 #include <limits>
 #include <cmath>
 #include "../matrix/matrix_abstract.h"
+#include "../svm/sparse_vector_abstract.h"
 
 namespace dlib
 {
@@ -466,24 +467,48 @@ namespace dlib
         ) const;
         /*!
             ensures
-                - if (this object has been presented with any input vectors) then
+                - if (this object has been presented with any input vectors or
+                  set_dimension() has been called) then
                     - returns the dimension of the column vectors used with this object
                 - else
                     - returns 0
         !*/
 
-        void add (
-            const matrix_exp& val
+        void set_dimension (
+            long size
         );
         /*!
             requires
-                - is_col_vector(val) == true
-                - if (in_vector_size() != 0) then
-                    - val.size() == in_vector_size()
+                - size > 0
+            ensures
+                - #in_vector_size() == size
+                - #current_n() == 0
+        !*/
+
+        template <typename T>
+        void add (
+            const T& val
+        );
+        /*!
+            requires
+                - val must represent a column vector.  It can either be a dlib::matrix
+                  object or some kind of unsorted sparse vector type.  See the top of
+                  dlib/svm/sparse_vector_abstract.h for a definition of unsorted sparse vector.
+                - val must have a number of dimensions which is compatible with the current
+                  setting of in_vector_size().  In particular, this means that the
+                  following must hold:
+                    - if (val is a dlib::matrix) then 
+                        - in_vector_size() == 0 || val.size() == val_vector_size()
+                    - else
+                        - max_index_plus_one(val) <= in_vector_size()
+                        - in_vector_size() > 0 
+                          (i.e. you must call set_dimension() prior to calling add() if
+                          you want to use sparse vectors.)
             ensures
                 - updates the mean and covariance stored in this object so that
                   the new value is factored into them.
-                - #in_vector_size() == val.size()
+                - if (val is a dlib::matrix) then
+                    - #in_vector_size() == val.size()
         !*/
 
         const column_matrix mean (
@@ -519,6 +544,179 @@ namespace dlib
                   the vectors given to *this and item.  That is, this function returns a
                   running_covariance object, R, that is equivalent to what you would obtain if all
                   calls to this->add() and item.add() had instead been done to R.
+        !*/
+    };
+
+// ----------------------------------------------------------------------------------------
+
+    template <
+        typename matrix_type
+        >
+    class running_cross_covariance
+    {
+        /*!
+            REQUIREMENTS ON matrix_type
+                Must be some type of dlib::matrix.
+
+            INITIAL VALUE
+                - x_vector_size() == 0
+                - y_vector_size() == 0
+                - current_n() == 0
+
+            WHAT THIS OBJECT REPRESENTS
+                This object is a simple tool for computing the mean and cross-covariance
+                matrices of a sequence of pairs of vectors.  
+        !*/
+
+    public:
+
+        typedef typename matrix_type::mem_manager_type mem_manager_type;
+        typedef typename matrix_type::type scalar_type;
+        typedef typename matrix_type::layout_type layout_type;
+        typedef matrix<scalar_type,0,0,mem_manager_type,layout_type> general_matrix;
+        typedef matrix<scalar_type,0,1,mem_manager_type,layout_type> column_matrix;
+
+        running_cross_covariance(
+        );
+        /*!
+            ensures
+                - this object is properly initialized
+        !*/
+
+        void clear(
+        );
+        /*!
+            ensures
+                - This object has its initial value.
+                - Clears all memory of any previous data points.
+        !*/
+
+        long x_vector_size (
+        ) const;
+        /*!
+            ensures
+                - if (this object has been presented with any input vectors or
+                  set_dimensions() has been called) then
+                    - returns the dimension of the x vectors given to this object via add().
+                - else
+                    - returns 0
+        !*/
+
+        long y_vector_size (
+        ) const;
+        /*!
+            ensures
+                - if (this object has been presented with any input vectors or
+                  set_dimensions() has been called) then
+                    - returns the dimension of the y vectors given to this object via add().
+                - else
+                    - returns 0
+        !*/
+
+        void set_dimensions (
+            long x_size,
+            long y_size
+        );
+        /*!
+            requires
+                - x_size > 0
+                - y_size > 0
+            ensures
+                - #x_vector_size() == x_size
+                - #y_vector_size() == y_size
+                - #current_n() == 0
+        !*/
+
+        long current_n (
+        ) const;
+        /*!
+            ensures
+                - returns the number of samples that have been presented to this object.
+        !*/
+
+        template <typename T, typename U>
+        void add (
+            const T& x,
+            const U& y
+        );
+        /*!
+            requires
+                - x and y must represent column vectors.  They can either be dlib::matrix
+                  objects or some kind of unsorted sparse vector type.  See the top of
+                  dlib/svm/sparse_vector_abstract.h for a definition of unsorted sparse vector.
+                - x and y must have a number of dimensions which is compatible with the
+                  current setting of x_vector_size() and y_vector_size().  In particular,
+                  this means that the following must hold:
+                    - if (x or y is a sparse vector type) then
+                        - x_vector_size() > 0 && y_vector_size() > 0
+                          (i.e. you must call set_dimensions() prior to calling add() if
+                          you want to use sparse vectors.)
+                    - if (x is a dlib::matrix) then 
+                        - x_vector_size() == 0 || x.size() == x_vector_size()
+                    - else
+                        - max_index_plus_one(x) <= x_vector_size()
+                    - if (y is a dlib::matrix) then 
+                        - y_vector_size() == 0 || y.size() == y_vector_size()
+                    - else
+                        - max_index_plus_one(y) <= y_vector_size()
+            ensures
+                - updates the mean and cross-covariance matrices stored in this object so
+                  that the new (x,y) vector pair is factored into them.
+                - if (x is a dlib::matrix) then
+                    - #x_vector_size() == x.size()
+                - if (y is a dlib::matrix) then
+                    - #y_vector_size() == y.size()
+        !*/
+
+        const column_matrix mean_x (
+        ) const;
+        /*!
+            requires
+                - current_n() != 0 
+            ensures
+                - returns the mean of all the x vectors presented to this object so far.
+                - The returned vector will have x_vector_size() dimensions.
+        !*/
+
+        const column_matrix mean_y (
+        ) const;
+        /*!
+            requires
+                - current_n() != 0 
+            ensures
+                - returns the mean of all the y vectors presented to this object so far.
+                - The returned vector will have y_vector_size() dimensions.
+        !*/
+
+        const general_matrix covariance_xy (
+        ) const;
+        /*!
+            requires
+                - current_n() > 1
+            ensures
+                - returns the unbiased sample cross-covariance matrix for all the vector
+                  pairs presented to this object so far.  In particular, returns a matrix
+                  M such that:
+                    - M.nr() == x_vector_size()
+                    - M.nc() == y_vector_size()
+                    - M == the cross-covariance matrix of the data given to add().
+        !*/
+
+        const running_cross_covariance operator+ (
+            const running_cross_covariance& item
+        ) const;
+        /*!
+            requires
+                - x_vector_size() == 0 || item.x_vector_size() == 0 || x_vector_size() == item.x_vector_size()
+                  (i.e. the x_vector_size() of *this and item must match or one must be zero)
+                - y_vector_size() == 0 || item.y_vector_size() == 0 || y_vector_size() == item.y_vector_size()
+                  (i.e. the y_vector_size() of *this and item must match or one must be zero)
+            ensures
+                - returns a new running_cross_covariance object that represents the
+                  combination of all the vectors given to *this and item.  That is, this
+                  function returns a running_cross_covariance object, R, that is equivalent
+                  to what you would obtain if all calls to this->add() and item.add() had
+                  instead been done to R.
         !*/
     };
 
@@ -572,6 +770,7 @@ namespace dlib
                 - samples == a column matrix or something convertible to a column 
                   matrix via mat().  Also, x should contain 
                   matrix_type objects that represent nonempty column vectors.
+                - samples does not contain any infinite or NaN values
             ensures
                 - #in_vector_size() == samples(0).nr()
                 - #out_vector_size() == samples(0).nr()
@@ -730,6 +929,7 @@ namespace dlib
                 - samples == a column matrix or something convertible to a column 
                   matrix via mat().  Also, x should contain 
                   matrix_type objects that represent nonempty column vectors.
+                - samples does not contain any infinite or NaN values
             ensures
                 - This object has learned how to normalize vectors that look like
                   vectors in the given set of samples.  

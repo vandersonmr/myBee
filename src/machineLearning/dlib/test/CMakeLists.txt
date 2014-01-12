@@ -45,6 +45,7 @@ set (tests
    entropy_encoder_model.cpp
    example_args.cpp
    fft.cpp
+   fhog.cpp
    filtering.cpp
    find_max_factor_graph_nmplp.cpp
    find_max_factor_graph_viterbi.cpp
@@ -160,6 +161,7 @@ TARGET_LINK_LIBRARIES(${target_name} dlib )
 
 if (NOT DLIB_NO_GUI_SUPPORT)
    add_subdirectory(gui)
+   add_subdirectory(../../examples examples_build)
 endif()
 
 

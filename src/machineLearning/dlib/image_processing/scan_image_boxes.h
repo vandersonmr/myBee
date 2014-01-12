@@ -74,6 +74,9 @@ namespace dlib
         const box_generator& get_box_generator (
         ) const { return detect_boxes; } 
 
+        const Feature_extractor_type& get_feature_extractor (
+        ) const { return feats; }
+
         inline void copy_configuration (
             const scan_image_boxes& item
         );
@@ -274,7 +277,7 @@ namespace dlib
         long dims;
         deserialize(dims, in);
         if (item.get_num_dimensions() != dims)
-            throw serialization_error("Number of dimensions in serialized scan_image_pyramid don't match the expected number.");
+            throw serialization_error("Number of dimensions in serialized scan_image_boxes doesn't match the expected number.");
     }
 
 // ----------------------------------------------------------------------------------------
@@ -449,9 +452,7 @@ namespace dlib
         
         dets.clear();
 
-        array<integral_image_generic<double> > saliency_images;
-        saliency_images.set_max_size(get_num_components_per_detection_template());
-        saliency_images.set_size(get_num_components_per_detection_template());
+        array<integral_image_generic<double> > saliency_images(get_num_components_per_detection_template());
 
         array2d<double> temp_img(feats.nr(), feats.nc());
 

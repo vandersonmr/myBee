@@ -3457,6 +3457,22 @@ namespace dlib
         void clear_labelable_part_names (
         );
 
+        void enable_overlay_editing (
+        ) { auto_mutex M(m); overlay_editing_enabled = true; }
+
+        void disable_overlay_editing (
+        ) 
+        { 
+            auto_mutex M(m); 
+            overlay_editing_enabled = false;  
+            rect_is_selected = false;
+            drawing_rect = false;
+            parent.invalidate_rectangle(rect);
+        }
+        
+        bool overlay_editing_is_enabled (
+        ) const { auto_mutex M(m); return overlay_editing_enabled; }
+
     private:
 
         void draw (
@@ -3537,6 +3553,7 @@ namespace dlib
         point last_right_click_pos;
         const int part_width;
         std::set<std::string> part_names;
+        bool overlay_editing_enabled;
 
         // restricted functions
         image_display(image_display&);        // copy constructor
@@ -3565,9 +3582,11 @@ namespace dlib
             have_last_click(false),
             mouse_btn(0),
             clicked_signaler(this->wm),
-            have_last_keypress(false)
+            have_last_keypress(false),
+            tie_input_events(false)
         {  
             gui_img.set_image_clicked_handler(*this, &image_window::on_image_clicked);
+            gui_img.disable_overlay_editing();
             set_image(img); 
             show(); 
         }
@@ -3582,9 +3601,11 @@ namespace dlib
             have_last_click(false),
             mouse_btn(0),
             clicked_signaler(this->wm),
-            have_last_keypress(false)
+            have_last_keypress(false),
+            tie_input_events(false)
         {  
             gui_img.set_image_clicked_handler(*this, &image_window::on_image_clicked);
+            gui_img.disable_overlay_editing();
             set_image(img); 
             set_title(title);
             show(); 
@@ -3752,6 +3773,15 @@ namespace dlib
             unsigned long& mouse_button
         ); 
 
+        void tie_events (
+        );
+
+        void untie_events (
+        );
+
+        bool events_tied (
+        ) const;
+
         bool get_next_double_click (
             point& p
         ) 
@@ -3812,6 +3842,7 @@ namespace dlib
         unsigned long next_key;
         bool next_is_printable;
         unsigned long next_state;
+        bool tie_input_events;
     };
 
 // ----------------------------------------------------------------------------------------

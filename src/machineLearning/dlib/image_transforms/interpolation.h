@@ -60,18 +60,18 @@ namespace dlib
         {
             COMPILE_TIME_ASSERT(pixel_traits<typename image_type::type>::has_alpha == false);
 
-            const long top    = static_cast<long>(std::floor(p.y()));
-            const long bottom = static_cast<long>(std::ceil (p.y()));
             const long left   = static_cast<long>(std::floor(p.x()));
-            const long right  = static_cast<long>(std::ceil (p.x()));
+            const long top    = static_cast<long>(std::floor(p.y()));
+            const long right  = left+1;
+            const long bottom = top+1;
 
 
             // if the interpolation goes outside img 
             if (!get_rect(img).contains(rectangle(left,top,right,bottom))) 
                 return false;
 
-            const double lr_frac = p.x() - std::floor(p.x());
-            const double tb_frac = p.y() - std::floor(p.y());
+            const double lr_frac = p.x() - left;
+            const double tb_frac = p.y() - top;
 
             double tl = 0, tr = 0, bl = 0, br = 0;
 
@@ -96,18 +96,18 @@ namespace dlib
         {
             COMPILE_TIME_ASSERT(pixel_traits<typename image_type::type>::has_alpha == false);
 
-            const long top    = static_cast<long>(std::floor(p.y()));
-            const long bottom = static_cast<long>(std::ceil (p.y()));
             const long left   = static_cast<long>(std::floor(p.x()));
-            const long right  = static_cast<long>(std::ceil (p.x()));
+            const long top    = static_cast<long>(std::floor(p.y()));
+            const long right  = left+1;
+            const long bottom = top+1;
 
 
             // if the interpolation goes outside img 
             if (!get_rect(img).contains(rectangle(left,top,right,bottom))) 
                 return false;
 
-            const double lr_frac = p.x() - std::floor(p.x());
-            const double tb_frac = p.y() - std::floor(p.y());
+            const double lr_frac = p.x() - left;
+            const double tb_frac = p.y() - top;
 
             double tl, tr, bl, br;
 
@@ -517,6 +517,86 @@ namespace dlib
 
 // ----------------------------------------------------------------------------------------
 
+    // This is an optimized version of resize_image for the case where bilinear
+    // interpolation is used.
+    template <
+        typename image_type1,
+        typename image_type2
+        >
+    void resize_image (
+        const image_type1& in_img,
+        image_type2& out_img,
+        interpolate_bilinear
+    )
+    {
+        // make sure requires clause is not broken
+        DLIB_ASSERT( is_same_object(in_img, out_img) == false ,
+            "\t void resize_image()"
+            << "\n\t Invalid inputs were given to this function."
+            << "\n\t is_same_object(in_img, out_img):  " << is_same_object(in_img, out_img)
+            );
+
+        typedef typename image_type1::type T;
+        typedef typename image_type2::type U;
+        const double x_scale = (in_img.nc()-1)/(double)std::max<long>((out_img.nc()-1),1);
+        const double y_scale = (in_img.nr()-1)/(double)std::max<long>((out_img.nr()-1),1);
+        double y = -y_scale;
+        for (long r = 0; r < out_img.nr(); ++r)
+        {
+            y += y_scale;
+            const long top    = static_cast<long>(std::floor(y));
+            const long bottom = std::min(top+1, in_img.nr()-1);
+            const double tb_frac = y - top;
+            double x = -x_scale;
+            if (!pixel_traits<U>::rgb)
+            {
+                for (long c = 0; c < out_img.nc(); ++c)
+                {
+                    x += x_scale;
+                    const long left   = static_cast<long>(std::floor(x));
+                    const long right  = std::min(left+1, in_img.nc()-1);
+                    const double lr_frac = x - left;
+
+                    double tl = 0, tr = 0, bl = 0, br = 0;
+
+                    assign_pixel(tl, in_img[top][left]);
+                    assign_pixel(tr, in_img[top][right]);
+                    assign_pixel(bl, in_img[bottom][left]);
+                    assign_pixel(br, in_img[bottom][right]);
+
+                    double temp = (1-tb_frac)*((1-lr_frac)*tl + lr_frac*tr) + 
+                        tb_frac*((1-lr_frac)*bl + lr_frac*br);
+
+                    assign_pixel(out_img[r][c], temp);
+                }
+            }
+            else
+            {
+                for (long c = 0; c < out_img.nc(); ++c)
+                {
+                    x += x_scale;
+                    const long left   = static_cast<long>(std::floor(x));
+                    const long right  = std::min(left+1, in_img.nc()-1);
+                    const double lr_frac = x - left;
+
+                    const T tl = in_img[top][left];
+                    const T tr = in_img[top][right];
+                    const T bl = in_img[bottom][left];
+                    const T br = in_img[bottom][right];
+
+                    T temp;
+                    assign_pixel(temp, 0);
+                    vector_to_pixel(temp, 
+                        (1-tb_frac)*((1-lr_frac)*pixel_to_vector<double>(tl) + lr_frac*pixel_to_vector<double>(tr)) + 
+                            tb_frac*((1-lr_frac)*pixel_to_vector<double>(bl) + lr_frac*pixel_to_vector<double>(br)));
+                    assign_pixel(out_img[r][c], temp);
+                }
+            }
+        }
+    }
+
+// ----------------------------------------------------------------------------------------
+
     template <
         typename image_type1,
         typename image_type2
@@ -533,7 +613,7 @@ namespace dlib
             << "\n\t is_same_object(in_img, out_img):  " << is_same_object(in_img, out_img)
             );
 
-        resize_image(in_img, out_img, interpolate_quadratic());
+        resize_image(in_img, out_img, interpolate_bilinear());
     }
 
 // ----------------------------------------------------------------------------------------
@@ -576,6 +656,60 @@ namespace dlib
             );
 
         assign_image(out_img, flipud(mat(in_img)));
+    }
+
+// ----------------------------------------------------------------------------------------
+
+    namespace impl
+    {
+        inline rectangle flip_rect_left_right (
+            const rectangle& rect,
+            const rectangle& window 
+        )
+        {
+            rectangle temp;
+            temp.top() = rect.top();
+            temp.bottom() = rect.bottom();
+
+            const long left_dist = rect.left()-window.left();
+
+            temp.right() = window.right()-left_dist; 
+            temp.left()  = temp.right()-rect.width()+1; 
+            return temp;
+        }
+    }
+
+    template <
+        typename image_type
+        >
+    void add_image_left_right_flips (
+        dlib::array<image_type>& images,
+        std::vector<std::vector<rectangle> >& objects
+    )
+    {
+        // make sure requires clause is not broken
+        DLIB_ASSERT( images.size() == objects.size(),
+            "\t void add_image_left_right_flips()"
+            << "\n\t Invalid inputs were given to this function."
+            << "\n\t images.size():  " << images.size() 
+            << "\n\t objects.size(): " << objects.size() 
+            );
+
+        image_type temp;
+        std::vector<rectangle> rects;
+
+        const unsigned long num = images.size();
+        for (unsigned long j = 0; j < num; ++j)
+        {
+            flip_image_left_right(images[j], temp);
+
+            rects.clear();
+            for (unsigned long i = 0; i < objects[j].size(); ++i)
+                rects.push_back(impl::flip_rect_left_right(objects[j][i], get_rect(images[j])));
+
+            images.push_back(temp);
+            objects.push_back(rects);
+        }
     }
 
 // ----------------------------------------------------------------------------------------
