@@ -54,9 +54,9 @@ function nodeGraphManager(name){
               "<div id=\"status"+name+"\">"+
                   "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
               "</div></h3>" + 
-            "</div>")
+            "</div>");
 
-	this.plot = $.plot("#"+name, [{data:[], label: name+" temp."}],
+  this.plot = $.plot("[id='"+name+"']", [{data:[], label: name+" temp."}],
 			              {series: {
 					lines:{show:true}, 
 					points:{show:true}},
@@ -65,7 +65,7 @@ function nodeGraphManager(name){
 					clickable: true},
 				       xaxis:{
 					tickSize: 100}
-				      })
+				      });
 
 	window.teste = this.plot
 	this.setData = function(data, time, stat){
@@ -118,18 +118,17 @@ function clearEmptyGraphs() {
   }
 }
 
-window.setInterval(clearEmptyGraphs,1500);
 
 function insertIndex(stack){
-	var res = []
-	var time = []
+	var res   = []
+	var time  = []
 	var stats = []
 	var i = 0
 	var size = stack.length
 	for(var j=0; j < size; j++){
 		var temp = stack.pop();
 		stats.push(temp[2])
-		time.push(temp[1]);
+		time.push (temp[1]);
 		res.push([i++, temp[0]])
 	}
 	return [res,time,stats]
@@ -142,13 +141,16 @@ function parseData(input) {
 		return temperatures
 
 	var rows = input.split("<br>")
-	for(var captura = 0; captura < rows.length-1; captura++){
-		var row = rows[captura].replace(/\n/g,"").split("&")
-		var nodeName = row[0].replace(/#/g,"").replace(" ","")
-                              .replace("\n","node").replace("[","").replace("]","")
-		var time = row[1]
+	
+  for(var captura = 1; captura < rows.length-1; captura++){
+		var row       = rows[captura].replace(/\n/g,"").split("&")
+		var nodeName  = row[0].replace(/#/g,"").replace(" ","")
+                          .replace("\n","node").replace("[","").replace("]","")
+
+		var time      = row[1]
 		var tempValue = row[2]
-		var stats = row[3]	
+		var stats     = row[3]	
+    
 		if(temperatures[nodeName] == undefined){
 			temperatures[nodeName] = []
 		}
@@ -162,8 +164,10 @@ function plotData(data){
 	for(var node in data){
 			if(data[node].length == 0)
 				continue
-			if (graphList[node] == undefined)
-				graphList[node] = new nodeGraphManager(node);
+			if (graphList[node] == undefined){
+				graphList[node] = [];
+        graphList[node] = new nodeGraphManager(node);
+      }
 		
 			var tempData = insertIndex(data[node])
 			graphList[node].setNodeStatus(tempData[2][tempData[2].length-1].replace(" ",""))
@@ -175,14 +179,14 @@ function plotData(data){
 
 function showTooltip(x, y, contents) {
 	$("<div id='tooltip'>" + contents + "</div>").css({
-		position: "absolute",
-		display: "none",
-		top: y + 5,
-		left: x + 5,
-		border: "1px solid #fdd",
-		padding: "2px",
+		position : "absolute",
+		display  : "none",
+		top      : y + 5,
+		left     : x + 5,
+		border   : "1px solid #fdd",
+		padding  : "2px",
 		"background-color": "#fee",
-		opacity: 0.80
+		opacity  : 0.80
 	}).appendTo("body").fadeIn(200)
 }
 
@@ -190,7 +194,7 @@ var updateInterval = 1000
 
 function update() {
 	var input
-	$.get('cgi-bin/getDados').success(
+	$.get('getDados').success(
 			function(data){	
 				var res = parseData(data)
 				plotData(res)
@@ -199,10 +203,11 @@ function update() {
 	setTimeout(update, updateInterval)
 }
 
-jQuery(document).ready(new function () {
+$(document).ready(function (e) {
 		var tc = new timeControl()
 		tc.startClockUpdate()
 		update()
+    window.setInterval(clearEmptyGraphs,1500);
 });
 
 $("#ltempoReal").click(function() {

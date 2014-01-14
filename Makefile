@@ -26,20 +26,6 @@ cgi:
 	$(CCPP) $(SRC)/web-UI/CGI/getDados.c $(SRC)/database/dataDAO.c $(LDmysql) -o $(SRC)/web-UI/getDados $(CFLAGS) $(HEADERS) -fpermissive
 	$(CCPP) $(SRC)/web-UI/CGI/getHistorico.c $(SRC)/database/dataDAO.c $(LDmysql) -o $(SRC)/web-UI/getHistorico $(CFLAGS) $(HEADERS) -fpermissive
 
-install:
-	sudo mkdir -p /var/www/lang
-	sudo cp ./$(SRC)/web-UI/*.html /var/www/
-	sudo cp ./$(SRC)/web-UI/*.css /var/www/
-	sudo cp ./$(SRC)/web-UI/*.js /var/www/
-	sudo cp ./$(SRC)/web-UI/getDados /usr/lib/cgi-bin/
-	sudo cp ./$(SRC)/web-UI/getHistorico /usr/lib/cgi-bin/
-	sudo cp ./$(SRC)/web-UI/lang/* /var/www/lang/
-	sudo mkdir -p /usr/lib/cgi-bin/config/
-	sudo cp ./config/db.conf /usr/lib/cgi-bin/config/
-	sudo chmod 777 /usr/lib/cgi-bin/getDados
-	sudo chmod 777 /usr/lib/cgi-bin/getHistorico
-
-
 init:
 	@echo "Iniciando repd..."
 	@sudo ./repd/repad_$(ARCH);\
