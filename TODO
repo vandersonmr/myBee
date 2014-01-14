@@ -7,13 +7,12 @@
     * Criar testes
   
     - Usar NoSQL db ao invés do Mysql? 
-    - Trocar o sistema que imprime o gráfico de C para Node.js
     - Adicionar suporte a multiplos dados (temperatura, humidade, pressão)
+    - Adicionar suporte a visualizar histórico dos nodes
     
    * Escrever relatório PIBIT.
    * Testar alcance do wifi do raspberry
-  
-
 
 Feito:
-    -  Apenas mostrar gráfico de nodes conectados (Não funciona 100% porque é difícil indentificar quem ta online).
+    - Trocar o sistema que imprime o gráfico de C para Node.js
+    - Apenas mostrar gráfico de nodes conectados (Não funciona 100% porque é difícil indentificar quem ta online).
