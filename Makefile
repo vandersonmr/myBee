@@ -8,7 +8,7 @@ LDrepa= -pthread -lpthread $(SHAREDOBJ) -lpython2.7
 LDmysql=  -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
 
-all: repa server client cgi clear.o
+all: repa server client clear.o
 
 dataDAO.o:
 	$(CCPP) -c $(SRC)/database/dataDAO.c -o dataDAO.o $(CFLAGS) $(HEADERS) -fpermissive
@@ -21,10 +21,6 @@ server: dataDAO.o server.o machineLearning.o repa
 
 client: repa
 	$(CC) $(SRC)/client.c -o client $(CFLAGS) $(LDrepa) $(HEADERS) -lm
-
-cgi:
-	$(CCPP) $(SRC)/web-UI/CGI/getDados.c $(SRC)/database/dataDAO.c $(LDmysql) -o $(SRC)/web-UI/getDados $(CFLAGS) $(HEADERS) -fpermissive
-	$(CCPP) $(SRC)/web-UI/CGI/getHistorico.c $(SRC)/database/dataDAO.c $(LDmysql) -o $(SRC)/web-UI/getHistorico $(CFLAGS) $(HEADERS) -fpermissive
 
 init:
 	@echo "Iniciando repd..."
