@@ -6,9 +6,8 @@
     * Melhorar nomes
     * Criar testes
   
-    - Usar NoSQL db ao invés do Mysql? 
-    - Adicionar suporte a multiplos dados (temperatura, humidade, pressão)
-    - Adicionar suporte a visualizar histórico dos nodes
+    - Adicionar suporte a multiplos dados (temperatura, humidade, pressão) - João
+    - Adicionar suporte a visualizar histórico dos nodes - Vanderson
     
    * Escrever relatório PIBIT.
    * Testar alcance do wifi do raspberry
@@ -16,3 +15,4 @@
 Feito:
     - Trocar o sistema que imprime o gráfico de C para Node.js
     - Apenas mostrar gráfico de nodes conectados (Não funciona 100% porque é difícil indentificar quem ta online).
+
