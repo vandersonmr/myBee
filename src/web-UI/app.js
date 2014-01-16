@@ -6,6 +6,7 @@
 var express  =  require('express')
   , routes   =  require('./routes')
   , getDados =  require('./routes/getDados')
+  , getNodes =  require('./routes/getNodes')
   , _mysql   =  require('mysql')
   , dataDB   =  require('./public/javascripts/dataDAO');
 
@@ -57,6 +58,7 @@ app.configure('production', function(){
 
 app.get('/'        , routes.index);
 app.get('/getDados', getDados.getDados);
+app.get('/getNodes', getNodes.getNodes);
 
 //Extra
 

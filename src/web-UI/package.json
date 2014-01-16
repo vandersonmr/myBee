@@ -1,5 +1,5 @@
 {
-    "name": "Monitor de Abelhas web-UI"
+    "name": "MonitordeAbelhas"
   , "version": "0.0.1"
   , "private": true
   , "dependencies": {

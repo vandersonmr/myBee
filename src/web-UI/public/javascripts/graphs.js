@@ -203,6 +203,22 @@ function update() {
 	setTimeout(update, updateInterval)
 }
 
+function fillNodesOptions() {
+	$.get('getNodes').success(
+			function(data) {
+        $("#nodesBox").empty();
+        var rows = data.split('\n');
+        $.each(rows, function(index, value) {
+          if (value.replace(/\s/g,"") != "") // Not empty
+            $("#nodesBox").append($("<option>", { 
+                  value : value
+                , text  : value
+            }));
+        });
+	    }
+  );
+}
+
 $(document).ready(function (e) {
 		var tc = new timeControl()
 		tc.startClockUpdate()
@@ -218,6 +234,7 @@ $("#ltempoReal").click(function() {
 $("#lhistorico").click(function() {
   $("#GraphsGrid").hide();
   $("#historico").show();
+  fillNodesOptions();
 });
 
 $("#historico").hide();
