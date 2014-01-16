@@ -39,14 +39,14 @@ function getStatusMsg(statusID){
 	}
 }
 
-function nodeGraphManager(name){
+function nodeGraphManager(name, divId){
 	this.name = name
 	this.data = []
 	var times = []
 	var stats = []
 	this.nodeStatus = "OK"
 
-	$("#GraphsGrid").append(
+	$("#"+divId).append(
             "<div id=\"g"+name+"\" class=\"graph\">"+
         		  "<h2>Node: "+name+"</h2>"+
               "<div id=\""+name+"\"  style=\"width:600px;height:300px;float:left\"></div>"+
@@ -160,19 +160,22 @@ function parseData(input) {
 	return temperatures
 }
 
-function plotData(data){
+function plotData(data, divId) {
 	for(var node in data){
-			if(data[node].length == 0)
+      nodeKey = node + divId
+
+      if(data[node].length == 0)
 				continue
-			if (graphList[node] == undefined){
-				graphList[node] = [];
-        graphList[node] = new nodeGraphManager(node);
+
+			if (graphList[nodeKey] == undefined){
+				graphList[nodeKey] = [];
+        graphList[nodeKey] = new nodeGraphManager(node,divId);
       }
 		
 			var tempData = insertIndex(data[node])
-			graphList[node].setNodeStatus(tempData[2][tempData[2].length-1].replace(" ",""))
-			graphList[node].setData(tempData[0],tempData[1],tempData[2])
-			graphList[node].update()
+			graphList[nodeKey].setNodeStatus(tempData[2][tempData[2].length-1].replace(" ",""))
+			graphList[nodeKey].setData(tempData[0],tempData[1],tempData[2])
+			graphList[nodeKey].update()
 			
 	}
 }
@@ -197,7 +200,7 @@ function update() {
 	$.get('getDados').success(
 			function(data){	
 				var res = parseData(data)
-				plotData(res)
+				plotData(res,"GraphsGrid")
 			});
 
 	setTimeout(update, updateInterval)
@@ -219,11 +222,20 @@ function fillNodesOptions() {
   );
 }
 
+function addHistoric(nodeName) {
+  $.get('getHistoric/'+nodeName).success(
+      function(data) {
+    		var res = parseData(data)
+				plotData(res,"HistoricGrid")  
+      }
+  ); 
+}
+
 $(document).ready(function (e) {
-		var tc = new timeControl()
-		tc.startClockUpdate()
-		update()
-    window.setInterval(clearEmptyGraphs,1500);
+	var tc = new timeControl()
+	tc.startClockUpdate()
+	update()
+  window.setInterval(clearEmptyGraphs,1500);
 });
 
 $("#ltempoReal").click(function() {
@@ -238,3 +250,7 @@ $("#lhistorico").click(function() {
 });
 
 $("#historico").hide();
+
+$("#addHist").click(function() { 
+  addHistoric($("#nodesBox").val()); 
+});

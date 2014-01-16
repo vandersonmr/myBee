@@ -3,12 +3,13 @@
  * Module dependencies.
  */
 
-var express  =  require('express')
-  , routes   =  require('./routes')
-  , getDados =  require('./routes/getDados')
-  , getNodes =  require('./routes/getNodes')
-  , _mysql   =  require('mysql')
-  , dataDB   =  require('./public/javascripts/dataDAO');
+var express     =  require('express')
+  , routes      =  require('./routes')
+  , getDados    =  require('./routes/getDados')
+  , getHistoric =  require('./routes/getHistoric')
+  , getNodes    =  require('./routes/getNodes')
+  , _mysql      =  require('mysql')
+  , dataDB      =  require('./public/javascripts/dataDAO');
 
 // DataBase - Mysql
 
@@ -19,9 +20,9 @@ var MYSQL_PASS = '123456';
 var DATABASE   = 'monitorAbelhas';
 
 mysql = _mysql.createConnection({
-  host: HOST,
-  port: PORT,
-  user: MYSQL_USER,
+  host    : HOST,
+  port    : PORT,
+  user    : MYSQL_USER,
   password: MYSQL_PASS,
 });
 
@@ -32,7 +33,7 @@ mysql.connect(function(err) {
 mysql.query('use ' + DATABASE);
 
 // Instaciation
-var app     = module.exports = express.createServer();
+var app = module.exports = express.createServer();
 dataDAO = new dataDB.dataDAO(mysql); 
 
 // Configuration
@@ -56,9 +57,10 @@ app.configure('production', function(){
 
 // Routes
 
-app.get('/'        , routes.index);
-app.get('/getDados', getDados.getDados);
-app.get('/getNodes', getNodes.getNodes);
+app.get('/'                     , routes.index);
+app.get('/getDados'             , getDados.getDados);
+app.get('/getNodes'             , getNodes.getNodes);
+app.get('/getHistoric/:nodeName', getHistoric.getHistoric);
 
 //Extra
 
