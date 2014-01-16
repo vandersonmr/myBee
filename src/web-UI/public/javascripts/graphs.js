@@ -25,7 +25,7 @@ function timeControl() {
 
   this.startClockUpdate = function(){
     var func = this
-      setInterval(function(){ func.updateClock() },500)
+      setInterval(function(){ func.updateClock() },300)
   }
 }
 
@@ -62,6 +62,7 @@ function nodeGraphManager(name, divId){
     points:{show:true}},
     grid: {
       hoverable: true,
+    downsample: { threshold: 500 },
     clickable: true},
     xaxis:{
       tickSize: 100}
