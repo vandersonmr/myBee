@@ -108,12 +108,12 @@ function nodeGraphManager(name, divId){
 
 var graphList = {}
 
-function clearEmptyGraphs() {
+function clearEmptyGraphs(divId) {
   for (var index in graphList) {
-    if (graphList[index].data.length <= 1) {
-      $("#g"+index).hide();
+    if (graphList[index].data.length <= 2) {
+      $("[id='g"+index.replace(divId,"")+"']").hide();
     } else {
-      $("#g"+index).show();
+      $("[id='g"+index.replace(divId,"")+"']").show();
     }
   }
 }
@@ -164,7 +164,7 @@ function plotData(data, divId) {
 	for(var node in data){
       nodeKey = node + divId
 
-      if(data[node].length == 0)
+      if(data[node].length < 3)
 				continue
 
 			if (graphList[nodeKey] == undefined){
@@ -235,7 +235,7 @@ $(document).ready(function (e) {
 	var tc = new timeControl()
 	tc.startClockUpdate()
 	update()
-  window.setInterval(clearEmptyGraphs,1500);
+  window.setInterval(function() { clearEmptyGraphs("GraphsGrid") } ,1500);
 });
 
 $("#ltempoReal").click(function() {
