@@ -25,7 +25,7 @@ function timeControl() {
 
   this.startClockUpdate = function(){
     var func = this
-      setInterval(function(){ func.updateClock() },300)
+    setInterval(function(){ func.updateClock() },300)
   }
 }
 
@@ -40,7 +40,7 @@ function getStatusMsg(statusID){
 }
 
 function nodeGraphManager(name, divId){
-  this.name = name
+    this.name = name
     this.data = []
     var times = []
     var stats = []
@@ -56,34 +56,35 @@ function nodeGraphManager(name, divId){
         "</div></h3>" + 
         "</div>");
 
-  this.plot = $.plot("[id='"+name+"']", [{data:[], label: name+" temp."}],
+  this.plot = $.plot("#"+divId+" [id='"+name+"']", [{data:[], label: name+" temp."}],
       {series: {
                  lines:{show:true}, 
-    points:{show:true}},
-    grid: {
-      hoverable: true,
-    downsample: { threshold: 500 },
-    clickable: true},
-    xaxis:{
-      tickSize: 100}
+                 points:{show:true}},
+                 grid: {
+                   hoverable: true,
+                   downsample: { threshold: 500 },
+                   clickable: true
+                 },
+                 xaxis:{
+                   tickSize: 100
+                 }
       });
 
-  window.teste = this.plot
-    this.setData = function(data, time, stat){
-      this.data = data
-        times = time
-        stats = stat
-    }
+  this.setData = function(data, time, stat){
+    this.data = data
+    times = time
+    stats = stat
+  }
 
   this.setNodeStatus = function(nodeStatus){
     this.nodeStatus = nodeStatus
-      $("#status"+this.name).html(getStatusMsg(nodeStatus))
+    $("#status"+this.name).html(getStatusMsg(nodeStatus)) // FIXME
   }
 
   this.update = function(){
     this.plot.setData([this.data])
-      this.plot.setupGrid()
-      this.plot.draw()
+    this.plot.setupGrid()
+    this.plot.draw()
   }
 
   var previousPoint = null;
@@ -93,10 +94,10 @@ function nodeGraphManager(name, divId){
         previousPoint = item.dataIndex;
         $("#tooltip").remove();
         var x = item.datapoint[0],
-    y = item.datapoint[1];
-  showTooltip(item.pageX, item.pageY,
-    "Data: "+ times[x] + "<br> Temperatura: " + y + "º célcius"
-    + "<br> Status: " + stats[x]);
+        y = item.datapoint[1];
+        showTooltip(item.pageX, item.pageY,
+                    "Data: "+ times[x] + "<br> Temperatura: " + y + "º célcius"
+                    + "<br> Status: " + stats[x]);
       }
     } else {
       $("#tooltip").remove();
@@ -144,9 +145,9 @@ function parseData(input) {
       var rows = input.split("<br>")
 
       for(var captura = 1; captura < rows.length-1; captura++){
-        var row       = rows[captura].replace(/\n/g,"").split("&")
+          var row       = rows[captura].replace(/\n/g,"").split("&")
           var nodeName  = row[0].replace(/#/g,"").replace(" ","")
-          .replace("\n","node").replace("[","").replace("]","")
+                            .replace("\n","node").replace("[","").replace("]","")
 
           var time      = row[1]
           var tempValue = row[2]
@@ -156,7 +157,7 @@ function parseData(input) {
             temperatures[nodeName] = []
           }
 
-        temperatures[nodeName].push([tempValue,time,stats])
+          temperatures[nodeName].push([tempValue,time,stats])
       }
   return temperatures
 }
@@ -165,18 +166,18 @@ function plotData(data, divId) {
   for(var node in data){
     nodeKey = node + divId
 
-      if(data[node].length < 3)
-        continue
+    if(data[node].length < 3)
+       continue
 
-          if (graphList[nodeKey] == undefined){
-            graphList[nodeKey] = [];
-            graphList[nodeKey] = new nodeGraphManager(node,divId);
-          }
+    if (graphList[nodeKey] == undefined) {
+      graphList[nodeKey] = [];
+      graphList[nodeKey] = new nodeGraphManager(node,divId);
+    }
 
     var tempData = insertIndex(data[node])
-      graphList[nodeKey].setNodeStatus(tempData[2][tempData[2].length-1].replace(" ",""))
-      graphList[nodeKey].setData(tempData[0],tempData[1],tempData[2])
-      graphList[nodeKey].update()
+    graphList[nodeKey].setNodeStatus(tempData[2][tempData[2].length-1].replace(" ",""))
+    graphList[nodeKey].setData(tempData[0],tempData[1],tempData[2])
+    graphList[nodeKey].update()
 
   }
 }
@@ -184,13 +185,13 @@ function plotData(data, divId) {
 function showTooltip(x, y, contents) {
   $("<div id='tooltip'>" + contents + "</div>").css({
     position : "absolute",
-  display  : "none",
-  top      : y + 5,
-  left     : x + 5,
-  border   : "1px solid #fdd",
-  padding  : "2px",
-  "background-color": "#fee",
-  opacity  : 0.80
+    display  : "none",
+    top      : y + 5,
+    left     : x + 5,
+    border   : "1px solid #fdd",
+    padding  : "2px",
+    "background-color": "#fee",
+    opacity  : 0.80
   }).appendTo("body").fadeIn(200)
 }
 
@@ -201,7 +202,7 @@ function update() {
     $.get('getDados').success(
         function(data){	
           var res = parseData(data)
-      plotData(res,"GraphsGrid")
+          plotData(res,"GraphsGrid")
         });
 
   setTimeout(update, updateInterval)
