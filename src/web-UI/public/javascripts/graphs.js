@@ -39,7 +39,7 @@ function getStatusMsg(statusID){
   }
 }
 
-function nodeGraphManager(name, divId){
+function nodeGraphManager(name, divId, options){
     this.name = name
     this.data = []
     var times = []
@@ -48,12 +48,13 @@ function nodeGraphManager(name, divId){
 
     $("#"+divId).append(
         "<div id=\"g"+name+"\" class=\"graph\">"+
-        "<h2>Node: "+name+"</h2>"+
-        "<div id=\""+name+"\"  style=\"width:85%;height:90%;float:left\"></div>"+
-        "<h3>Status: <br> "+
-        "<div id=\"status"+name+"\">"+
-        "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
-        "</div></h3>" + 
+          "<h2>Node: "+name+"</h2>"+
+          "<div id=\""+name+"\"  style=\"width:85%;height:90%;float:left\"></div>"+
+          (options.closeBox ? "<a class=\"boxclose\" id=\"boxclose\"></a>" : "") +
+          "<h3>Status: <br> "+
+          "<div id=\"status"+name+"\">"+
+            "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
+          "</div></h3>" + 
         "</div>");
 
   this.plot = $.plot("#"+divId+" [id='"+name+"']", [{data:[], label: name+" temp."}],
@@ -78,17 +79,23 @@ function nodeGraphManager(name, divId){
 
   this.setNodeStatus = function(nodeStatus){
     this.nodeStatus = nodeStatus
-    $("#status"+this.name).html(getStatusMsg(nodeStatus)) // FIXME
+    $("#"+divId+" [id='status"+this.name+"']").html(getStatusMsg(nodeStatus)) 
   }
 
   this.update = function(){
     this.plot.setData([this.data])
     this.plot.setupGrid()
     this.plot.draw()
+    $("#"+divId+" [id='g"+name+"']").show();
   }
 
+  if (options.closeBox)
+    $("#"+divId+" #boxclose").click(function() {
+      $("#"+divId+" [id='g"+name+"']").hide();
+    });
+
   var previousPoint = null;
-  $("#"+name).bind("plothover", function (event, pos, item) {
+  $("#"+divId+" [id='"+name+"']").bind("plothover", function (event, pos, item) { 
     if (item) {
       if (previousPoint != item.dataIndex) {
         previousPoint = item.dataIndex;
@@ -103,7 +110,6 @@ function nodeGraphManager(name, divId){
       $("#tooltip").remove();
       previousPoint = null;            
     }		
-
   });
 
 }
@@ -123,16 +129,16 @@ function clearEmptyGraphs(divId) {
 
 function insertIndex(stack){
   var res   = []
-    var time  = []
-    var stats = []
-    var i = 0
-    var size = stack.length
-    for(var j=0; j < size; j++){
-      var temp = stack.pop();
-      stats.push(temp[2])
-        time.push (temp[1]);
-      res.push([i++, temp[0]])
-    }
+  var time  = []
+  var stats = []
+  var i = 0
+  var size = stack.length
+  for(var j=0; j < size; j++){
+    var temp = stack.pop();
+    stats.push(temp[2])
+    time.push (temp[1]);
+    res.push([i++, temp[0]])
+  }
   return [res,time,stats]
 }
 
@@ -162,7 +168,7 @@ function parseData(input) {
   return temperatures
 }
 
-function plotData(data, divId) {
+function plotData(data, divId, options) {
   for(var node in data){
     nodeKey = node + divId
 
@@ -171,7 +177,7 @@ function plotData(data, divId) {
 
     if (graphList[nodeKey] == undefined) {
       graphList[nodeKey] = [];
-      graphList[nodeKey] = new nodeGraphManager(node,divId);
+      graphList[nodeKey] = new nodeGraphManager(node,divId,options);
     }
 
     var tempData = insertIndex(data[node])
@@ -202,7 +208,7 @@ function update() {
     $.get('getDados').success(
         function(data){	
           var res = parseData(data)
-          plotData(res,"GraphsGrid")
+          plotData(res,"GraphsGrid", {closeBox : false})
         });
 
   setTimeout(update, updateInterval)
@@ -214,11 +220,13 @@ function fillNodesOptions() {
         $("#nodesBox").empty();
         var rows = data.split('\n');
         $.each(rows, function(index, value) {
+          
           if (value.replace(/\s/g,"") != "") // Not empty
-          $("#nodesBox").append($("<option>", { 
-            value : value
-            , text  : value
-          }));
+            $("#nodesBox").append($("<option>", { 
+                value : value
+              , text  : value
+            }));
+
         });
       }
       );
@@ -228,9 +236,9 @@ function addHistoric(nodeName) {
   $.get('getHistoric/'+nodeName).success(
       function(data) {
         var res = parseData(data)
-    plotData(res,"HistoricGrid")  
+        plotData(res,"HistoricGrid", {closeBox : true})  
       }
-      ); 
+  ); 
 }
 
 $(document).ready(function (e) {
@@ -258,7 +266,3 @@ $("#addHist").click(function() {
   addHistoric($("#nodesBox").val()); 
 });
 
-$(".graph").resizable({
-  minWidth: 450,
-  minHeight: 250,
-});

@@ -11,7 +11,7 @@
 #menu {
   margin: 15px auto 30px;
   width: 960px;
-  height: 5px;}
+height: 5px;}
 
 #menu ul { list-style:none; }
 #menu ul li { display:inline; float:left; margin-bottom:20px; }
@@ -32,3 +32,23 @@ text-shadow: #eee 0px 0px 2px; }
   right bottom, rgb(237,227,112) 0%, rgb(255,173,10) 72%) !important;
   background-color:rgb(255,173,10) !important;
 -moz-opacity:.90; filter:alpha(opacity=90); opacity:.90; }
+
+a.boxclose{
+  float:right;
+  margin-top:-80px;
+  margin-right:-10px;
+  cursor:pointer;
+  color: #fff;
+  border: 1px solid #AEAEAE;
+  border-radius: 30px;
+  background: #605F61;
+  font-size: 31px;
+  font-weight: bold;
+  display: inline-block;
+  line-height: 0px;
+  padding: 11px 3px;       
+}
+
+.boxclose:before {
+  content: "×";
+}
