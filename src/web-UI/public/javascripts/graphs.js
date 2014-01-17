@@ -95,7 +95,8 @@ function nodeGraphManager(name, divId, options){
     this.plot.setData([this.data])
     this.plot.setupGrid()
     this.plot.draw()
-    this.highlight();
+    this.plot.getData()[0].highlightColor = "#D80000";
+    this.highlight()
     $("#"+divId+" [id='g"+name+"']").show();
   }
 
