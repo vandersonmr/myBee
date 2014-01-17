@@ -71,6 +71,15 @@ function nodeGraphManager(name, divId, options){
                  }
       });
 
+  this.highlight = function() {
+    for(key in stats) {
+      if (stats[key] != 0) {
+        this.plot.highlight(0,parseInt(key));
+        console.log(key)
+      }
+    }
+  }
+
   this.setData = function(data, time, stat){
     this.data = data
     times = time
@@ -86,6 +95,7 @@ function nodeGraphManager(name, divId, options){
     this.plot.setData([this.data])
     this.plot.setupGrid()
     this.plot.draw()
+    this.highlight();
     $("#"+divId+" [id='g"+name+"']").show();
   }
 
