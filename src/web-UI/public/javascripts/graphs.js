@@ -72,10 +72,10 @@ function nodeGraphManager(name, divId, options){
       });
 
   this.highlight = function() {
+    this.plot.unhighlight();
     for(key in stats) {
       if (stats[key] != 0) {
         this.plot.highlight(0,parseInt(key));
-        console.log(key)
       }
     }
   }
