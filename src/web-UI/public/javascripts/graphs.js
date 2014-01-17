@@ -119,9 +119,9 @@ var graphList = {}
 function clearEmptyGraphs(divId) {
   for (var index in graphList) {
     if (graphList[index].data.length <= 2) {
-      $("[id='g"+index.replace(divId,"")+"']").hide();
+      $("#"+divId+"[id='g"+index.replace(divId,"")+"']").hide();
     } else {
-      $("[id='g"+index.replace(divId,"")+"']").show();
+      $("#"+divId+"[id='g"+index.replace(divId,"")+"']").show();
     }
   }
 }
