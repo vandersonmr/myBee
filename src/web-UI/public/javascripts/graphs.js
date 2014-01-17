@@ -48,14 +48,24 @@ function nodeGraphManager(name, divId, options){
 
     $("#"+divId).append(
         "<div id=\"g"+name+"\" class=\"graph\">"+
-          "<h2>Node: "+name+"</h2>"+
-          "<div id=\""+name+"\"  style=\"width:85%;height:90%;float:left\"></div>"+
+        
+           "<h2>Node: "+name+"</h2>"+
           (options.closeBox ? "<a class=\"boxclose\" id=\"boxclose"+name+"\"></a>" : "") +
-          "<h3>Status: <br> "+
-          "<div id=\"status"+name+"\">"+
-            "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
-          "</div></h3>" + 
-        "</div>");
+
+          (options.tabs ? "<div id=\"tabs"+name+"\">" +
+                        "<ul>"+
+                          "<li><a href=\"#tabs-1"+name+"\">Gráfico</a></li>"+
+                          "<li><a href=\"#tabs-2"+name+"\">Dados plano</a></li>"+
+                        "</ul>" : "") +
+
+           (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:90%;height:77%\">" : "")+
+            "<div id=\""+name+"\"  style=\"width:90%;height:92%;float:left\"></div>"+
+            "<h3>Status: <br> "+
+            "<div id=\"status"+name+"\">"+
+              "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
+            "</div></h3>" + 
+           (options.tabs ? "</div>" : "")+
+          "</div>");
 
   this.plot = $.plot("#"+divId+" [id='"+name+"']", [{data:[], label: name+" temp."}],
       {series: {
@@ -123,6 +133,8 @@ function nodeGraphManager(name, divId, options){
     }		
   });
 
+  $( "#tabs"+name ).tabs();
+
 }
 
 var graphList = {}
@@ -164,7 +176,7 @@ function parseData(input) {
       for(var captura = 1; captura < rows.length-1; captura++){
           var row       = rows[captura].replace(/\n/g,"").split("&")
           var nodeName  = row[0].replace(/#/g,"").replace(" ","")
-                            .replace("\n","node").replace("[","").replace("]","")
+                            .replace("\n","node").replace("[","").replace("]","").replace(/ /g,'')
 
           var time      = row[1]
           var tempValue = row[2]
@@ -219,7 +231,7 @@ function update() {
     $.get('getDados').success(
         function(data){	
           var res = parseData(data)
-          plotData(res,"GraphsGrid", {closeBox : false})
+          plotData(res,"GraphsGrid", {closeBox : false , tabs: false})
         });
 
   setTimeout(update, updateInterval)
@@ -247,7 +259,7 @@ function addHistoric(nodeName) {
   $.get('getHistoric/'+nodeName).success(
       function(data) {
         var res = parseData(data)
-        plotData(res,"HistoricGrid", {closeBox : true})  
+        plotData(res,"HistoricGrid", {closeBox : true, tabs: true})  
       }
   ); 
 }
