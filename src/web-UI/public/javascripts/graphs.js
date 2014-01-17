@@ -50,7 +50,7 @@ function nodeGraphManager(name, divId, options){
         "<div id=\"g"+name+"\" class=\"graph\">"+
           "<h2>Node: "+name+"</h2>"+
           "<div id=\""+name+"\"  style=\"width:85%;height:90%;float:left\"></div>"+
-          (options.closeBox ? "<a class=\"boxclose\" id=\"boxclose\"></a>" : "") +
+          (options.closeBox ? "<a class=\"boxclose\" id=\"boxclose"+name+"\"></a>" : "") +
           "<h3>Status: <br> "+
           "<div id=\"status"+name+"\">"+
             "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
@@ -90,7 +90,7 @@ function nodeGraphManager(name, divId, options){
   }
 
   if (options.closeBox)
-    $("#"+divId+" #boxclose").click(function() {
+    $("#"+divId+" [id='boxclose"+name+"']").click(function() {
       $("#"+divId+" [id='g"+name+"']").hide();
     });
 
@@ -104,7 +104,7 @@ function nodeGraphManager(name, divId, options){
         y = item.datapoint[1];
         showTooltip(item.pageX, item.pageY,
                     "Data: "+ times[x] + "<br> Temperatura: " + y + "º célcius"
-                    + "<br> Status: " + stats[x]);
+                    + "<br> Status: " + getStatusMsg(parseInt(stats[x])));
       }
     } else {
       $("#tooltip").remove();
