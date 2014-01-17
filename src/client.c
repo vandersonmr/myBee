@@ -18,7 +18,7 @@ int getTemperature() {
   if (timeNow > 6.3) // 6.3 ~= 2pi
     timeNow = 0;
 
-	return (sin(timeNow)*10+26) + rand() % 3 - 1; // Rand add some noise
+	return (sin(timeNow)*10+26) + rand() % 2 - 1; // Rand add some noise
 }
 
 /* Generate the data that will be send to the server */
