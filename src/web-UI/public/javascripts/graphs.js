@@ -61,10 +61,10 @@ function nodeGraphManager(name, divId, options){
             
           (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:90%;height:75%\">" : "")+
             "<div id=\""+name+"\"  style=\"width:100%;height:80%;\"></div>"+
-            "<h3>Status: <br> "+
+            (options.showStatus ? "<h3>Status: <br> "+
             "<div id=\"status"+name+"\">"+
               "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
-            "</div></h3>" + 
+            "</div></h3>" : "") + 
           (options.tabs ? "</div>" : "")+
 
           (options.tabs ? "<div id=\"tabs-2"+name+"\" style=\"width:90%;height:77%\">" : "")+
@@ -250,7 +250,7 @@ function update() {
     $.get('getDados').success(
         function(data){	
           var res = parseData(data)
-          plotData(res,"GraphsGrid", {closeBox : false , tabs: false , lastTemp: true})
+          plotData(res,"GraphsGrid", {lastTemp: true , showStatus : true})
         });
 
   setTimeout(update, updateInterval)
