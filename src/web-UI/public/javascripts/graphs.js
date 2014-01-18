@@ -95,10 +95,14 @@ function nodeGraphManager(name, divId, options){
   }
   
   this.fillDataTextArea = function(){
-    $("#rawData"+name).append("Chave  Tempo dado  status\n")
-    for( key in this.data) {
-      $("#rawData"+name).append(key+" "+times[key]+" "+this.data[key][1]+" "+stats[key]+"\n")
-    }
+    $("#rawData"+name).append("Chave  Tempo dado  status\n");
+    (function loop(key,data,times,stats) {
+      if (key == 0) return
+      setTimeout(function() {
+        $("#rawData"+name).append(key+" "+times[key]+" "+data[key][1]+" "+stats[key]+"\n")
+        loop(--key,data,times,stats)
+      },10);
+    })(this.data.length-1,this.data,times,stats);
   }
 
   this.setData = function(data, time, stat){
@@ -118,8 +122,8 @@ function nodeGraphManager(name, divId, options){
     this.plot.draw()
     this.plot.getData()[0].highlightColor = "#D80000"
     this.highlight()
-    this.fillDataTextArea()
     $("#"+divId+" [id='g"+name+"']").show()
+    if(options.tabs) this.fillDataTextArea()
   }
 
   if (options.closeBox)
