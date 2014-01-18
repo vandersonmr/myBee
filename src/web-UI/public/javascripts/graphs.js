@@ -58,8 +58,8 @@ function nodeGraphManager(name, divId, options){
                           "<li><a href=\"#tabs-2"+name+"\">Dados plano</a></li>"+
                         "</ul>" : "") +
             
-          (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:90%;height:77%\">" : "")+
-            "<div id=\""+name+"\"  style=\"width:90%;height:92%;float:left\"></div>"+
+          (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:90%;height:75%\">" : "")+
+            "<div id=\""+name+"\"  style=\"width:100%;height:80%;\"></div>"+
             "<h3>Status: <br> "+
             "<div id=\"status"+name+"\">"+
               "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
