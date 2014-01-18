@@ -49,7 +49,8 @@ function nodeGraphManager(name, divId, options){
     $("#"+divId).append(
         "<div id=\"g"+name+"\" class=\"graph\">"+
         
-           "<h2>Node: "+name+"</h2>"+
+          "<h2>Node: "+name+
+          (options.lastTemp ? " (Temperatura: <b id=\"lastTemp"+name+"\"></b> C)</h2>" : "</h2>")+
           (options.closeBox ? "<a class=\"boxclose\" id=\"boxclose"+name+"\"></a>" : "") +
 
           (options.tabs ? "<div id=\"tabs"+name+"\">" +
@@ -95,11 +96,12 @@ function nodeGraphManager(name, divId, options){
   }
   
   this.fillDataTextArea = function(){
-    $("#rawData"+name).append("Chave  Tempo dado  status\n");
+    $("#"+divId+" #rawData"+name).empty()
+    $("#"+divId+" #rawData"+name).append("Chave  Tempo dado  status\n");
     (function loop(key,data,times,stats) {
       if (key == 0) return
       setTimeout(function() {
-        $("#rawData"+name).append(key+" "+times[key]+" "+data[key][1]+" "+stats[key]+"\n")
+        $("#"+divId+" #rawData"+name).append(key+" "+times[key]+" "+data[key][1]+" "+stats[key]+"\n")
         loop(--key,data,times,stats)
       },10);
     })(this.data.length-1,this.data,times,stats);
@@ -123,6 +125,7 @@ function nodeGraphManager(name, divId, options){
     this.plot.getData()[0].highlightColor = "#D80000"
     this.highlight()
     $("#"+divId+" [id='g"+name+"']").show()
+    $("#"+divId+" #lastTemp"+name).html(this.data[this.data.length-1][1])
     if(options.tabs) this.fillDataTextArea()
   }
 
@@ -149,7 +152,7 @@ function nodeGraphManager(name, divId, options){
     }		
   });
 
-  $( "#tabs"+name ).tabs();
+  $("#"+divId+" #tabs"+name ).tabs();
 
 }
 
@@ -247,7 +250,7 @@ function update() {
     $.get('getDados').success(
         function(data){	
           var res = parseData(data)
-          plotData(res,"GraphsGrid", {closeBox : false , tabs: false})
+          plotData(res,"GraphsGrid", {closeBox : false , tabs: false , lastTemp: true})
         });
 
   setTimeout(update, updateInterval)
