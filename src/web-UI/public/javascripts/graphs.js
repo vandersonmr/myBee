@@ -57,14 +57,18 @@ function nodeGraphManager(name, divId, options){
                           "<li><a href=\"#tabs-1"+name+"\">Gráfico</a></li>"+
                           "<li><a href=\"#tabs-2"+name+"\">Dados plano</a></li>"+
                         "</ul>" : "") +
-
-           (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:90%;height:77%\">" : "")+
+            
+          (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:90%;height:77%\">" : "")+
             "<div id=\""+name+"\"  style=\"width:90%;height:92%;float:left\"></div>"+
             "<h3>Status: <br> "+
             "<div id=\"status"+name+"\">"+
               "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
             "</div></h3>" + 
-           (options.tabs ? "</div>" : "")+
+          (options.tabs ? "</div>" : "")+
+
+          (options.tabs ? "<div id=\"tabs-2"+name+"\" style=\"width:90%;height:77%\">" : "")+
+          (options.tabs ? "<textarea id=\"rawData"+name+"\" readonly style=\"resize: none; width:100%;height:100%\"></textarea>" : "")+
+          (options.tabs ? "</div>" : "")+
           "</div>");
 
   this.plot = $.plot("#"+divId+" [id='"+name+"']", [{data:[], label: name+" temp."}],
@@ -89,6 +93,13 @@ function nodeGraphManager(name, divId, options){
       }
     }
   }
+  
+  this.fillDataTextArea = function(){
+    $("#rawData"+name).append("Chave  Tempo dado  status\n")
+    for( key in this.data) {
+      $("#rawData"+name).append(key+" "+times[key]+" "+this.data[key][1]+" "+stats[key]+"\n")
+    }
+  }
 
   this.setData = function(data, time, stat){
     this.data = data
@@ -105,9 +116,10 @@ function nodeGraphManager(name, divId, options){
     this.plot.setData([this.data])
     this.plot.setupGrid()
     this.plot.draw()
-    this.plot.getData()[0].highlightColor = "#D80000";
+    this.plot.getData()[0].highlightColor = "#D80000"
     this.highlight()
-    $("#"+divId+" [id='g"+name+"']").show();
+    this.fillDataTextArea()
+    $("#"+divId+" [id='g"+name+"']").show()
   }
 
   if (options.closeBox)
