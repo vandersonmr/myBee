@@ -1,5 +1,8 @@
 #include <stdio.h>
-#include "dataDAO.h" 
+#include <cmath>
+#include <vector>
+#include <string>
+#include "dataDAO.hpp" 
 #include <time.h>
 #include <cstdlib>
 #include <cstring>
@@ -73,7 +76,7 @@ int connectDatabase(){
 }
 
 
-void saveData(Data* data, int status){
+void saveData(Data data, int status){
 	char query[LINE_SIZE];
   char *date;
   
@@ -83,49 +86,48 @@ void saveData(Data* data, int status){
   sscanf(date,"%[^\n]",date);
 	
   snprintf(query,LINE_SIZE,"INSERT INTO temperatures VALUES ('%s','%s','%d','%d','%s')",
-          data->nickname,date,data->temperature,status,data->node);
+          data.nickname.c_str(),date,(int)ceil(data.value),status,data.node.c_str());
 	
   if (mysql_query(connection,query)) //return true if get an error.
 		printf("%s\n",mysql_error(connection));
 	
 }
 
-int load(Data** data,char* query){
+vector<Data> load(char* query){
 	MYSQL_RES *res_set;
 	MYSQL_ROW row;
 
 	mysql_query(connection,query);
 
 	res_set = mysql_store_result(connection);
+  
+  vector<Data> result; 
 
-	unsigned int numrows = mysql_num_rows(res_set);
-	(*data) = (Data*) malloc(sizeof(Data)*numrows);	
-
-	int i=0;
 	while ((row = mysql_fetch_row(res_set)) != NULL){
-		(*data)[i].temperature = atoi((char*)row[2]);
-		(*data)[i].status = atoi((char*)row[3]);
-		(*data)[i].nickname = (char*) row[0];
-		(*data)[i].time = atof((char*) row[1]);
-    (*data)[i].node = (char*) row[4];
-		i++;
+    Data data;
+		data.value = atoi((char*)row[2]);
+		data.status = atoi((char*)row[3]);
+		data.nickname = (char*) row[0];
+		data.time = atof((char*) row[1]);
+    data.node = (char*) row[4];
+		result.push_back(data);
 	}
 
-	return numrows;	
+	return result;	
 }
 
-int loadLastsDatas(Data** data,int q, char* prefix) {
+vector<Data> loadLastsDatas(int q, string prefix) {
 	char* queryWithOutQ = (char *) "select * from temperatures where Prefix like '%s' order by Date desc limit 0,%d;";
 	char query[100];
-  snprintf(query,100,queryWithOutQ,prefix,q-1);
-	return load(data,query);
+  snprintf(query,100,queryWithOutQ,prefix.c_str(),q-1);
+	return load(query);
 }
 
-int loadLastsDatasByMinutes(Data** data,int minutes) {
+vector<Data> loadLastsDatasByMinutes(int minutes) {
   char* queryWithOutQ = (char *) "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from temperatures) as t INNER JOIN nodesOnline ON t.nodeIP=nodesOnline.nodeID where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
 	char query[300];
   snprintf(query,300,queryWithOutQ,minutes-1);
-	return load(data,query);
+	return load(query);
 }
 
 int clearNodesOnline() {
@@ -133,10 +135,10 @@ int clearNodesOnline() {
   return mysql_query(connection, query);
 }
 
-int insertNodeOnline(char* prefix) {
+int insertNodeOnline(string prefix) {
   char* queryWithoutPrefix = (char*) "insert into nodesOnline values ('%s')";
   char query[200];
-  snprintf(query,200, queryWithoutPrefix, prefix);
+  snprintf(query,200, queryWithoutPrefix, prefix.c_str());
   return mysql_query(connection, query);
 }
 

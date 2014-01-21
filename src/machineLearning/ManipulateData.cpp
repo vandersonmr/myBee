@@ -1,25 +1,23 @@
 #include "include/ManipulateData.h"
 
-void ManipulateData::checkLoad(char* nodeName){
+void ManipulateData::checkLoad(string nodeName){
 	if(!load){
 		load = true;
 		loadData(nodeName);
 	}
 }
 
-void ManipulateData::loadData(char* nodeName){
-	Data* data;
-	int numrows = loadLastsDatas(&data,sizeOfKnow,nodeName);
-	fillData(data,numrows);
+void ManipulateData::loadData(string nodeName){
+  std::vector<Data> datas = loadLastsDatas(sizeOfKnow,nodeName);
+	fillData(datas);
 }
 
-void ManipulateData::fillData(Data* data, int numrows){
-	for(int i=0;i<numrows;i++){
-		insertData(&data[i]);
-	}
+void ManipulateData::fillData(std::vector<Data> datas){
+	for (Data data : datas)
+		insertData(data);
 }
 
-int ManipulateData::testData(Data* data, char* nodeName){
+int ManipulateData::testData(Data data, string nodeName){
 	checkLoad(nodeName);
 	return estimate(data);
 }

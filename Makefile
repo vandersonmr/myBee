@@ -10,18 +10,12 @@ LDmysql=  -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
 
 all: repa server client clear.o
-
-dataDAO.o:
-	$(CCPP) -c $(SRC)/database/dataDAO.c -o dataDAO.o $(CFLAGS) $(HEADERS) -fpermissive
-
-server.o:
-	$(CCPP) -c $(SRC)/server.c -o server.o $(CFLAGS) $(HEADERS)
-
-server: dataDAO.o server.o machineLearning.o repa
-	$(CCPP) server.o dataDAO.o $(SRC)/machineLearning/*.o $(LDrepa) $(LDmysql) $(HEADERS) -o server
+	
+server: machineLearning.o repa
+	$(CCPP) $(SRC)/server.cpp $(SRC)/database/dataDAO.cpp  $(SRC)/machineLearning/*.o $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
 
 client: repa 
-	$(CCPP) $(SRC)/client.c -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
+	$(CCPP) $(SRC)/client.cpp -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
 
 init:
 	@echo "Iniciando repd..."

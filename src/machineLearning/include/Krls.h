@@ -6,8 +6,8 @@
 class Krls: public ManipulateData{
 	protected:
 		krls<kernel_type> krlsTest;
-		void insertData(Data*);
-		int estimate(Data*);
+		void insertData(Data);
+		int estimate(Data);
 	
 	public:
 		Krls();

@@ -10,14 +10,14 @@
 
 KCentroid::KCentroid() : kcentroidTest(kernel_type(ACCURACY),0.005, 30), ManipulateData(){}
 
-void KCentroid::insertData(Data* data){
+void KCentroid::insertData(Data data){
 	sample_type m;
-	m(0) = data->temperature;
+	m(0) = data.value;
 	kcentroidTest.train(m);
 }
 
-int KCentroid::estimate(Data* data){
+int KCentroid::estimate(Data data){
 	sample_type m;
-	m(0) = data->temperature;
+	m(0) = data.value;
 	return kcentroidTest(m) > limit? 2 : 0;
 }

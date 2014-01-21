@@ -1,7 +1,7 @@
 #ifndef MACHINELEARNING_H
 #define MACHINELEARNING_H
-#include "dataDAO.h"
+#include "dataDAO.hpp"
 
-int testData(Data*);
+int testData(Data);
 
 #endif

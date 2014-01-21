@@ -1,4 +1,4 @@
-CC=g++
+CC=clang++
 CFLAGS=-std=c++11 -O3
 dataDAO= -I../include/
 INCLUDES=-I./ $(dataDAO) -g
@@ -15,7 +15,7 @@ Krls:
 	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o Krls.o Krls.cpp
 
 limit:
-	$(CC)  $(dataDAO) -c -o limit.o limit.cpp
+	$(CC) $(dataDAO) -c -o limit.o limit.cpp
 
 Rvm:
 	$(CC) $(INCLUDES) $(CFLAGS) $(LIBS) -c -o Rvm.o Rvm.cpp

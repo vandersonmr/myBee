@@ -62,6 +62,30 @@ bool RepaAPI<T>::send_message(message<T> msg) {
 }
 
 template<class T>
+vector<string> RepaAPI<T>::get_nodes_online() {
+  struct dllist *list = NULL;
+  struct dll_node *lnode = NULL;
+  char* prefix = (char*)malloc(sizeof(char)*255);
+
+  dll_create(list);
+
+  repa_get_nodes_in_network(sock, list);
+
+  vector<string> nodes;
+
+  repa_print_prefix(repa_get_node_address(),prefix);
+  nodes.push_back(prefix);
+
+  for(lnode = list->head; lnode != NULL; lnode = lnode->next) {
+    repa_print_prefix((intptr_t) lnode->data, prefix);
+    nodes.push_back(prefix);
+  }
+
+  dll_destroy(list);
+  return nodes;
+}
+
+template<class T>
 bool RepaAPI<T>::close_repa() {
   terminated = true;
   if(pthread_kill(thread, 0) == 0)

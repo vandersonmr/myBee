@@ -3,18 +3,18 @@
 
 Krls::Krls() : krlsTest(kernel_type(ACCURACY),0.0001), ManipulateData(){}
 
-void Krls::insertData(Data* data){
+void Krls::insertData(Data data){
 	sample_type m;
-	m(0) = data->time;
-	krlsTest.train(m,data->temperature);
+	m(0) = data.time;
+	krlsTest.train(m,data.value);
 }
 
-int Krls::estimate(Data *data){
+int Krls::estimate(Data data){
 	sample_type m;
-	m(0) = data->time;
+	m(0) = data.time;
 	cout << "Krls -> Temperatura esperada: " << krlsTest(m) << endl;
-	cout << "Krls -> Temperatura real: " << data->temperature << endl;
-	int status = abs(krlsTest(m) - (double) data->temperature) > LIMIT? 4 : 0;
+	cout << "Krls -> Temperatura real: " << data.value << endl;
+	int status = abs(krlsTest(m) - (double) data.value) > LIMIT? 4 : 0;
 	insertData(data);
 	return status;
 }

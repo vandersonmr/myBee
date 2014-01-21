@@ -5,23 +5,28 @@ Rvm::Rvm() : ManipulateData() {
 	rvmTest.set_epsilon(0.001);
 }
 
-void Rvm::fillData(Data* data, int numrows){
+void Rvm::fillData(std::vector<Data> datas, int numrows){
 	if (numrows < AMOUNT){
 		load = false;
 		return;
 	}
 
-	for (int i = numrows - 1; i >= numrows - AMOUNT; i--){
-		insertData(&data[i]);
-	}
+  int i = numrows - 1;
+  
+  for (Data data : datas) {
+    if (i <= numrows - AMOUNT) break;
+    insertData(data);
+    i--;
+  }
+
 	trainData();
 }
 
-void Rvm::insertData(Data* data){
+void Rvm::insertData(Data data){
 	sample_type m;
-	m(0) = data->time;
+	m(0) = data.time;
 	samples.push_back(m);
-	labels.push_back(data->temperature);
+	labels.push_back(data.value);
 }
 
 void Rvm::trainData(){
@@ -30,21 +35,21 @@ void Rvm::trainData(){
 	rvmFunction = rvmTest.train(samples,labels);
 }
 
-void Rvm::pushNewData(Data* data, sample_type m){
+void Rvm::pushNewData(Data data, sample_type m){
 	samples.pop_back();
 	labels.pop_back();
 	samples.insert(samples.begin(),m);
-	labels.insert(labels.begin(),data->temperature);
+	labels.insert(labels.begin(),data.value);
 	trainData();
 }
 
-int Rvm::estimate(Data* data){
+int Rvm::estimate(Data data){
 	if (!load) return 0;
 	sample_type m;
-	m(0) = data->time;
+	m(0) = data.time;
 	cout << "Rvm -> Estimate: " << rvmFunction(m) << endl;
-	cout << "Rvm -> Real: " << data->temperature << endl;
-	int status = abs(rvmFunction(m) - (double) data->temperature) > LIMIT? 8 : 0;
+	cout << "Rvm -> Real: " << data.value << endl;
+	int status = abs(rvmFunction(m) - (double) data.value) > LIMIT? 8 : 0;
 	pushNewData(data,m);
 	return status;
 }

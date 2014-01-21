@@ -1,4 +1,5 @@
 #include "../../repa/hdr/repa.h"
+#include "../../repa/hdr/linkedlist.h"
 #include "message.hpp"
 #include <string>
 #include <vector>
@@ -24,6 +25,7 @@ template<class T>class RepaAPI {
     message<T> get_message();
     void get_message(function<void(message<T>)> callback);
     bool send_message(message<T>);
+    vector<string> get_nodes_online(); 
     bool close_repa();
 };
 #include "repaAPI.tpp"

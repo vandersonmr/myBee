@@ -1,24 +1,18 @@
 #ifndef DATADAO_H
 #define DATADAO_H
+#include <vector>
 #include "mysql/mysql.h"
+#include "data.hpp"
 #define PATH_CONF "config/db.conf"
 #define LINE_SIZE 255
 
-typedef struct Data{
-	char* node;
-  char* nickname;
-	int temperature;
-	int status;
-	double time;
-}Data;
-
-int loadLastsDatasByMinutes(Data**,int);
+vector<Data> loadLastsDatasByMinutes(int);
 void getConfData(char*, char*, char*, char*);
 extern int connectDatabase();
-extern void saveData(Data*,int);
-int loadLastsDatas(Data**,int,char*);
+extern void saveData(Data,int);
+vector<Data> loadLastsDatas(int,string);
 void closeConnection();
 int clearNodesOnline();
-int insertNodeOnline(char*);
+int insertNodeOnline(string);
 
 #endif

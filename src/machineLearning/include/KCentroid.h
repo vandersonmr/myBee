@@ -7,8 +7,8 @@
 class KCentroid: public ManipulateData{
 	protected:
 		kcentroid<kernel_type> kcentroidTest;
-		void insertData(Data*);
-		int estimate(Data*);
+		void insertData(Data);
+		int estimate(Data);
 	
 	public:
 		KCentroid();
