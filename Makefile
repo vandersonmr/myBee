@@ -5,6 +5,7 @@ SRC= ./src
 CFLAGS= -O0 -g -Wall -Wextra  -Werror
 SHAREDOBJ= repa.so
 LDrepa= -pthread -lpthread $(SHAREDOBJ) -lpython2.7
+LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa)
 LDmysql=  -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
 
@@ -19,8 +20,8 @@ server.o:
 server: dataDAO.o server.o machineLearning.o repa
 	$(CCPP) server.o dataDAO.o $(SRC)/machineLearning/*.o $(LDrepa) $(LDmysql) $(HEADERS) -o server
 
-client: repa
-	$(CC) $(SRC)/client.c -o client $(CFLAGS) $(LDrepa) $(HEADERS) -lm
+client: repa 
+	$(CCPP) $(SRC)/client.c -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
 
 init:
 	@echo "Iniciando repd..."
@@ -64,3 +65,4 @@ clear: clear.o
 	cd ./$(SRC)/machineLearning;\
 	make clear;\
 	cd -;
+

@@ -1,12 +1,14 @@
-#include "hdr/repa.h"
-#include "hdr/linkedlist.h"
+#include "repaAPI/include/repaAPI.hpp"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <vector>
+#include <string>
 
-repa_sock_t sock;
+
+RepaAPI<string> repaAPI;
 char *nickname;
 
 /* Randomize a temperature based on the sin function */
@@ -32,17 +34,21 @@ void getData(char* data) {
 }
 
 void sendMessageToServer(char* data) {
-	char* interest = (char*)malloc(255*sizeof(char));
-	strcpy(interest,"server"); 
-
 	size_t data_len = strlen(data);
 
 	if (data_len > 0) {
-		repa_send(sock, interest, data, data_len, 0);
-		printf("Message sent I: \"%s\" D: \"%s\"\n", interest, data);
+    vector<string> interests;
+    interests.push_back("server");
+  
+    message<string> msg;
+    msg.data = string(data);
+    msg.interests = interests;
+
+    repaAPI.send_message(msg);
+
+		printf("Message sent I: \"%s\" D: \"%s\"\n", interests.back().c_str(), data);
 	}
 
-	free(interest);
 }
 
 /* Stay in loop generating and sending data to server */
@@ -56,7 +62,6 @@ void generateData() {
 }
 
 int main(int argc, char **argv) {
-	char *interest;
   nickname = argv[argc-1];
 
   if (nickname == 0 || argc == 1) {
@@ -64,17 +69,13 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-	sock = repa_open();
+  vector<string> interests;
+  interests.push_back(string("client"));
 
-	//Aloca espaço para registrar endereço e dados para transmissão
-	interest = (char*)malloc(255*sizeof(char));
-
-	strcpy(interest,"client");
-	repa_register_interest(sock,interest); // Registra o interesse
+  repaAPI.init_repa(interests);
 
   generateData();
 
-	free(interest);
 	//repa_close(sock);
 	return 0;
 }
