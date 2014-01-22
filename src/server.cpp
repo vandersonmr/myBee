@@ -1,14 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include <signal.h>
-#include <stdio.h>
-#include <errno.h>
-#include <pthread.h>
 #include <mysql.h>
 #include <iostream>
 
@@ -36,6 +25,8 @@ void handle_message(message<Data> msg) {
    int status;
    status = checkTemperature(msg.data);
    cout << "message: " << msg.data.value << endl;
+   
+   msg.data.node = msg.prefix_address;
    saveData(msg.data,status);
    
    std::cout << "Message: \"" << msg.data.value << "\" Status: \"" <<

@@ -28,7 +28,7 @@ message<T> RepaAPI<T>::get_message() {
   char* interest = (char*)malloc(255*sizeof(char));
 
   int read_len = repa_timed_recv(sock,interest, data, prefix_addr, (long int)1E9);
-
+  
   message<T> result;
   if (read_len > 0) {
     msgpack::unpacked msg;
@@ -36,7 +36,10 @@ message<T> RepaAPI<T>::get_message() {
     msgpack::object obj = msg.get();
 
     obj.convert(&result);
-
+    
+    char* prefix = (char*)malloc(255*sizeof(char));
+    repa_print_prefix(prefix_addr,prefix);
+    result.prefix_address = string(prefix);                             
   }
 
   free(interest);
