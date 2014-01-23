@@ -32,7 +32,7 @@ void handle_message(message<Data> msg) {
    std::cout << "Message: \"" << msg.data.value << "\" Status: \"" <<
         status << "\" Prefix: " << msg.data.nickname << endl;
       
-   //updateListOfNodesOnline();
+   updateListOfNodesOnline();
 }
 
 int main(void) {
