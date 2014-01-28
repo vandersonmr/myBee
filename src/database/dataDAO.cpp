@@ -80,9 +80,7 @@ void saveData(Data data, int status){
 	char query[LINE_SIZE];
   char *date;
   
-  time_t t;
-  time(&t);
-  date = ctime(&t);
+  date = ctime(&data.time);
   sscanf(date,"%[^\n]",date);
 	
   snprintf(query,LINE_SIZE,"INSERT INTO temperatures VALUES ('%s','%s','%d','%d','%s')",

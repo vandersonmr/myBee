@@ -13,15 +13,15 @@ RepaAPI<Data> repaAPI;
 char *nickname;
 
 /* Randomize a temperature based on the sin function */
-double timeNow = 0;
+time_t timeNow = 0;
+double aux = 0;
 int getTemperature() {
   srand(time(NULL));
-  timeNow += 0.1; // Represent the time/clock
+  time(&timeNow); // Represent the time/clock
+  aux += 0.1;
+  if (aux > 6.3) aux = 0;
 
-  if (timeNow > 6.3) // 6.3 ~= 2pi
-    timeNow = 0;
-
-  return (sin(timeNow)*10+26) + rand() % 2 - 1; // Rand add some noise
+  return (sin(aux)*10+26) + rand() % 2 - 1; // Rand add some noise
 }
 
 /* Generate the data that will be send to the server */

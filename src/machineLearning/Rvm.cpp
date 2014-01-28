@@ -19,7 +19,7 @@ void Rvm::fillData(std::vector<Data> datas, int numrows){
 
 void Rvm::insertData(Data data){
     sample_type m;
-    m(0) = data.time;
+    m(0) = cos(data.time);
     samples.push_back(m);
     labels.push_back(data.value);
 }
@@ -41,7 +41,7 @@ void Rvm::pushNewData(Data data, sample_type m){
 int Rvm::estimate(Data data){
     if (!load) return 0;
     sample_type m;
-    m(0) = data.time;
+    m(0) = cos(data.time);
     cout << "Rvm -> Estimate: " << rvmFunction(m) << endl;
     cout << "Rvm -> Real: " << data.value << endl;
     int status = abs(rvmFunction(m) - (double) data.value) > LIMIT? 8 : 0;

@@ -10,6 +10,6 @@ class Data{
     string nickname;
     double value;
     int status;
-    double time;
+    time_t time;
     MSGPACK_DEFINE(type,node,nickname,value,status,time);
 };

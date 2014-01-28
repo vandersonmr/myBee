@@ -80,13 +80,16 @@ function nodeGraphManager(name, divId, options){
       {series: {
                  lines:{show:true}, 
                  points:{show:true}},
+            		 selection: { mode: "x" },
                  grid: {
                    hoverable: true,
                    downsample: { threshold: 500 },
                    clickable: true
                  },
                  xaxis:{
-                   tickSize: 100
+                   mode    : "time",
+                   timezone: "browser",
+                   timeformat: "%H:%M"
                  }
       });
 
@@ -229,7 +232,6 @@ function clearEmptyGraphs(divId) {
   }
 }
 
-
 function insertIndex(stack){
   var res   = []
   var time  = []
@@ -240,7 +242,7 @@ function insertIndex(stack){
     var temp = stack.pop();
     stats.push(temp[2])
     time.push (temp[1]);
-    res.push([i++, temp[0]])
+    res.push([Date.parse(temp[1]), temp[0]])
   }
   return [res,time,stats]
 }
