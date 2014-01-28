@@ -88,6 +88,7 @@ function nodeGraphManager(name, divId, options){
                  },
                  xaxis:{
                    mode    : "time",
+                   minTickSize: [1, "minute"],
                    timezone: "browser",
                    timeformat: "%H:%M"
                  }
