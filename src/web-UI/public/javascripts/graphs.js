@@ -222,9 +222,9 @@ var graphList = {}
 function clearEmptyGraphs(divId) {
   for (var index in graphList) {
     if (graphList[index].data.length <= 2) {
-      $("#"+divId+"[id='g"+index.replace(divId,"")+"']").hide();
+      $("#"+divId+" [id='g"+index.replace(divId,"")+"']").hide();
     } else {
-      $("#"+divId+"[id='g"+index.replace(divId,"")+"']").show();
+      $("#"+divId+" [id='g"+index.replace(divId,"")+"']").show();
     }
   }
 }
@@ -275,7 +275,7 @@ function plotData(data, divId, options) {
   for(var node in data){
     nodeKey = node + divId
 
-    if(data[node].length < 3)
+    if(data[node].length < 2)
        continue
 
     if (graphList[nodeKey] == undefined) {
