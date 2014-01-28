@@ -20,7 +20,6 @@ int testData(Data data){
     Node* node = Nodes[nodeName];
     int resKCentroid = node->kcentroidControl.testData(data,data.nickname);
     int resKrls = node->krlsControl.testData(data,data.nickname);
-    int resRvm = node->rvmControl.testData(data,data.nickname);
 
-    return resLimit | resKCentroid | resKrls | resRvm;
+    return resLimit | resKCentroid | resKrls;
 }

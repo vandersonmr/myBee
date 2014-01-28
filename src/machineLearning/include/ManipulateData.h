@@ -19,6 +19,7 @@ class ManipulateData{
     protected:
         typedef matrix<double,1,1> sample_type; // 1x1 [temp]
         typedef radial_basis_kernel<sample_type> kernel_type;
+
         bool load;
         void checkLoad(string);
         void loadData(string);
