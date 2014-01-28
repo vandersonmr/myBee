@@ -66,6 +66,7 @@ function nodeGraphManager(name, divId, options){
             "<div id=\"status"+name+"\">"+
               "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
             "</div></h3>" : "") + 
+            (options.miniGraph ? "<br><div id=\"smallgraph"+name+"\" style=\"width: 100%;height: 18%;\"></div>" : "")+ 
           (options.tabs ? "</div>" : "")+
 
           (options.tabs ? "<div id=\"tabs-2"+name+"\" style=\"width:90%;height:77%\">" : "")+
@@ -80,7 +81,6 @@ function nodeGraphManager(name, divId, options){
       {series: {
                  lines:{show:true}, 
                  points:{show:true}},
-            		 selection: { mode: "x" },
                  grid: {
                    hoverable: true,
                    downsample: { threshold: 500 },
@@ -172,6 +172,9 @@ function nodeGraphManager(name, divId, options){
     this.data = data
     times = time
     stats = stat
+    if (options.miniGraph) {
+      this.plotMiniGraph();
+    }
   }
 
   this.setNodeStatus = function(nodeStatus){
@@ -185,12 +188,15 @@ function nodeGraphManager(name, divId, options){
     this.plot.draw()
     this.plot.getData()[0].highlightColor = "#D80000"
     this.highlight()
+
     $("#"+divId+" [id='g"+name+"']").show()
     $("#"+divId+" #lastTemp"+name).html(this.data[this.data.length-1][1])
+
     if(options.tabs) {
       this.fillDataTextArea()
       this.fillDataStatistics()
     }
+    
   }
 
   if (options.closeBox)
@@ -216,6 +222,44 @@ function nodeGraphManager(name, divId, options){
     }		
   });
 
+  
+  this.plotMiniGraph = function()  {
+    var plot = this.plot
+    var rangeselectionCallback = function(o) {
+      console.log("New selection:"+o.start+","+o.end);
+      var xaxis = plot.getAxes().xaxis;
+      xaxis.options.min = o.start;
+      xaxis.options.max = o.end;
+      plot.setupGrid();
+      plot.draw();
+    }
+
+    var sData = $.extend(true,[],this.data);
+    var miniGraph = $.plot("#"+divId+" [id='smallgraph"+name+"']",[{data:sData}],{
+        xaxis: {     
+          mode    : "time",
+          timezone: "browser",
+          timeformat: "%H:%M"
+        },
+        yaxis: {
+          show: false
+        },
+        grid:{
+          color: "#666",
+          downsample: { threshold: 50 },
+          backgroundColor: { colors: ["#ddd", "#fff"]}
+        },
+        rangeselection:{
+          start:sData[sData.length-1][0],
+          end:sData[0][0],
+          color: "#feb",
+          enabled: true,
+          callback: rangeselectionCallback
+        }
+    });
+  }
+
+    
   $("#"+divId+" #tabs"+name ).tabs();
 
 }
@@ -341,7 +385,7 @@ function addHistoric(nodeName) {
   $.get('getHistoric/'+nodeName).success(
       function(data) {
         var res = parseData(data)
-        plotData(res,"HistoricGrid", {closeBox : true, tabs: true})  
+        plotData(res,"HistoricGrid", {closeBox : true, tabs: true, miniGraph: true})  
       }
   ); 
 }
