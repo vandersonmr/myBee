@@ -1,3 +1,6 @@
+#ifndef REPAAPI
+#define REPAAPI
+
 #include "../../repa/hdr/repa.h"
 #include "../../repa/hdr/linkedlist.h"
 #include "message.hpp"
@@ -29,3 +32,5 @@ template<class T>class RepaAPI {
     bool close_repa();
 };
 #include "repaAPI.tpp"
+
+#endif

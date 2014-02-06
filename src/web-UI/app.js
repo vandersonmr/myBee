@@ -16,7 +16,7 @@ var express     =  require('express')
 var HOST       = 'localhost';
 var PORT       = 3306;
 var MYSQL_USER = 'root';
-var MYSQL_PASS = '123456';
+var MYSQL_PASS = '123';
 var DATABASE   = 'monitorAbelhas';
 
 mysql = _mysql.createConnection({

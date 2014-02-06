@@ -2,20 +2,20 @@
 #include <thread>
 
 template<class T>
-ClientMonitor<T>::generators_runner() {
+void ClientMonitor<T>::generators_runner() {
   while (isRunning) { 
     if (dataGenerators.size() == 0)
-      continue
+      continue;
   
     vector<T> data;
 
-    for (auto generator : dataGenerators) 
+    for (auto& generator : dataGenerators) 
       data.push_back(generator());
 
     vector<string> interests; 
     interests.push_back("server");
 
-    message<vector<T>> msg;
+    message<T> msg;
     msg.data      = data; 
     msg.interests = interests;
   
@@ -26,10 +26,10 @@ ClientMonitor<T>::generators_runner() {
 }
 
 template<class T>
-ClientMonitor<T>::ClientMonitor(string name, int freq) {
+ClientMonitor<T>::ClientMonitor(int freq) {
   this->freq = freq;
   this->isRunning = true;
-  thread th(generators_runner); 
+  thread th(&ClientMonitor<T>::generators_runner,this); 
 
   vector<string> interests;
   interests.push_back(string("client"));
@@ -38,8 +38,8 @@ ClientMonitor<T>::ClientMonitor(string name, int freq) {
 } 
 
 template<class T>
-void ClientMonitor<T>::add_data_generator(string name, function callback) {
-  dataGenerators[name] = callback;
+void ClientMonitor<T>::add_data_generator(function<T()> callback) {
+  dataGenerators.push_back(callback);
 }
 
 template<class T>

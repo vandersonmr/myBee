@@ -1,3 +1,6 @@
+#ifndef MESSAGE
+#define MESSAGE
+
 #include <msgpack.hpp>
 #include <vector>
 #include <string>
@@ -11,3 +14,5 @@ template<class T> class message {
     string prefix_address;
     MSGPACK_DEFINE(interests, data, prefix_address);
 };
+
+#endif

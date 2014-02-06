@@ -1,15 +1,16 @@
 #include <string>
 #include <msgpack.hpp>
+#include <vector>
+#include <map>
 
 using namespace std;
 
 class Data{
   public:
-    string type;
+    map<string,double> type_value;
     string node;
     string nickname;
-    double value;
     int status;
     time_t time;
-    MSGPACK_DEFINE(type,node,nickname,value,status,time);
+    MSGPACK_DEFINE(type_value,node,nickname,status,time);
 };

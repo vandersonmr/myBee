@@ -1,4 +1,5 @@
 #include "repaAPI/include/repaAPI.hpp"
+#include "monitorAPI/include/clientMonitor.hpp"
 #include "data.hpp"
 #include <string.h>
 #include <stdio.h>
@@ -8,7 +9,6 @@
 #include <vector>
 #include <string>
 
-
 RepaAPI<Data> repaAPI;
 char *nickname;
 
@@ -16,63 +16,51 @@ char *nickname;
 time_t timeNow = 0;
 double aux = 0;
 int getTemperature() {
-  srand(time(NULL));
-  time(&timeNow); // Represent the time/clock
-  aux += 0.1;
-  if (aux > 6.3) aux = 0;
+    srand(time(NULL));
+    time(&timeNow); // Represent the time/clock
+    aux += 0.1;
+    if (aux > 6.3) aux = 0;
 
-  return (sin(aux)*10+26) + rand() % 2 - 1; // Rand add some noise
+    return (sin(aux)*10+26) + rand() % 2 - 1; // Rand add some noise
+}
+
+int getHumidity(){
+    return 0;
+}
+
+int getPressure(){
+    return 0;
 }
 
 /* Generate the data that will be send to the server */
 Data getData() {
-  // In this case is generate a randomic temperature
-  Data data;
-  data.type     = string("temperature");
-  data.value    = getTemperature();
-  data.time     = timeNow;
-  data.nickname = string(nickname);
+    // In this case is generate a randomic temperature
+    map<string,double> values;
 
-  return data;
-}
+    values["temperature"] = getTemperature();
+    values["humidity"] = getHumidity();
+    values["pressure"] = getPressure();
+    
+    Data data;
+    data.type_value = values;
+    data.time     = timeNow;
+    data.nickname = string(nickname);
 
-void sendMessageToServer(Data data) {
-  vector<string> interests;
-  interests.push_back("server");
-
-  message<Data> msg;
-  msg.data           = data;
-  msg.interests      = interests;
-
-  repaAPI.send_message(msg);
-
-  printf("Message sent I: \"%s\" D: \"%f\"\n", interests.back().c_str(), data.value);
-
-}
-
-/* Stay in loop generating and sending data to server */
-void generateData() {
-  while (true) {
-    Data data = getData();
-    sendMessageToServer(data);
-    sleep(1);
-  }
+    return data;
 }
 
 int main(int argc, char **argv) {
-  nickname = argv[argc-1];
+    nickname = argv[argc-1];
 
-  if (nickname == 0 || argc == 1) {
-    printf("Formato incorreto! Tente ./client nomeDoNode\n");
-    exit(1);
-  }
+    if (nickname == 0 || argc == 1) {
+        printf("Formato incorreto! Tente ./client nomeDoNode\n");
+        exit(1);
+    }
 
-  vector<string> interests;
-  interests.push_back(string("client"));
+    ClientMonitor<Data> monitor(5);
+    monitor.add_data_generator(&getData);
 
-  repaAPI.init_repa(interests);
+    while (true) sleep(1);
 
-  generateData();
-
-  return 0;
+    return 0;
 }

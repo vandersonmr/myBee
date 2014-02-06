@@ -10,11 +10,11 @@ template<class T> class ClientMonitor {
     int freq;
     bool isRunning;
     RepaAPI<T> repaAPI;
-    map<string, function> dataGenerators;
+    vector<function<T()>> dataGenerators;
     void generators_runner();
   public: 
-    void ClientMonitor(string,int);
-    void add_data_generator(string, function);
+    ClientMonitor(int);
+    void add_data_generator(function<T()>);
     void rm_data_generator(string);
     void set_freq(int);
     void close();

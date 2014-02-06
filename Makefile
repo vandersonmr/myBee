@@ -1,6 +1,6 @@
 ARCH=$(shell uname -m)
 CC=gcc
-CCPP=g++
+CCPP=clang++
 SRC= ./src
 CFLAGS= -O0 -g -Wall -Wextra  -Werror
 SHAREDOBJ= repa.so
