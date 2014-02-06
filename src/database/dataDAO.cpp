@@ -83,8 +83,10 @@ void saveData(Data data, int status){
     date = ctime(&data.time);
     sscanf(date,"%[^\n]",date);
 
-    snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%d','%d','%s')",
-            data.nickname.c_str(),date,(int)ceil(data.value),status,data.node.c_str());
+    snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%d','%d','%d','%d','%s')",
+            data.nickname.c_str(), date, (int)ceil(data.type_value["temperature"]),
+            (int)data.type_value["humidity"], (int)data.type_value["pressure"],
+            status, data.node.c_str());
 
     if (mysql_query(connection,query)) //return true if get an error.
         printf("%s\n",mysql_error(connection));
@@ -103,11 +105,13 @@ vector<Data> load(char* query){
 
     while ((row = mysql_fetch_row(res_set)) != NULL){
         Data data;
-        data.value = atoi((char*)row[2]);
-        data.status = atoi((char*)row[3]);
+        data.type_value["temperature"] = atoi((char*)row[2]);
+        data.type_value["humidity"] = atoi((char*)row[3]);
+        data.type_value["pressure"] = atoi((char*)row[4]);
+        data.status = atoi((char*)row[5]);
         data.nickname = (char*) row[0];
         data.time = atof((char*) row[1]);
-        data.node = (char*) row[4];
+        data.node = (char*) row[6];
         result.push_back(data);
     }
 
@@ -115,14 +119,14 @@ vector<Data> load(char* query){
 }
 
 vector<Data> loadLastsDatas(int q, string prefix) {
-    char* queryWithOutQ = (char *) "select * from temperatures where Prefix like '%s' order by Date desc limit 0,%d;";
+    char* queryWithOutQ = (char *) "select * from data where Prefix like '%s' order by Date desc limit 0,%d;";
     char query[100];
     snprintf(query,100,queryWithOutQ,prefix.c_str(),q-1);
     return load(query);
 }
 
 vector<Data> loadLastsDatasByMinutes(int minutes) {
-    char* queryWithOutQ = (char *) "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from temperatures) as t INNER JOIN nodesOnline ON t.nodeIP=nodesOnline.nodeID where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
+    char* queryWithOutQ = (char *) "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from data) as t INNER JOIN nodesOnline ON t.nodeIP=nodesOnline.nodeID where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
     char query[300];
     snprintf(query,300,queryWithOutQ,minutes-1);
     return load(query);

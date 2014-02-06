@@ -8,12 +8,15 @@ CREATE TABLE `nodesOnline` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS `temperatures`;
+DROP TABLE IF EXISTS `data`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `temperatures` (
+CREATE TABLE `data` (
   `Prefix` varchar(255) DEFAULT NULL,
   `Date` varchar(255) DEFAULT NULL,
   `Temperature` varchar(255) DEFAULT NULL,
+  `Humidity` varchar(255) DEFAULT NULL,
+  `Pressure` varchar(255) DEFAULT NULL,
   `Status` int(10) DEFAULT NULL,
   `nodeIP` varchar(200) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

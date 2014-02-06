@@ -22,20 +22,22 @@ void updateListOfNodesOnline() {
 
 void handle_message(message<Data> msg) {       
 
-    int status;
-    status = checkData(msg.data);
-    cout << "message: ";
+    for (Data data: msg.data){
+        int status;
+        status = checkData(data);
+        cout << "message: ";
 
-    for (auto& values: msg.data.type_value)
-        cout << values.first << ": " << values.second << endl;
+        for (auto& values: data.type_value)
+            cout << values.first << ": " << values.second << endl;
 
-    msg.data.node = msg.prefix_address;
-    saveData(msg.data,status);
+        data.node = msg.prefix_address;
+        saveData(data,status);
 
-    cout <<"\" Status: \"" << status << "\" Prefix: " << 
-        msg.data.nickname << endl;
+        cout <<"\" Status: \"" << status << "\" Prefix: " << 
+            data.nickname << endl;
 
-    updateListOfNodesOnline();
+        updateListOfNodesOnline();
+    }
 }
 
 int main(void) {

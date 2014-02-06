@@ -10,7 +10,7 @@ using namespace std;
 template<class T> class message {
   public:
     vector<string> interests;
-    T data;
+    vector<T> data;
     string prefix_address;
     MSGPACK_DEFINE(interests, data, prefix_address);
 };

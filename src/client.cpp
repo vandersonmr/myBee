@@ -46,6 +46,9 @@ Data getData() {
     data.time     = timeNow;
     data.nickname = string(nickname);
 
+    printf("%.3f %.3f %.3f\n", values["temperature"], values["humidity"], 
+            values["pressure"]);
+
     return data;
 }
 
