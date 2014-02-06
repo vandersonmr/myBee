@@ -15,7 +15,7 @@ void ClientMonitor<T>::GeneratorsRunner() {
     vector<string> interests = {"server"}; 
 
     message<vector<T>> msg;
-    msg.data      = data; 
+    //msg.data      = data; FIXME
     msg.interests = interests;
   
     repa_api.send_message(msg);  
@@ -28,6 +28,7 @@ template<class T>
 ClientMonitor<T>::ClientMonitor(string name, int freq) {
   this->freq = freq;
   this->is_running = true;
+  name = name; //fixme
   thread th([this] { GeneratorsRunner(); }); 
 
   vector<string> interests = {"client"};

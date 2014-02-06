@@ -1,5 +1,5 @@
 #include "repaAPI/include/repaAPI.hpp"
-#include "monitorAPI/include/clientMonitor.hpp"
+#include "monitorAPI/include/client_monitor.hpp"
 #include "data.hpp"
 #include <string.h>
 #include <stdio.h>
@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    ClientMonitor<Data> monitor(5);
-    monitor.add_data_generator(&getData);
+    ClientMonitor<Data> monitor(string(nickname),5);
+    monitor.AddDataGenerator(string("hereIsTheFuck"),getData);
 
     while (true) sleep(1);
 
