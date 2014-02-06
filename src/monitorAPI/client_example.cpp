@@ -1,9 +1,10 @@
-#include "include/ClientMonitor.hpp"
+#include "include/client_monitor.hpp"
+#include "../include/data.hpp"
 
 /* Randomize a temperature based on the sin function */
 time_t timeNow = 0;
 double aux = 0;
-int getTemperature() {
+int GetTemperature() {
   srand(time(NULL));
   time(&timeNow); // Represent the time/clock
   aux += 0.1;
@@ -12,21 +13,24 @@ int getTemperature() {
   return (sin(aux)*10+26) + rand() % 2 - 1; // Rand add some noise
 }
 
+string nickname;
 
-Data getData() { 
+Data GetData() { 
   // In this case is generate a randomic temperature 
   Data data; 
   data.type     = string("temperature"); 
-  data.value    = getTemperature(); 
+  data.value    = GetTemperature(); 
   data.time     = timeNow; 
-  data.nickname = string(nickname); 
+  data.nickname = nickname; 
 
   return data; 
 }
 
-void main(void) {
-  ClientMonitor cm(string("node1"), 15); // 15 - 15 Segundos
-  cm.add_data_generator(getData);
+int main(void) {
+  nickname = string("node1");
+
+  ClientMonitor<Data> cm(nickname, 15); // 15 - 15 Segundos
+  cm.AddDataGenerator("temperature",GetData);
 
   while(true); // Gera dados para sempre;
 }
