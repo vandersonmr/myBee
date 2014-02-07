@@ -12,7 +12,7 @@ using namespace std;
 #define LOWER_PRESSURE 5
 
 int testLimit(Data data){
-    double temp = data.type_value["temperature"];
+    double temp = data.value;
     if(temp < UPPER_BOUND && temp > LOWER_BOUND){
         return 0;
     }

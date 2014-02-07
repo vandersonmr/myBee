@@ -14,9 +14,8 @@ DROP TABLE IF EXISTS `data`;
 CREATE TABLE `data` (
   `Prefix` varchar(255) DEFAULT NULL,
   `Date` varchar(255) DEFAULT NULL,
-  `Temperature` varchar(255) DEFAULT NULL,
-  `Humidity` varchar(255) DEFAULT NULL,
-  `Pressure` varchar(255) DEFAULT NULL,
+  `Type` varchar(255) DEFAULT NULL,
+  `Value` varchar(255) DEFAULT NULL,
   `Status` int(10) DEFAULT NULL,
   `nodeIP` varchar(200) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
