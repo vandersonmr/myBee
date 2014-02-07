@@ -6,7 +6,7 @@ void ClientMonitor<T>::GeneratorsRunner() {
   while (is_running) { 
     if (data_generators.size() == 0)
       continue;
-  
+
     vector<T> data;
     for (auto generator : data_generators) { 
       data.push_back(generator.second());
@@ -14,10 +14,10 @@ void ClientMonitor<T>::GeneratorsRunner() {
 
     vector<string> interests = {"server"}; 
 
-    message<vector<T>> msg;
-    //msg.data      = data; FIXME
+    message<T> msg;
+    msg.data      = data;
     msg.interests = interests;
-  
+
     repa_api.send_message(msg);  
 
     this_thread::sleep_for(chrono::seconds(freq));
@@ -28,8 +28,8 @@ template<class T>
 ClientMonitor<T>::ClientMonitor(string name, int freq) {
   this->freq = freq;
   this->is_running = true;
-  name = name; //fixme
-  thread th([this] { GeneratorsRunner(); }); 
+  this->name = name;
+  thread (&ClientMonitor<T>::GeneratorsRunner,this).detach(); 
 
   vector<string> interests = {"client"};
 

@@ -15,41 +15,33 @@ char *nickname;
 /* Randomize a temperature based on the sin function */
 time_t timeNow = 0;
 double aux = 0;
-int getTemperature() {
+
+Data GetData(string type, double value){
+    Data data;
+    data.type = type;
+    data.value = value;
+    time(&timeNow);
+    data.time = timeNow;
+    data.nickname = string(nickname);
+    return data;
+}
+
+Data GetTemperature() {
     srand(time(NULL));
-    time(&timeNow); // Represent the time/clock
     aux += 0.1;
     if (aux > 6.3) aux = 0;
-
-    return (sin(aux)*10+26) + rand() % 2 - 1; // Rand add some noise
+    double temp = (sin(aux)*10+26) + rand() % 2 - 1; // Rand add some noise
+    return GetData("temperature",temp);
 }
 
-int getHumidity(){
-    return 0;
+Data GetHumidity(){
+    double humidity = 0;
+    return GetData("humidity",humidity);
 }
 
-int getPressure(){
-    return 0;
-}
-
-/* Generate the data that will be send to the server */
-Data getData() {
-    // In this case is generate a randomic temperature
-    map<string,double> values;
-
-    values["temperature"] = getTemperature();
-    values["humidity"] = getHumidity();
-    values["pressure"] = getPressure();
-    
-    Data data;
-    data.type_value = values;
-    data.time     = timeNow;
-    data.nickname = string(nickname);
-
-    printf("%.3f %.3f %.3f\n", values["temperature"], values["humidity"], 
-            values["pressure"]);
-
-    return data;
+Data GetPressure(){
+    double pressure = 0;
+    return GetData("pressure",pressure);
 }
 
 int main(int argc, char **argv) {
@@ -60,8 +52,10 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    ClientMonitor<Data> monitor(string(nickname),5);
-    monitor.AddDataGenerator(string("hereIsTheFuck"),getData);
+    ClientMonitor<Data> monitor("node",5);
+    monitor.AddDataGenerator("temperature",&GetTemperature);
+    monitor.AddDataGenerator("humidity",&GetHumidity);
+    monitor.AddDataGenerator("pressure",&GetPressure);
 
     while (true) sleep(1);
 

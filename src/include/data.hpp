@@ -7,10 +7,11 @@ using namespace std;
 
 class Data{
   public:
-    map<string,double> type_value;
+    string type;
     string node;
+    double value;
     string nickname;
     int status;
     time_t time;
-    MSGPACK_DEFINE(type_value,node,nickname,status,time);
+    MSGPACK_DEFINE(type,node,value,nickname,status,time);
 };

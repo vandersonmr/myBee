@@ -25,10 +25,7 @@ void handle_message(message<Data> msg) {
     for (Data data: msg.data){
         int status;
         status = checkData(data);
-        cout << "message: ";
-
-        for (auto& values: data.type_value)
-            cout << values.first << ": " << values.second << endl;
+        cout << "message: " << data.value << endl;
 
         data.node = msg.prefix_address;
         saveData(data,status);

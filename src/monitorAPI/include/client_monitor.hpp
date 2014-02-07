@@ -9,7 +9,8 @@ template<class T> class ClientMonitor {
   private:
     int freq;
     bool is_running;
-    RepaAPI<vector<T>> repa_api;
+    string name;
+    RepaAPI<T> repa_api;
     map<string, function<T(void)>> data_generators;
     void GeneratorsRunner();
   public: 
