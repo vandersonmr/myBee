@@ -1,3 +1,6 @@
+#ifndef DATA
+#define DATA
+
 #include <string>
 #include <msgpack.hpp>
 #include <vector>
@@ -15,3 +18,5 @@ class Data{
     time_t time;
     MSGPACK_DEFINE(type,node,value,nickname,status,time);
 };
+
+#endif

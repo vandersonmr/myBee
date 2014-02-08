@@ -1,20 +1,20 @@
 #include <chrono>
 #include <thread>
+#include "include/client_monitor.hpp"
 
-template<class T>
-void ClientMonitor<T>::GeneratorsRunner() {
+void ClientMonitor::GeneratorsRunner() {
   while (is_running) { 
     if (data_generators.size() == 0)
       continue;
 
-    vector<T> data;
+    vector<Data> data;
     for (auto generator : data_generators) { 
       data.push_back(generator.second());
     }
 
     vector<string> interests = {"server"}; 
 
-    message<T> msg;
+    message<Data> msg;
     msg.data      = data;
     msg.interests = interests;
 
@@ -24,35 +24,30 @@ void ClientMonitor<T>::GeneratorsRunner() {
   }
 }
 
-template<class T>
-ClientMonitor<T>::ClientMonitor(string name, int freq) {
+ClientMonitor::ClientMonitor(string name, int freq) {
   this->freq = freq;
   this->is_running = true;
   this->name = name;
-  thread (&ClientMonitor<T>::GeneratorsRunner,this).detach(); 
+  thread (&ClientMonitor::GeneratorsRunner,this).detach(); 
 
   vector<string> interests = {"client"};
 
   repa_api.init_repa(interests);
 } 
 
-template<class T>
-void ClientMonitor<T>::AddDataGenerator(string name, function<T(void)> callback) {
+void ClientMonitor::AddDataGenerator(string name, function<Data(void)> callback) {
   data_generators[name] = callback;
 }
 
-template<class T>
-void ClientMonitor<T>::RmDataGenerator(string name) {
+void ClientMonitor::RmDataGenerator(string name) {
   data_generators.erase(name);
 }
 
-template<class T>
-void ClientMonitor<T>::SetFreq(int freq) {
+void ClientMonitor::SetFreq(int freq) {
   this->freq = freq;
 }
 
-template<class T>
-void ClientMonitor<T>::Close() {
+void ClientMonitor::Close() {
   this->is_running = false;
   repa_api.close_repa();
 }

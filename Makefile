@@ -14,8 +14,8 @@ all: repa server client clear.o
 server: machineLearning.o repa
 	$(CCPP) $(SRC)/server.cpp $(SRC)/database/dataDAO.cpp  $(SRC)/machineLearning/*.o $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
 
-client: repa 
-	$(CCPP) $(SRC)/client.cpp -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
+client: repa monitorAPI.o 
+	$(CCPP) $(SRC)/client.cpp $(SRC)/monitorAPI/*.o -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
 
 init:
 	@echo "Iniciando repd..."
@@ -35,6 +35,11 @@ kill:
 
 machineLearning.o:
 	cd ./$(SRC)/machineLearning;\
+	make;\
+	cd -;
+
+monitorAPI.o:
+	cd ./$(SRC)/monitorAPI;\
 	make;\
 	cd -;
 
@@ -59,4 +64,6 @@ clear: clear.o
 	cd ./$(SRC)/machineLearning;\
 	make clear;\
 	cd -;
-
+	cd ./$(SRC)/monitorAPI;\
+	make clear;\
+	cd -;

@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  ClientMonitor<Data> monitor("node",5);
+  ClientMonitor monitor("node",5);
   monitor.AddDataGenerator("temperature",&GetTemperature);
   monitor.AddDataGenerator("humidity",&GetHumidity);
   monitor.AddDataGenerator("pressure",&GetPressure);
