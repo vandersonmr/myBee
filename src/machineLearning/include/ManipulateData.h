@@ -21,8 +21,8 @@ class ManipulateData{
         typedef radial_basis_kernel<sample_type> kernel_type;
 
         bool load;
-        void checkLoad(string);
-        void loadData(string);
+        void checkLoad(string,string);
+        void loadData(string,string);
         virtual void fillData(std::vector<Data>,int);
         virtual void insertData(Data){} 
         virtual int estimate(Data){ return 0;}

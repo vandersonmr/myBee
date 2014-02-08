@@ -123,6 +123,13 @@ vector<Data> loadLastsDatas(int q, string prefix) {
   return load(query);
 }
 
+vector<Data> loadLastsDatasByType(int q, string prefix, string type){
+  char* queryWithOutQ = (char *) "select * from data where Prefix like '%s' and Type like '%s' order by Date desc limit 0,%d;";
+  char query[100];
+  snprintf(query,100,queryWithOutQ,prefix.c_str(),type.c_str(),q-1);
+  return load(query);
+}
+
 vector<Data> loadLastsDatasByMinutes(int minutes) {
   char* queryWithOutQ = (char *) "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from data) as t INNER JOIN nodesOnline ON t.nodeIP=nodesOnline.nodeID where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
   char query[300];

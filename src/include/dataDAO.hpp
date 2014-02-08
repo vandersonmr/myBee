@@ -11,6 +11,7 @@ void getConfData(char*, char*, char*, char*);
 extern int connectDatabase();
 extern void saveData(Data,int);
 vector<Data> loadLastsDatas(int,string);
+vector<Data> loadLastsDatasByType(int,string,string);
 void closeConnection();
 int clearNodesOnline();
 int insertNodeOnline(string);
