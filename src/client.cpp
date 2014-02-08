@@ -5,54 +5,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <time.h>
 #include <vector>
 #include <string>
 
-RepaAPI<Data> repaAPI;
-char *nickname;
-
 /* Randomize a temperature based on the sin function */
-time_t timeNow = 0;
 double aux = 0;
 
-Data GetData(string type, double value){
-  Data data;
-  data.type = type;
-  data.value = value;
-  time(&timeNow);
-  data.time = timeNow;
-  data.nickname = string(nickname);
-  return data;
-}
-
-Data GetTemperature() {
+double GetTemperature() {
   srand(time(NULL));
   aux += 0.1;
   if (aux > 6.3) aux = 0;
   double temp = (sin(aux)*10+26) + rand() % 2 - 1; // Rand add some noise
-  return GetData("temperature",temp);
+  return temp;
 }
 
-Data GetHumidity(){
+double GetHumidity(){
   double humidity = 0;
-  return GetData("humidity",humidity);
+  return humidity;
 }
 
-Data GetPressure(){
+double GetPressure(){
   double pressure = 0;
-  return GetData("pressure",pressure);
+  return pressure;
 }
 
 int main(int argc, char **argv) {
-  nickname = argv[argc-1];
+  char* nickname = argv[argc-1];
 
   if (nickname == 0 || argc == 1) {
     printf("Formato incorreto! Tente ./client nomeDoNode\n");
     exit(1);
   }
 
-  ClientMonitor monitor("node",5);
+  ClientMonitor monitor(string(nickname),5);
   monitor.AddDataGenerator("temperature",&GetTemperature);
   monitor.AddDataGenerator("humidity",&GetHumidity);
   monitor.AddDataGenerator("pressure",&GetPressure);

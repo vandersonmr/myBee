@@ -10,13 +10,14 @@ class ClientMonitor {
   private:
     int freq;
     bool is_running;
-    string name;
+    string node_name;
     RepaAPI<Data> repa_api;
-    map<string, function<Data(void)>> data_generators;
+    map<string, function<double(void)>> data_generators;
+    Data GetData(string, double);
     void GeneratorsRunner();
   public: 
     ClientMonitor(string,int);
-    void AddDataGenerator(string, function<Data(void)>);
+    void AddDataGenerator(string, function<double(void)>);
     void RmDataGenerator(string);
     void SetFreq(int);
     void Close();
