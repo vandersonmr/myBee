@@ -12,8 +12,8 @@ void Krls::insertData(Data data){
 int Krls::estimate(Data data){
     sample_type m;
     m(0) = cos(data.time);
-    cout << "Krls -> Temperatura esperada: " << krlsTest(m) << endl;
-    cout << "Krls -> Temperatura real: " << data.value << endl;
+    cout << "Krls -> " << data.type << " esperada: " << krlsTest(m) << endl;
+    cout << "Krls -> " << data.type << " real: " << data.value << endl;
     int status = abs(krlsTest(m) - (double) data.value) > LIMIT? 4 : 0;
     insertData(data);
     return status;

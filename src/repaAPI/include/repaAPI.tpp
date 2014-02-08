@@ -16,6 +16,10 @@ void* RepaAPI<T>::handle_message(void*) {
 template<class T>
 bool RepaAPI<T>::init_repa(vector<string> interests) {
     sock = repa_open();
+    if (sock.error < 0){
+      cout << "Protocolo repa não inicializado." << endl;
+      return false;
+    }
     for (string interest : interests)
         repa_register_interest(sock,interest.c_str());
     return true;

@@ -25,13 +25,13 @@ void handle_message(message<Data> msg) {
   for (Data data: msg.data){
     int status;
     status = checkData(data);
-    cout << "message: " << data.value << endl;
+    cout << "message: " << data.value;
 
     data.node = msg.prefix_address;
     saveData(data,status);
 
-    cout <<"\" Status: \"" << status << "\" Prefix: " << 
-      data.nickname << endl;
+    cout <<" \" Status: \"" << status << "\" Prefix: " << 
+      data.nickname << "\n\n";
 
     updateListOfNodesOnline();
   }
@@ -45,7 +45,8 @@ int main(void) {
 
   vector<string> interests;
   interests.push_back(string("server"));
-  repa.init_repa(interests);
+  
+  if (!repa.init_repa(interests)) return EXIT_FAILURE;
 
   repa.get_message(&handle_message);
 

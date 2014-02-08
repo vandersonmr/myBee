@@ -12,7 +12,7 @@ unordered_map<string,Node*> Nodes;
 
 int testData(Data data){
   int resLimit = testLimit(data);
-  string nodeName = string(data.nickname);
+  string nodeName = string(data.nickname+data.type);
 
   if(Nodes[nodeName] == NULL)
     Nodes[nodeName] = new Node();
