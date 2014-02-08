@@ -1,6 +1,18 @@
 #include <chrono>
+#include <ctime>
 #include <thread>
 #include "include/client_monitor.hpp"
+
+Data ClientMonitor::GetData(string type, double value){
+  time_t timenow;
+  Data data;
+  data.type = type;
+  data.value = value;
+  time(&timenow);
+  data.time = timenow;
+  data.nickname = node_name;
+  return data;
+}
 
 void ClientMonitor::GeneratorsRunner() {
   while (is_running) { 
@@ -9,7 +21,7 @@ void ClientMonitor::GeneratorsRunner() {
 
     vector<Data> data;
     for (auto generator : data_generators) { 
-      data.push_back(generator.second());
+      data.push_back(GetData(generator.first,generator.second()));
     }
 
     vector<string> interests = {"server"}; 
@@ -27,7 +39,7 @@ void ClientMonitor::GeneratorsRunner() {
 ClientMonitor::ClientMonitor(string name, int freq) {
   this->freq = freq;
   this->is_running = true;
-  this->name = name;
+  this->node_name = name;
   thread (&ClientMonitor::GeneratorsRunner,this).detach(); 
 
   vector<string> interests = {"client"};
@@ -35,7 +47,7 @@ ClientMonitor::ClientMonitor(string name, int freq) {
   repa_api.init_repa(interests);
 } 
 
-void ClientMonitor::AddDataGenerator(string name, function<Data(void)> callback) {
+void ClientMonitor::AddDataGenerator(string name, function<double(void)> callback) {
   data_generators[name] = callback;
 }
 
