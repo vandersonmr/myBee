@@ -74,7 +74,7 @@ template<class T>
 vector<string> RepaAPI<T>::get_nodes_online() {
     struct dllist *list = NULL;
     struct dll_node *lnode = NULL;
-    char* prefix = (char*)malloc(sizeof(char)*255);
+    char* prefix = new char[255];
 
     dll_create(list);
 
@@ -90,6 +90,7 @@ vector<string> RepaAPI<T>::get_nodes_online() {
         nodes.push_back(prefix);
     }
 
+    delete[] prefix;
     dll_destroy(list);
     return nodes;
 }
