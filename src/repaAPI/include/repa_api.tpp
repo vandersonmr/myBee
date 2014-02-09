@@ -4,17 +4,17 @@
 #include <signal.h>
 
 template<class T>
-void* RepaAPI<T>::handle_message(void*) {
+void* RepaAPI<T>::HandleMessage(void*) {
     terminated = false;
     while (!terminated) {
-        message<T> msg = get_message();
+        message<T> msg = GetMessage();
         callback(msg);
     }
     return 0; 
 }
 
 template<class T>
-bool RepaAPI<T>::init_repa(vector<string> interests) {
+bool RepaAPI<T>::InitRepa(vector<string> interests) {
     sock = repa_open();
     if (sock.error < 0){
       cout << "Protocolo repa não inicializado." << endl;
@@ -26,7 +26,7 @@ bool RepaAPI<T>::init_repa(vector<string> interests) {
 }
 
 template<class T>
-message<T> RepaAPI<T>::get_message() {
+message<T> RepaAPI<T>::GetMessage() {
     prefix_addr_t prefix_addr;
     const char* data = (char*)malloc(1500*sizeof(char));
     char* interest = (char*)malloc(255*sizeof(char));
@@ -51,14 +51,14 @@ message<T> RepaAPI<T>::get_message() {
 }
 
 template<class T>
-void RepaAPI<T>::get_message(function<void(message<T>)> callback) {
+void RepaAPI<T>::GetMessage(function<void(message<T>)> callback) {
     this->callback = callback;
-    pthread_create(&thread, NULL, &RepaAPI::runHelper, this);
+    pthread_create(&thread, NULL, &RepaAPI::RunHelper, this);
 }
 
 
 template<class T>
-bool RepaAPI<T>::send_message(message<T> msg) {
+bool RepaAPI<T>::SendMessage(message<T> msg) {
     for (string interest : msg.interests) {
         msgpack::sbuffer sbuf;
         msgpack::pack(sbuf, msg);
@@ -69,7 +69,7 @@ bool RepaAPI<T>::send_message(message<T> msg) {
 }
 
 template<class T>
-vector<string> RepaAPI<T>::get_nodes_online() {
+vector<string> RepaAPI<T>::GetNodesOnline() {
     struct dllist *list = NULL;
     struct dll_node *lnode = NULL;
     char* prefix = (char*)malloc(sizeof(char)*255);
@@ -93,7 +93,7 @@ vector<string> RepaAPI<T>::get_nodes_online() {
 }
 
 template<class T>
-bool RepaAPI<T>::close_repa() {
+bool RepaAPI<T>::CloseRepa() {
     terminated = true;
     if(pthread_kill(thread, 0) == 0)
     {

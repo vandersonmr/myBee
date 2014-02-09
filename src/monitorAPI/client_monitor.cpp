@@ -30,7 +30,7 @@ void ClientMonitor::GeneratorsRunner() {
     msg.data      = data;
     msg.interests = interests;
 
-    repa_api.send_message(msg);  
+    repa_api.SendMessage(msg);  
 
     this_thread::sleep_for(chrono::seconds(freq));
   }
@@ -44,7 +44,7 @@ ClientMonitor::ClientMonitor(string name, int freq) {
 
   vector<string> interests = {"client"};
 
-  repa_api.init_repa(interests);
+  repa_api.InitRepa(interests);
 } 
 
 void ClientMonitor::AddDataGenerator(string name, function<double(void)> callback) {
@@ -61,5 +61,5 @@ void ClientMonitor::SetFreq(int freq) {
 
 void ClientMonitor::Close() {
   this->is_running = false;
-  repa_api.close_repa();
+  repa_api.CloseRepa();
 }

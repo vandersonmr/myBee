@@ -17,20 +17,20 @@ template<class T>class RepaAPI {
     repa_sock_t sock;
     function<void(message<T>)> callback;
     
-    void* handle_message(void*);
+    void* HandleMessage(void*);
 
-    static void *runHelper(void *classRef){
-      return ((RepaAPI *)classRef)->handle_message(classRef);
+    static void *RunHelper(void *class_ref){
+      return ((RepaAPI *)class_ref)->HandleMessage(class_ref);
     }
 
   public:
-    bool init_repa (vector<string>);
-    message<T> get_message();
-    void get_message(function<void(message<T>)> callback);
-    bool send_message(message<T>);
-    vector<string> get_nodes_online(); 
-    bool close_repa();
+    bool InitRepa (vector<string>);
+    message<T> GetMessage();
+    void GetMessage(function<void(message<T>)> callback);
+    bool SendMessage(message<T>);
+    vector<string> GetNodesOnline(); 
+    bool CloseRepa();
 };
-#include "repaAPI.tpp"
+#include "repa_api.tpp"
 
 #endif

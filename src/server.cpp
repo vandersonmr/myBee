@@ -4,7 +4,7 @@
 #include "machineLearning.h"
 #include "dataDAO.hpp"
 #include "hdr/repa.h"
-#include "repaAPI/include/repaAPI.hpp"
+#include "repaAPI/include/repa_api.hpp"
 
 RepaAPI<Data> repa;
 
@@ -13,7 +13,7 @@ int checkData(Data data){
 }
 
 void updateListOfNodesOnline() {
-  vector<string> nodes = repa.get_nodes_online();
+  vector<string> nodes = repa.GetNodesOnline();
   clearNodesOnline();
   for (string nodeOnline : nodes) {
     insertNodeOnline(nodeOnline); 
@@ -46,13 +46,13 @@ int main(void) {
   vector<string> interests;
   interests.push_back(string("server"));
   
-  if (!repa.init_repa(interests)) return EXIT_FAILURE;
+  if (!repa.InitRepa(interests)) return EXIT_FAILURE;
 
-  repa.get_message(&handle_message);
+  repa.GetMessage(&handle_message);
 
   while(true) sleep(1);
 
   closeConnection();
-  repa.close_repa();
+  repa.CloseRepa();
   exit(EXIT_SUCCESS);
 }
