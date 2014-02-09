@@ -1,18 +1,19 @@
 ***** Coisas a serem feitas
   
-  - Até final de Janeiro fazer:
-
+  - Até dia 27 fazer:
     * Comentar código
-    * Melhorar nomes
     * Criar testes
+    - Adicionar suporte a escolher dia especifico para visualizar o histórico.
+    - Google Style in everywhere ;)
   
-    - Adicionar suporte a multiplos dados (temperatura, humidade, pressão) - João
-    - Adicionar suporte a visualizar histórico dos nodes - Vanderson
+  Em progresso:
+    - Adicionar suporte a multiplos dados (temperatura, humidade, pressão)
+    - Adicionar suporte a histórico
+    - Melhorar nomes 
     
-   * Escrever relatório PIBIT.
-   * Testar alcance do wifi do raspberry
-
 Feito:
     - Trocar o sistema que imprime o gráfico de C para Node.js
     - Apenas mostrar gráfico de nodes conectados (Não funciona 100% porque é difícil indentificar quem ta online).
+    - Escrever relatório PIBIT.
+    - Testar alcance do wifi do raspberry
 
