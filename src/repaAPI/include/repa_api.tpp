@@ -28,8 +28,8 @@ bool RepaAPI<T>::InitRepa(vector<string> interests) {
 template<class T>
 message<T> RepaAPI<T>::GetMessage() {
     prefix_addr_t prefix_addr;
-    const char* data = (char*)malloc(1500*sizeof(char));
-    char* interest = (char*)malloc(255*sizeof(char));
+    char* data = new char[1500];
+    char* interest = new char[255];
 
     int read_len = repa_timed_recv(sock,interest, data, prefix_addr, (long int)1E9);
     
@@ -41,12 +41,14 @@ message<T> RepaAPI<T>::GetMessage() {
 
         obj.convert(&result);
 
-        char* prefix = (char*)malloc(255*sizeof(char));
+        char* prefix = new char[255];
         repa_print_prefix(prefix_addr,prefix);
-        result.prefix_address = string(prefix);                             
+        result.prefix_address = string(prefix);
+        delete[] prefix;
     }
-
-    free(interest);
+    
+    delete[] data;
+    delete[] interest;
     return result;
 }
 
@@ -72,7 +74,7 @@ template<class T>
 vector<string> RepaAPI<T>::GetNodesOnline() {
     struct dllist *list = NULL;
     struct dll_node *lnode = NULL;
-    char* prefix = (char*)malloc(sizeof(char)*255);
+    char* prefix = new char[255];
 
     dll_create(list);
 
@@ -88,6 +90,7 @@ vector<string> RepaAPI<T>::GetNodesOnline() {
         nodes.push_back(prefix);
     }
 
+    delete[] prefix;
     dll_destroy(list);
     return nodes;
 }
