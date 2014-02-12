@@ -15,10 +15,18 @@ int ServerMonitor::CheckData(Data data) {
 
 void ServerMonitor::HandleMessage(message<Data> msg) {
   for (Data data: msg.data){ 
-    int status = CheckData(data); 
-    data.node = msg.prefix_address; 
+    int status = 0;
 
-    saveData(data,status); 
+    if (has_a_filter)
+      data = filter(data);
+
+    if (is_machine_learning_enable) 
+      status = CheckData(data); 
+    
+    data.node = msg.prefix_address; 
+  
+    if (is_persistence_enable)
+      saveData(data,status); 
 
     UpdateListOfNodesOnline(); 
   }
