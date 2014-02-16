@@ -11,11 +11,11 @@ HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
 
 all: repa server client clear.o
 	
-server: machineLearning.o repa
-	$(CCPP) $(SRC)/server.cpp $(SRC)/database/dataDAO.cpp  $(SRC)/machineLearning/*.o $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
+server: machineLearning.o repa monitorAPI.o
+	$(CCPP) $(SRC)/server.cpp $(SRC)/monitorAPI/server_monitor.o $(SRC)/database/dataDAO.cpp  $(SRC)/machineLearning/*.o $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
 
 client: repa monitorAPI.o 
-	$(CCPP) $(SRC)/client.cpp $(SRC)/monitorAPI/*.o -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
+	$(CCPP) $(SRC)/client.cpp $(SRC)/monitorAPI/client_monitor.o -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
 
 init:
 	@echo "Iniciando repd..."
