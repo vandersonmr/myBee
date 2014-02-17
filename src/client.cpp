@@ -37,10 +37,11 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  ClientMonitor monitor(string(nickname),5);
-  monitor.AddDataGenerator("temperature",&GetTemperature);
-  monitor.AddDataGenerator("humidity",&GetHumidity);
-  monitor.AddDataGenerator("pressure",&GetPressure);
+  ClientMonitor monitor(string(nickname), 5);
+
+  monitor.AddDataGenerator("temperature", &GetTemperature);
+  monitor.AddDataGenerator("humidity"   , &GetHumidity);
+  monitor.AddDataGenerator("pressure"   , &GetPressure);
 
   while (true) sleep(1);
 

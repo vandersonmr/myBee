@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <iostream>
 #include <cmath>
 #include <vector>
 #include <string>
@@ -99,41 +100,28 @@ vector<Data> load(char* query){
   mysql_query(connection,query);
 
   res_set = mysql_store_result(connection);
-
   vector<Data> result; 
 
   while ((row = mysql_fetch_row(res_set)) != NULL){
     Data data;
-    data.type = (char*)row[2];
-    data.value = atoi((char*)row[3]);
-    data.status = atoi((char*)row[4]);
+
+    data.type     = (char*) row[2];
+    data.value    = atoi((char*) row[3]);
+    data.status   = atoi((char*) row[4]);
     data.nickname = (char*) row[0];
-    data.time = atof((char*) row[1]);
-    data.node = (char*) row[5];
+    data.time     = atof((char*) row[1]);
+    data.node     = (char*) row[5];
+
     result.push_back(data);
   }
 
   return result;	
 }
 
-vector<Data> loadLastsDatas(int q, string prefix) {
-  char* queryWithOutQ = (char *) "select * from data where Prefix like '%s' order by Date desc limit 0,%d;";
-  char query[100];
-  snprintf(query,100,queryWithOutQ,prefix.c_str(),q-1);
-  return load(query);
-}
-
 vector<Data> loadLastsDatasByType(int q, string prefix, string type){
   char* queryWithOutQ = (char *) "select * from data where Prefix like '%s' and Type like '%s' order by Date desc limit 0,%d;";
-  char query[100];
-  snprintf(query,100,queryWithOutQ,prefix.c_str(),type.c_str(),q-1);
-  return load(query);
-}
-
-vector<Data> loadLastsDatasByMinutes(int minutes) {
-  char* queryWithOutQ = (char *) "select * from (select *,str_to_date(Date,'%%a %%b %%e %%H:%%i:%%s %%Y') as Time from data) as t INNER JOIN nodesOnline ON t.nodeIP=nodesOnline.nodeID where t.Time > NOW() - INTERVAL %d MINUTE ORDER BY Time DESC;";
-  char query[300];
-  snprintf(query,300,queryWithOutQ,minutes-1);
+  char query[200];
+  snprintf(query,200,queryWithOutQ,prefix.c_str(),type.c_str(),q-1);
   return load(query);
 }
 

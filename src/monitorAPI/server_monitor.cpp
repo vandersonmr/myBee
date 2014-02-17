@@ -14,7 +14,7 @@ int ServerMonitor::CheckData(Data data) {
 }
 
 void ServerMonitor::HandleMessage(message<Data> msg) {
-  for (Data data: msg.data){ 
+  for (auto& data: msg.data){ 
     int status = 0;
 
     if (has_a_filter)
