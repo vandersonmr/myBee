@@ -9,10 +9,10 @@ void ManipulateData::checkLoad(string nodeName, string type){
 
 void ManipulateData::loadData(string nodeName, string type){
     std::vector<Data> datas = loadLastsDatasByType(sizeOfKnow,nodeName,type);
-    fillData(datas,datas.size());
+    fillData(datas);
 }
 
-void ManipulateData::fillData(std::vector<Data> datas, int numrows){
+void ManipulateData::fillData(std::vector<Data> datas){
     for (Data data : datas)
         insertData(data);
 }

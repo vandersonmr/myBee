@@ -109,9 +109,6 @@ namespace dlib
         const in_scalar_vector_type& y_test
     )
     {
-        typedef typename dec_funct_type::sample_type sample_type;
-        typedef typename dec_funct_type::mem_manager_type mem_manager_type;
-        typedef matrix<sample_type,0,1,mem_manager_type> sample_vector_type;
 
         // make sure requires clause is not broken
         DLIB_ASSERT( is_binary_classification_problem(x_test,y_test) == true,
@@ -821,7 +818,7 @@ namespace dlib
     {
         typedef probabilistic_function<typename trainer_type::trained_function_type> trained_function_type;
 
-        const trainer_type& trainer;
+        const trainer_type trainer;
         const long folds;
 
         trainer_adapter_probabilistic (

@@ -11,8 +11,8 @@
 
 MYSQL* connection;
 
-void getConfData(char* server, char* user, char* pass, char* db){
-  FILE *fp = fopen(PATH_CONF,"r");
+void getConfData(string conf_path, char* server, char* user, char* pass, char* db){
+  FILE *fp = fopen(conf_path.c_str(), "r");
   if(fp != NULL){
     char *data, *type, *temp;
     data = (char*)malloc(LINE_SIZE*sizeof(char));
@@ -40,7 +40,7 @@ void getConfData(char* server, char* user, char* pass, char* db){
   }
 }
 
-int connectDatabase(){
+int connectDatabase(string conf_path) {
   connection=mysql_init(NULL);
 
   if(connection == NULL){
@@ -53,7 +53,7 @@ int connectDatabase(){
   char *pass = (char*)malloc(LINE_SIZE*sizeof(char));
   char *db = (char*)malloc(LINE_SIZE*sizeof(char));
 
-  getConfData(server,user,pass,db);
+  getConfData(conf_path,server,user,pass,db);
 
   connection = mysql_real_connect(connection,server,user,pass,db,0,NULL,0);
 

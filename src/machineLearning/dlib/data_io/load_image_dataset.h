@@ -24,7 +24,7 @@ namespace dlib
         typename image_type, 
         typename MM
         >
-    void load_image_dataset (
+    std::vector<std::vector<rectangle> > load_image_dataset (
         array<image_type,MM>& images,
         std::vector<std::vector<rectangle> >& object_locations,
         const std::string& filename,
@@ -36,6 +36,12 @@ namespace dlib
         object_locations.clear();
         const std::string old_working_dir = get_current_dir();
 
+        std::vector<std::vector<rectangle> > ignored_rects;
+
+        using namespace dlib::image_dataset_metadata;
+        dataset data;
+        load_image_dataset_metadata(data, filename);
+
         // Set the current directory to be the one that contains the
         // metadata file. We do this because the file might contain
         // file paths which are relative to this folder.
@@ -43,33 +49,36 @@ namespace dlib
         set_current_dir(parent_dir);
 
 
-        using namespace dlib::image_dataset_metadata;
 
-        dataset data;
-        load_image_dataset_metadata(data, filename);
 
         image_type img;
-        std::vector<rectangle> rects;
+        std::vector<rectangle> rects, ignored;
         for (unsigned long i = 0; i < data.images.size(); ++i)
         {
             rects.clear();
+            ignored.clear();
             for (unsigned long j = 0; j < data.images[i].boxes.size(); ++j)
             {
                 if (label.size() == 0 || data.images[i].boxes[j].label == label)
                 {
-                    rects.push_back(data.images[i].boxes[j].rect);
+                    if (data.images[i].boxes[j].ignore)
+                        ignored.push_back(data.images[i].boxes[j].rect);
+                    else
+                        rects.push_back(data.images[i].boxes[j].rect);
                 }
             }
 
             if (!skip_empty_images || rects.size() != 0)
             {
                 object_locations.push_back(rects);
+                ignored_rects.push_back(ignored);
                 load_image(img, data.images[i].filename);
                 images.push_back(img);
             }
         }
 
         set_current_dir(old_working_dir);
+        return ignored_rects;
     }
 
 // ----------------------------------------------------------------------------------------
@@ -78,13 +87,13 @@ namespace dlib
         typename image_type, 
         typename MM
         >
-    void load_image_dataset (
+    std::vector<std::vector<rectangle> > load_image_dataset (
         array<image_type,MM>& images,
         std::vector<std::vector<rectangle> >& object_locations,
         const std::string& filename
     )
     {
-        load_image_dataset(images, object_locations, filename, "");
+        return load_image_dataset(images, object_locations, filename, "");
     }
 
 // ----------------------------------------------------------------------------------------
@@ -105,6 +114,10 @@ namespace dlib
         object_locations.clear();
         const std::string old_working_dir = get_current_dir();
 
+        using namespace dlib::image_dataset_metadata;
+        dataset data;
+        load_image_dataset_metadata(data, filename);
+
         // Set the current directory to be the one that contains the
         // metadata file. We do this because the file might contain
         // file paths which are relative to this folder.
@@ -112,10 +125,6 @@ namespace dlib
         set_current_dir(parent_dir);
 
 
-        using namespace dlib::image_dataset_metadata;
-
-        dataset data;
-        load_image_dataset_metadata(data, filename);
         std::set<std::string> all_parts;
 
         // find out what parts are being used in the dataset.  Store results in all_parts.

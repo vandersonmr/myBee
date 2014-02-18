@@ -47,7 +47,7 @@ void ServerMonitor::SetFilter(function<Data(Data)> filter) {
 }
 
 int ServerMonitor::EnablePersistence(string config_path) {
-  if (!connectDatabase()){
+  if (!connectDatabase(config_path)){
     return EXIT_FAILURE;
   }
 
@@ -56,7 +56,8 @@ int ServerMonitor::EnablePersistence(string config_path) {
 }
 
 void ServerMonitor::EnableMachineLearning(int sensible) {
-  this->is_machine_learning_enable = true;
+  if (sensible > 0)
+    this->is_machine_learning_enable = true;
 }
 
 void ServerMonitor::Close() { 

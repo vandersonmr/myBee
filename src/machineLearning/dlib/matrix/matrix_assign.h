@@ -10,6 +10,7 @@
 #include "matrix_assign_fwd.h"
 #include "matrix_default_mul.h"
 #include "matrix_conj_trans.h"
+#include "matrix_mat.h"
 
 namespace dlib
 {
@@ -158,6 +159,29 @@ namespace dlib
         {
             const static int value = general_matrix;
         };
+
+        template < typename T, typename MM >
+        struct matrix_type_id<matrix_op<op_array2d_to_mat<array2d<T,MM> > > >
+        { const static int value = general_matrix; };
+
+        template < typename T, typename MM >
+        struct matrix_type_id<matrix_op<op_array_to_mat<array<T,MM> > > >
+        { const static int value = column_matrix; };
+
+        template < typename value_type, typename alloc >
+        struct matrix_type_id<matrix_op<op_std_vect_to_mat<std::vector<value_type,alloc> > > >
+        { const static int value = column_matrix; };
+
+        template < typename value_type, typename alloc >
+        struct matrix_type_id<matrix_op<op_std_vect_to_mat<std_vector_c<value_type,alloc> > > >
+        { const static int value = column_matrix; };
+
+        template < typename T >
+        struct matrix_type_id<matrix_op<op_pointer_to_col_vect<T> > >
+        { const static int value = column_matrix; };
+        template < typename T >
+        struct matrix_type_id<matrix_op<op_pointer_to_mat<T> > >
+        { const static int value = general_matrix; };
 
     // ------------------------------------------------------------------------------------
 
@@ -345,11 +369,6 @@ namespace dlib
             }
         };
 
-#ifdef __GNUC__
-#define DLIB_SHUT_UP_GCC_ABOUT_THIS_UNUSED_VARIABLE __attribute__ ((unused))
-#else
-#define DLIB_SHUT_UP_GCC_ABOUT_THIS_UNUSED_VARIABLE 
-#endif
         // This is a macro to help us add overloads for the matrix_assign_blas_helper template.  
         // Using this macro it is easy to add overloads for arbitrary matrix expressions.
 #define DLIB_ADD_BLAS_BINDING(src_expression)                                               \
@@ -364,9 +383,9 @@ namespace dlib
             const src_exp& src,                                                             \
             typename src_exp::type alpha,                                                   \
             bool add_to,                                                                    \
-            bool DLIB_SHUT_UP_GCC_ABOUT_THIS_UNUSED_VARIABLE transpose                      \
+            bool DLIB_NO_WARN_UNUSED transpose                      \
         ) {                                                                                 \
-            typedef typename dest_exp::type T;                                             
+            DLIB_NO_WARN_UNUSED typedef typename dest_exp::type T;                                             
 
 #define DLIB_END_BLAS_BINDING }};
 

@@ -29,12 +29,12 @@ namespace dlib
         /*!
             ensures
                 - #get_match_thresh()   == 0.5
-                - #get_overlap_thresh() == 0.5
+                - #get_overlap_thresh() == 1.0
         !*/
 
-        test_box_overlap (
+        explicit test_box_overlap (
             double match_thresh,
-            double overlap_thresh
+            double overlap_thresh = 1.0
         );
         /*!
             requires
@@ -115,6 +115,30 @@ namespace dlib
                 - for all valid i:
                     - for all distinct rectangles A and B in rects[i]:
                         - TBO(A,B) == false
+    !*/
+
+// ----------------------------------------------------------------------------------------
+
+    bool overlaps_any_box (
+        const test_box_overlap& tester,
+        const std::vector<rectangle>& rects,
+        const rectangle& rect
+    );
+    /*!
+        ensures
+            - returns true if rect overlaps any box in rects and false otherwise.  Overlap
+              is determined based on the given tester object.
+    !*/
+
+// ----------------------------------------------------------------------------------------
+
+    bool overlaps_any_box (
+        const std::vector<rectangle>& rects,
+        const rectangle& rect
+    );
+    /*!
+        ensures
+            - returns overlaps_any_box(test_box_overlap(), rects, rect)
     !*/
 
 // ----------------------------------------------------------------------------------------

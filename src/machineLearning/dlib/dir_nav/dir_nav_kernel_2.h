@@ -109,6 +109,9 @@ namespace dlib
         inline uint64 size (
         ) const { return state.file_size; }
 
+        operator std::string (
+        ) const { return full_name(); }
+
         bool operator == (
             const file& rhs
         ) const;
@@ -240,6 +243,9 @@ namespace dlib
         inline const std::string& full_name (
         ) const { return state.full_name; }
 
+        operator std::string (
+        ) const { return full_name(); }
+
         bool operator == (
             const directory& rhs
         ) const;
@@ -275,6 +281,18 @@ namespace dlib
         !*/
 
     };
+
+// ----------------------------------------------------------------------------------------
+
+    inline std::ostream& operator<< (
+        std::ostream& out,
+        const directory& item
+    ) { out << (std::string)item; return out; }
+
+    inline std::ostream& operator<< (
+        std::ostream& out,
+        const file& item
+    ) { out << (std::string)item; return out; }
 
 // ----------------------------------------------------------------------------------------
 

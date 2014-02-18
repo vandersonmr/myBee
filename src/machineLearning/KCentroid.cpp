@@ -8,7 +8,7 @@
 #include "include/KCentroid.h"
 
 
-KCentroid::KCentroid() : kcentroidTest(kernel_type(ACCURACY),0.005, 30), ManipulateData(){}
+KCentroid::KCentroid() : ManipulateData(), kcentroidTest(kernel_type(ACCURACY),0.005, 30){}
 
 void KCentroid::insertData(Data data){
     sample_type m;

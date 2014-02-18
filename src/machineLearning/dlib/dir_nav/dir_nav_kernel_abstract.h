@@ -139,6 +139,14 @@ namespace dlib
                 - returns the size of this file in bytes.
         !*/
 
+        operator std::string (
+        ) const; 
+        /*!
+            ensures
+                - returns full_name()
+                  (i.e. provides an implicit conversion to string from dlib::file)
+        !*/
+
         file& operator= (
             const file& rhs
         );
@@ -390,6 +398,14 @@ namespace dlib
                     - the last character of #full_name() is NOT get_separator()
         !*/
 
+        operator std::string (
+        ) const; 
+        /*!
+            ensures
+                - returns full_name()
+                  (i.e. provides an implicit conversion to string from dlib::directory)
+        !*/
+
         directory& operator= (
             const directory& rhs
         );
@@ -440,6 +456,28 @@ namespace dlib
         !*/ 
 
     };
+
+// ----------------------------------------------------------------------------------------
+
+    inline std::ostream& operator<< (
+        std::ostream& out,
+        const directory& item
+    );
+    /*!
+        ensures
+            - performs: out << item.full_name()
+            - returns out
+    !*/
+
+    inline std::ostream& operator<< (
+        std::ostream& out,
+        const file& item
+    );
+    /*!
+        ensures
+            - performs: out << item.full_name()
+            - returns out
+    !*/
 
 // ----------------------------------------------------------------------------------------
 

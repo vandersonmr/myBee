@@ -23,7 +23,7 @@ class ManipulateData{
         bool load;
         void checkLoad(string,string);
         void loadData(string,string);
-        virtual void fillData(std::vector<Data>,int);
+        virtual void fillData(std::vector<Data>);
         virtual void insertData(Data){} 
         virtual int estimate(Data){ return 0;}
 

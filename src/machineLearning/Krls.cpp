@@ -1,7 +1,7 @@
 #include "include/Krls.h"
 
 
-Krls::Krls() : krlsTest(kernel_type(ACCURACY),0.0001), ManipulateData(){}
+Krls::Krls() : ManipulateData(), krlsTest(kernel_type(ACCURACY),0.0001) {}
 
 void Krls::insertData(Data data){
     sample_type m;
