@@ -50,7 +50,7 @@ function nodeGraphManager(name, divId, options){
         "<div id=\"g"+name+"\" class=\"graph\">"+
         
           "<h2>Node: "+name+
-          (options.lastTemp ? " (Temperatura: <b id=\"lastTemp"+name+"\"></b> C)</h2>" : "</h2>")+
+          (options.lastTemp ? " (<b id=\"lastTemp"+name+"\"></b>)</h2>" : "</h2>")+
           (options.closeBox ? "<a class=\"boxclose\" id=\"boxclose"+name+"\"></a>" : "") +
 
           (options.tabs ? "<div id=\"tabs"+name+"\">" +
@@ -194,7 +194,9 @@ function nodeGraphManager(name, divId, options){
     this.highlight()
 
     $("#"+divId+" [id='g"+name+"']").show()
-    //$("#"+divId+" #lastTemp"+name).html(this.data[0][this.data.length-1][1])
+
+    lastDataByType = this.data[this.data.length-1]
+    $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+lastDataByType.data[this.data.length-1][1]) //!TODO
 
     if(options.tabs) {
       this.fillDataTextArea()
@@ -279,7 +281,7 @@ function hasData(data) {
 
 function clearEmptyGraphs(divId) {
   for (var index in graphList) {
-    if (!hasData(graphList[data])) {
+    if (!hasData(graphList[index])) {
       $("#"+divId+" [id='g"+index.replace(divId,"")+"']").hide();
     } else {
       $("#"+divId+" [id='g"+index.replace(divId,"")+"']").show();
