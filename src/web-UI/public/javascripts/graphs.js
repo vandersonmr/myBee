@@ -184,14 +184,17 @@ function nodeGraphManager(name, divId, options){
   }
 
   this.update = function(){
-    this.plot.setData([this.data])
+    this.plot.setData(this.data)
     this.plot.setupGrid()
     this.plot.draw()
-    this.plot.getData()[0].highlightColor = "#D80000"
+
+    for(var i in this.plot.getData()) 
+      this.plot.getData()[i].highlightColor = "#D80000"
+
     this.highlight()
 
     $("#"+divId+" [id='g"+name+"']").show()
-    $("#"+divId+" #lastTemp"+name).html(this.data[this.data.length-1][1])
+    //$("#"+divId+" #lastTemp"+name).html(this.data[0][this.data.length-1][1])
 
     if(options.tabs) {
       this.fillDataTextArea()
@@ -286,10 +289,18 @@ function insertIndex(stack){
   for(var j=0; j < size; j++){
     var temp = stack.pop();
     stats.push(temp[2])
-    time.push (temp[1]);
-    res.push([Date.parse(temp[1]), temp[0]])
+    time.push (temp[1])
+
+    if (res[temp[3]] == undefined) 
+      res[temp[3]] = []
+
+    res[temp[3]].push([Date.parse(temp[1]), temp[0]])
   }
-  return [res,time,stats]
+
+  var finalData = []
+  for(var i in res) finalData.push({ label: i, data: res[i] })
+
+  return [finalData,time,stats]
 }
 
 function parseData(input) {
@@ -308,12 +319,14 @@ function parseData(input) {
           var time      = row[1]
           var tempValue = row[2]
           var stats     = row[3]	
+          var type      = row[4]
 
           if(temperatures[nodeName] == undefined){
             temperatures[nodeName] = []
           }
 
-          temperatures[nodeName].push([tempValue,time,stats])
+          temperatures[nodeName].push([tempValue,time,stats,type])
+          
       }
   return temperatures
 }
