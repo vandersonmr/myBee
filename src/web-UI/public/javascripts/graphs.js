@@ -296,9 +296,13 @@ function insertIndex(stack){
 
     res[temp[3]].push([Date.parse(temp[1]), temp[0]])
   }
+  
+  var keys = Object.keys(res);
+  keys.sort();
 
+    
   var finalData = []
-  for(var i in res) finalData.push({ label: i, data: res[i] })
+  for(var i in keys) finalData.push({ label: keys[i], data: res[keys[i]] })
 
   return [finalData,time,stats]
 }

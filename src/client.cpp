@@ -9,7 +9,9 @@
 #include <string>
 
 /* Randomize a temperature based on the sin function */
-double aux = 0;
+double aux  = 0;
+double aux1 = 0;
+double aux2 = 0;
 
 double GetTemperature() {
   srand(time(NULL));
@@ -20,12 +22,18 @@ double GetTemperature() {
 }
 
 double GetHumidity(){
-  double humidity = 0;
+  srand(time(NULL));
+  aux1 += 0.1;
+  if (aux1 > 6.3) aux1 = 0;
+  double humidity = (sin(aux1)*8+26) + rand() % 2 - 1; // Rand add some noise
   return humidity;
 }
 
 double GetPressure(){
-  double pressure = 0;
+  srand(time(NULL));
+  aux2 += 0.1;
+  if (aux2 > 6.3) aux2 = 0;
+  double pressure = (sin(aux2)*12+26) + rand() % 2 - 1; // Rand add some noise
   return pressure;
 }
 
@@ -37,7 +45,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  ClientMonitor monitor(string(nickname), 5);
+  ClientMonitor monitor(string(nickname), 4);
 
   monitor.AddDataGenerator("temperature", &GetTemperature);
   monitor.AddDataGenerator("humidity"   , &GetHumidity);
