@@ -270,9 +270,16 @@ function nodeGraphManager(name, divId, options){
 
 var graphList = {}
 
+function hasData(data) {
+  for(i in data) {
+    if(data[i].length > 2) return true
+  }
+  return false;
+}
+
 function clearEmptyGraphs(divId) {
   for (var index in graphList) {
-    if (graphList[index].data.length <= 2) {
+    if (!hasData(graphList[data])) {
       $("#"+divId+" [id='g"+index.replace(divId,"")+"']").hide();
     } else {
       $("#"+divId+" [id='g"+index.replace(divId,"")+"']").show();
