@@ -31,11 +31,11 @@ function timeControl() {
 
 /* Get an statusID (Number) and return a html tag with a text that rigth 
  * represent the status. */
-function getStatusMsg(statusID){
+function getStatusMsg(statusID, name){
   if(statusID == 0) { // If is a good status
     return "<div style=\"color:blue\">"+statusMsg[0]+"</div>"
   } else { 
-    return "<div style=\"color:red\">"+statusMsg[parseInt(statusID)]+"</div>"
+    return "<div style=\"color:red\">"+name+" : "+statusMsg[parseInt(statusID)]+"</div>"
   }
 }
 
@@ -98,7 +98,7 @@ function nodeGraphManager(name, divId, options){
     this.plot.unhighlight();
     for(key in stats) {
       if (stats[key] != 0) {
-        this.plot.highlight(0,parseInt(key));
+        this.plot.highlight(0,parseInt(key)); // !TODO
       }
     }
   }
@@ -178,9 +178,9 @@ function nodeGraphManager(name, divId, options){
     }
   }
 
-  this.setNodeStatus = function(nodeStatus){
+  this.setNodeStatus = function(nodeStatus, name){
     this.nodeStatus = nodeStatus
-    $("#"+divId+" [id='status"+this.name+"']").html(getStatusMsg(nodeStatus)) 
+    $("#"+divId+" [id='status"+this.name+"']").html(getStatusMsg(nodeStatus,name)) 
   }
 
   this.update = function(){
@@ -216,11 +216,12 @@ function nodeGraphManager(name, divId, options){
       if (previousPoint != item.dataIndex) {
         previousPoint = item.dataIndex;
         $("#tooltip").remove();
-        var x = item.datapoint[0],
+        var x = item.dataIndex,
         y = item.datapoint[1];
+
         showTooltip(item.pageX, item.pageY,
-                    "Data: "+ times[x] + "<br> Temperatura: " + y + "º célcius"
-                    + "<br> Status: " + getStatusMsg(parseInt(stats[x])));
+                    "Data: "+ times[item.series.label][x] + "<br> "+item.series.label+": " + y + " "
+                    + "<br> Status: " + getStatusMsg(parseInt(stats[item.series.label][x])));
       }
     } else {
       $("#tooltip").remove();
@@ -300,8 +301,16 @@ function insertIndex(stack){
   var size = stack.length
   for(var j=0; j < size; j++){
     var temp = stack.pop();
-    stats.push(temp[2])
-    time.push (temp[1])
+
+    if(stats[temp[3]] == undefined)
+      stats[temp[3]] = []
+
+    stats[temp[3]].push(temp[2])
+
+    if(time[temp[3]] == undefined)
+      time[temp[3]] = []
+
+    time[temp[3]].push(temp[1])
 
     if (res[temp[3]] == undefined) 
       res[temp[3]] = []
@@ -360,7 +369,17 @@ function plotData(data, divId, options) {
     }
 
     var tempData = insertIndex(data[node])
-    graphList[nodeKey].setNodeStatus(tempData[2][tempData[2].length-1].replace(" ",""))
+    
+    var keys = Object.keys(tempData[2])
+    var highestKey = keys[0]
+    for(var i in keys) {
+      var lastStatus = tempData[2][keys[i]][tempData[2][keys[i]].length-1]
+      if(lastStatus > tempData[2][highestKey][tempData[2][highestKey].length-1]) 
+        highestKey = keys[i]
+    }
+
+    graphList[nodeKey].setNodeStatus(tempData[2][highestKey][tempData[2][highestKey].length-1], highestKey)
+    
     graphList[nodeKey].setData(tempData[0],tempData[1],tempData[2])
     graphList[nodeKey].update()
 
