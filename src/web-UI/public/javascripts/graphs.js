@@ -33,9 +33,9 @@ function timeControl() {
  * represent the status. */
 function getStatusMsg(statusID){
   if(statusID == 0) { // If is a good status
-    return "<div style=\"color:blue\">"+statusMsg[statusID]+"</div>"
+    return "<div style=\"color:blue\">"+statusMsg[0]+"</div>"
   } else { 
-    return "<div style=\"color:red\">"+statusMsg[statusID]+"</div>"
+    return "<div style=\"color:red\">"+statusMsg[parseInt(statusID)]+"</div>"
   }
 }
 
@@ -241,7 +241,10 @@ function nodeGraphManager(name, divId, options){
     }
 
     var sData = $.extend(true,[],this.data);
-    var miniGraph = $.plot("#"+divId+" [id='smallgraph"+name+"']",[{data:sData}],{
+    var miniGraph = $.plot("#"+divId+" [id='smallgraph"+name+"']",sData,{
+        legend: {
+              show: false
+        },
         xaxis: {     
           mode    : "time",
           timezone: "browser",
