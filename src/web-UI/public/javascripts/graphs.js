@@ -276,9 +276,9 @@ function nodeGraphManager(name, divId, options){
 
 var graphList = {}
 
-function hasData(data) {
-  for(i in data) {
-    if(data[i].length > 2) return true
+function hasData(graphData) {
+  for(i in graphData.data) {
+    if(graphData.data[i].data.length > 2) return true
   }
   return false;
 }
