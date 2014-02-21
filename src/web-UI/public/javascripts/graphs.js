@@ -99,9 +99,14 @@ function nodeGraphManager(name, divId, options){
 
   this.highlight = function() {
     this.plot.unhighlight();
-    for(key in stats) {
-      if (stats[key] != 0) {
-        this.plot.highlight(0,parseInt(key)); // !TODO
+    var keys = Object.keys(stats);
+    keys.sort();
+ 
+    for(i in keys) {
+      for(index in stats[keys[i]]) {
+        if (parseInt(stats[keys[i]][index]) != 0) {
+          this.plot.highlight(parseInt(i),parseInt(index))
+        }
       }
     }
   }
@@ -254,7 +259,7 @@ function nodeGraphManager(name, divId, options){
         $("#tooltip").remove();
         var x = item.dataIndex,
         y = item.datapoint[1];
-
+        console.log(x);
         showTooltip(item.pageX, item.pageY,
                     "Data: "+ times[item.series.label][x] + "<br> "+item.series.label+": " + y + " "
                     + "<br> Status: " + getStatusMsg(parseInt(stats[item.series.label][x])));
@@ -269,7 +274,6 @@ function nodeGraphManager(name, divId, options){
   this.plotMiniGraph = function()  {
     var plot = this.plot
     var rangeselectionCallback = function(o) {
-      console.log("New selection:"+o.start+","+o.end);
       var xaxis = plot.getAxes().xaxis;
       xaxis.options.min = o.start;
       xaxis.options.max = o.end;
@@ -304,7 +308,6 @@ function nodeGraphManager(name, divId, options){
         }
     });
   }
-
     
   $("#"+divId+" #tabs"+name ).tabs();
 
