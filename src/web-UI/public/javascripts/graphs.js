@@ -38,6 +38,37 @@ function getStatusMsg(statusID, name){
     return "<div style=\"color:red\">"+(name!=undefined?name+" : ":"")+statusMsg[parseInt(statusID)]+"</div>"
   }
 }
+  function interateAsyncData(index, graph, callBack, endFunction, result) {
+    var loopid   = null
+    var stopped  = false
+    
+    this.stop = function() {
+      stopped = true
+      clearTimeout(loopid)
+    }
+
+    function loop(key,data,times,stats, dataLabel) {
+      clearTimeout(loopid)
+      if (key == 0) {
+        if (endFunction) {
+          endFunction(dataLabel)
+          return 
+        } else {
+          return
+        }
+      }
+      if (!stopped) { 
+        loopid = setTimeout(function() {
+          callBack(key,data,times,stats, dataLabel)
+          loop(--key,data,times,stats, dataLabel)
+        },1);
+      }
+    }
+    
+    dataLabel = graph.data[index].label;
+    loop(graph.data[index].data.length-1,graph.data[index].data,graph.times[dataLabel],graph.stats[dataLabel], dataLabel);
+  }
+
 
 function nodeGraphManager(name, divId, options){
     this.name = name
@@ -111,30 +142,6 @@ function nodeGraphManager(name, divId, options){
     }
   }
  
-  var stopped = false; 
-  var loopid    = null; 
-  this.interateAsyncData = function(index, callBack, endFunction, result) {
-    function loop(key,data,times,stats, dataLabel) {
-      clearTimeout(loopid)
-      if (key == 0) {
-        if (endFunction) {
-          endFunction()
-          return 
-        } else {
-          return
-        }
-      }
-      if (!stopped) { 
-        loopid = setTimeout(function() {
-          callBack(key,data,times,stats, dataLabel)
-          loop(--key,data,times,stats, dataLabel)
-        },1);
-      }
-    }
-    dataLabel = this.data[index].label;
-    loop(this.data[index].data.length-1,this.data[index].data,times[dataLabel],stats[dataLabel], dataLabel);
-  }
-
   this.fillSelectWithTypesOfData = function(selectName) {
     for(var i in this.data) {
       $("#"+selectName).append($("<option>", {
@@ -144,17 +151,19 @@ function nodeGraphManager(name, divId, options){
     }
   }
 
+  var dataStatisticsInterator;
   this.fillDataStatistics = function() {
     
     this.fillSelectWithTypesOfData("selectStatistics"+name);
-    /*var pai = this;
+    var pai = this;
     $("#selectStatistics"+name).change(function() {
+      if (dataStatisticsInterator) dataStatisticsInterator.stop()
       $("#"+divId+" #statistics"+name).empty(); 
       $("#"+divId+" #statistics"+name).append("Estatísticas dos dados "+pai.data[$(this).val()].label+"\n"+
                                              " Carregando... \n");
   
       var result = {mean:0,alerts:0}
-      pai.interateAsyncData($(this).val(),
+      dataStatisticsInterator = new interateAsyncData($(this).val(), pai,
           function(key, data, times, stats, label) {
              var dataInt = parseInt(data[key][1])
              result.mean += dataInt/data.length;
@@ -176,7 +185,7 @@ function nodeGraphManager(name, divId, options){
               if (stats[key] != 0)
                result.alerts += 1
           },
-          function() {
+          function(label) {
             $("#"+divId+" #statistics"+name).empty()
             $("#"+divId+" #statistics"+name).append("Estatísticas dos dados \n")
             $("#"+divId+" #statistics"+name).append(""+label+" Média : "+Math.round(result.mean)+"\n")
@@ -187,24 +196,26 @@ function nodeGraphManager(name, divId, options){
           result
       )
     })
-    $("#selectStatistics"+name).change();*/
+    $("#selectStatistics"+name).change();
   }
 
-
+  var dataTextInterator;
   this.fillDataTextArea = function(){
     this.fillSelectWithTypesOfData("selectRawData"+name);
     
     var pai = this;
+    pai.stats = stats;
+    pai.times = times
     $("#selectRawData"+name).change(function() {
-      stopped = true;
-      stopped = false;
+      if(dataTextInterator) dataTextInterator.stop();
       $("#"+divId+" #rawData"+name).empty()
       $("#"+divId+" #rawData"+name).append("Chave tipo Tempo dado  status\n");
-      pai.interateAsyncData($(this).val(), function(key, data, times, stats, dataLabel) {
+      dataTextInterator = new interateAsyncData($(this).val(), pai, 
+        function(key, data, times, stats, dataLabel) {
           $("#"+divId+" #rawData"+name)
                   .append(key+" "+" "+dataLabel+" "+times[key]+" "+data[key][1]+" "+stats[key]+"\n")
-          
-      })
+        }
+      );
     })
 
     $("#selectRawData"+name).change();
@@ -259,7 +270,6 @@ function nodeGraphManager(name, divId, options){
         $("#tooltip").remove();
         var x = item.dataIndex,
         y = item.datapoint[1];
-        console.log(x);
         showTooltip(item.pageX, item.pageY,
                     "Data: "+ times[item.series.label][x] + "<br> "+item.series.label+": " + y + " "
                     + "<br> Status: " + getStatusMsg(parseInt(stats[item.series.label][x])));
@@ -317,7 +327,7 @@ var graphList = {}
 
 function hasData(graphData) {
   for(i in graphData.data) {
-    if(graphData.data[i].data.length > 2) return true
+    if(graphData.data[i].data.length > 1) return true
   }
   return false;
 }
