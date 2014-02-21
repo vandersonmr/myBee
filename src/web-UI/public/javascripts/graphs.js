@@ -140,9 +140,9 @@ function nodeGraphManager(name, divId, options){
   }
 
   this.fillDataStatistics = function() {
-    /*
+    
     this.fillSelectWithTypesOfData("selectStatistics"+name);
-    var pai = this;
+    /*var pai = this;
     $("#selectStatistics"+name).change(function() {
       $("#"+divId+" #statistics"+name).empty(); 
       $("#"+divId+" #statistics"+name).append("Estatísticas dos dados "+pai.data[$(this).val()].label+"\n"+
@@ -296,10 +296,10 @@ function nodeGraphManager(name, divId, options){
           backgroundColor: { colors: ["#ddd", "#fff"]}
         },
         rangeselection:{
-          start:sData[sData.length-1][0],
-          end:sData[0][0],
-          color: "#feb",
-          enabled: true,
+          start   : sData[0].data[sData[0].data.length-1][0],
+          end     : sData[0].data[0][0],
+          color   : "#feb",
+          enabled : true,
           callback: rangeselectionCallback
         }
     });
