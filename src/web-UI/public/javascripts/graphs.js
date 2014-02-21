@@ -70,10 +70,13 @@ function nodeGraphManager(name, divId, options){
           (options.tabs ? "</div>" : "")+
 
           (options.tabs ? "<div id=\"tabs-2"+name+"\" style=\"width:90%;height:77%\">" : "")+
+          (options.tabs ? "<select id=\"selectRawData"+name+"\" ></select>": "")+
           (options.tabs ? "<textarea id=\"rawData"+name+"\" readonly style=\"resize: none; width:100%;height:100%\"></textarea>" : "")+
           (options.tabs ? "</div>" : "")+
 
           (options.tabs ? "<div id=\"tabs-3"+name+"\" style=\"width:90%;height:77%\">" : "")+
+          (options.tabs ? "<select id=\"selectStatistics"+name+"\" ></select>": "")+
+          (options.tabs ? "<textarea id=\"statistics"+name+"\" readonly style=\"resize: none; width:100%;height:100%\"></textarea>" : "")+
           (options.tabs ? "</div>" : "")+
           "</div>");
 
@@ -102,71 +105,104 @@ function nodeGraphManager(name, divId, options){
       }
     }
   }
-  
-  this.interateAsyncData = function(callBack, endFunction, result) {
-    function loop(key,data,times,stats) {
+ 
+  var stopped = false; 
+  var loopid    = null; 
+  this.interateAsyncData = function(index, callBack, endFunction, result) {
+    function loop(key,data,times,stats, dataLabel) {
+      clearTimeout(loopid)
       if (key == 0) {
-        if (endFunction)
+        if (endFunction) {
           endFunction()
-        else
+          return 
+        } else {
           return
+        }
       }
-      setTimeout(function() {
-        callBack(key,data,times,stats)
-        loop(--key,data,times,stats)
-      },1);
+      if (!stopped) { 
+        loopid = setTimeout(function() {
+          callBack(key,data,times,stats, dataLabel)
+          loop(--key,data,times,stats, dataLabel)
+        },1);
+      }
     }
-
-    loop(this.data.length-1,this.data,times,stats);
+    dataLabel = this.data[index].label;
+    loop(this.data[index].data.length-1,this.data[index].data,times[dataLabel],stats[dataLabel], dataLabel);
   }
 
-  this.fillDataStatistics = function(){
-    $("#"+divId+" #tabs-3"+name).append("<h3> Estatísticas dos dados </h3>"+
-                                        " <br><h2> Carregando... </h2>");
+  this.fillSelectWithTypesOfData = function(selectName) {
+    for(var i in this.data) {
+      $("#"+selectName).append($("<option>", {
+          value : i
+        , text  : this.data[i].label
+      }))
+    }
+  }
+
+  this.fillDataStatistics = function() {
+    /*
+    this.fillSelectWithTypesOfData("selectStatistics"+name);
+    var pai = this;
+    $("#selectStatistics"+name).change(function() {
+      $("#"+divId+" #statistics"+name).empty(); 
+      $("#"+divId+" #statistics"+name).append("Estatísticas dos dados "+pai.data[$(this).val()].label+"\n"+
+                                             " Carregando... \n");
   
-    var result = {mean:0,alerts:0}
-    this.interateAsyncData(
-        function(key, data, times, stats) {
-            var dataInt = parseInt(data[key][1])
-            result.mean += dataInt/data.length;
+      var result = {mean:0,alerts:0}
+      pai.interateAsyncData($(this).val(),
+          function(key, data, times, stats, label) {
+             var dataInt = parseInt(data[key][1])
+             result.mean += dataInt/data.length;
             
-            if (!result.highest) {
-              result.highest = dataInt
-            } else {
-              if (dataInt > result.highest)
+             if (!result.highest) {
                 result.highest = dataInt
-            }
+              } else {
+                if (dataInt > result.highest)
+                  result.highest = dataInt
+              }
 
-            if (!result.lowest) {
-              result.lowest = dataInt
-            } else {
-              if (dataInt < result.lowest)
+              if (!result.lowest) {
                 result.lowest = dataInt
-            }
+              } else {
+                if (dataInt < result.lowest)
+                  result.lowest = dataInt
+             }
 
-            if (stats[key] != 0)
-              result.alerts += 1
-        },
-        function() {
-          $("#"+divId+" #tabs-3"+name).empty()
-          $("#"+divId+" #tabs-3"+name).append("<h3> Estatísticas dos dados </h3>")
-          $("#"+divId+" #tabs-3"+name).append("<li> Temperatura Média : "+Math.round(result.mean)+" </li>")
-          $("#"+divId+" #tabs-3"+name).append("<li> Temperatura Máxima : "+result.highest+" </li>")
-          $("#"+divId+" #tabs-3"+name).append("<li> Temperatura Mínima : "+result.lowest+" </li>")
-          $("#"+divId+" #tabs-3"+name).append("<li> Quantidade de alertas : "+result.alerts+" </li>")
-        },
-        result
-    )
-
+              if (stats[key] != 0)
+               result.alerts += 1
+          },
+          function() {
+            $("#"+divId+" #statistics"+name).empty()
+            $("#"+divId+" #statistics"+name).append("Estatísticas dos dados \n")
+            $("#"+divId+" #statistics"+name).append(""+label+" Média : "+Math.round(result.mean)+"\n")
+            $("#"+divId+" #statistics"+name).append(""+label+" Máxima : "+result.highest+"\n")
+            $("#"+divId+" #statistics"+name).append(""+label+" Mínima : "+result.lowest+" \n")
+            $("#"+divId+" #statistics"+name).append("Quantidade de alertas : "+result.alerts+" \n")
+          },
+          result
+      )
+    })
+    $("#selectStatistics"+name).change();*/
   }
+
 
   this.fillDataTextArea = function(){
-    $("#"+divId+" #rawData"+name).empty()
-    $("#"+divId+" #rawData"+name).append("Chave  Tempo dado  status\n");
-
-    this.interateAsyncData(function(key, data, times, stats) {
-      $("#"+divId+" #rawData"+name).append(key+" "+times[key]+" "+data[key][1]+" "+stats[key]+"\n")
+    this.fillSelectWithTypesOfData("selectRawData"+name);
+    
+    var pai = this;
+    $("#selectRawData"+name).change(function() {
+      stopped = true;
+      stopped = false;
+      $("#"+divId+" #rawData"+name).empty()
+      $("#"+divId+" #rawData"+name).append("Chave tipo Tempo dado  status\n");
+      pai.interateAsyncData($(this).val(), function(key, data, times, stats, dataLabel) {
+          $("#"+divId+" #rawData"+name)
+                  .append(key+" "+" "+dataLabel+" "+times[key]+" "+data[key][1]+" "+stats[key]+"\n")
+          
+      })
     })
+
+    $("#selectRawData"+name).change();
   }
 
   this.setData = function(data, time, stat){
