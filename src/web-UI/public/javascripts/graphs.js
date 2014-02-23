@@ -89,6 +89,7 @@ function nodeGraphManager(name, divId, options){
                           "<li><a href=\"#tabs-1"+name+"\">Gráfico</a></li>"+
                           "<li><a href=\"#tabs-2"+name+"\">Dados plano</a></li>"+
                           "<li><a href=\"#tabs-3"+name+"\">Estatísticas</a></li>"+
+                          "<li><a href=\"#tabs-4"+name+"\">Opções</a></li>"+
                         "</ul>" : "") +
             
           (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:90%;height:75%\">" : "")+
@@ -108,6 +109,11 @@ function nodeGraphManager(name, divId, options){
           (options.tabs ? "<div id=\"tabs-3"+name+"\" style=\"width:90%;height:77%\">" : "")+
           (options.tabs ? "<select id=\"selectStatistics"+name+"\" ></select>": "")+
           (options.tabs ? "<textarea id=\"statistics"+name+"\" readonly style=\"resize: none; width:100%;height:100%\"></textarea>" : "")+
+          (options.tabs ? "</div>" : "")+
+
+          (options.tabs ? "<div id=\"tabs-4"+name+"\" style=\"width:90%;height:77%\">" : "")+
+          (options.tabs ? "Mostar os dados: <br>" : "") +
+          (options.tabs ? "<p id=\"choices"+name+"\" style=\"float:left; width:90%;\"></p>" : "")+
           (options.tabs ? "</div>" : "")+
           "</div>");
 
@@ -253,6 +259,7 @@ function nodeGraphManager(name, divId, options){
     if(options.tabs) {
       this.fillDataTextArea()
       this.fillDataStatistics()
+      this.fillOptions()
     }
     
   }
@@ -280,7 +287,40 @@ function nodeGraphManager(name, divId, options){
     }		
   });
 
-  
+  this.fillOptions = function() {
+    // insert checkboxes 
+    var i = 0;
+    $.each(this.data, function(key, val) {
+      val.color = i;
+      ++i;
+    });
+    var choiceContainer = $("#choices"+name);
+    $.each(this.data, function(key, val) {
+      choiceContainer.append("<br/><input type='checkbox' name='" + key +
+        "' checked='checked' id='id" + key + "'></input>" +
+        "<label for='id" + key + "'>"
+        + val.label + "</label>");
+    });
+    choiceContainer.find("input").click(plotAccordingToChoices);
+    var pai = this
+      function plotAccordingToChoices() {
+        var data = [];
+        choiceContainer.find("input:checked").each(function () {
+          var key = $(this).attr("name");
+          if (key && pai.data[key]) {
+            data.push(pai.data[key]);
+          }
+        });
+        if (data.length > 0) {
+          pai.plot.setData(data)
+            pai.plot.setupGrid()
+            pai.plot.draw()
+        }
+      }
+
+    plotAccordingToChoices();
+  }
+
   this.plotMiniGraph = function()  {
     var plot = this.plot
     var rangeselectionCallback = function(o) {
