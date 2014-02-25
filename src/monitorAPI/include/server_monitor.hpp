@@ -20,6 +20,7 @@ class ServerMonitor {
     int  CheckData(Data data);
     void UpdateListOfNodesOnline();
     void HandleMessage(message<Data>);
+    static void SigHandler(int);
   public: 
     ServerMonitor();
     void SetFilter(function<Data(Data)>);

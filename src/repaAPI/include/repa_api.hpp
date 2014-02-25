@@ -22,7 +22,6 @@ template<class T>class RepaAPI {
     static void *RunHelper(void *class_ref){
       return ((RepaAPI *)class_ref)->HandleMessage(class_ref);
     }
-
   public:
     bool InitRepa (vector<string>);
     message<T> GetMessage();
