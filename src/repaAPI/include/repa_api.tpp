@@ -31,8 +31,8 @@ message<T> RepaAPI<T>::GetMessage() {
     char* data = new char[1500];
     char* interest = new char[255];
 
-    int read_len = repa_timed_recv(sock,interest, data, prefix_addr, (long int)1E9);
-    
+    int read_len = repa_recv(sock,interest, data, prefix_addr); //(long int)1E9);
+
     message<T> result;
     if (read_len > 0) {
         msgpack::unpacked msg;
@@ -98,12 +98,12 @@ vector<string> RepaAPI<T>::GetNodesOnline() {
 template<class T>
 bool RepaAPI<T>::CloseRepa() {
     terminated = true;
+    repa_close(sock);
     if(pthread_kill(thread, 0) == 0)
     {
         /* still running */
         pthread_join(thread, NULL);
     }
-    repa_close(sock);
     exit(EXIT_SUCCESS);
 }
 

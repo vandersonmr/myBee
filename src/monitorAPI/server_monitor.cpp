@@ -60,7 +60,7 @@ void ServerMonitor::EnableMachineLearning(int sensible) {
     this->is_machine_learning_enable = true;
 }
 
-void ServerMonitor::Close() { 
+void ServerMonitor::Close() {
   closeConnection();
   repa.CloseRepa();
 }
