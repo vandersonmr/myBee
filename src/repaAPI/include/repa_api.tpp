@@ -31,7 +31,7 @@ message<T> RepaAPI<T>::GetMessage() {
     char* data = new char[1500];
     char* interest = new char[255];
 
-    int read_len = repa_timed_recv(sock,interest, data, prefix_addr, (long int)1E9);
+    int read_len = repa_recv(sock,interest, data, prefix_addr);
 
     message<T> result;
     if (read_len > 0) {
