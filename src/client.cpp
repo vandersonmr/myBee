@@ -50,8 +50,13 @@ int main(int argc, char **argv) {
   monitor.AddDataGenerator("temperature", &GetTemperature);
   monitor.AddDataGenerator("humidity"   , &GetHumidity);
   monitor.AddDataGenerator("pressure"   , &GetPressure);
+ 
+  string word;
+  string end = "quit";
 
-  while (true) sleep(1);
+  while(word.compare(end) != 0) std::cin >> word;
+
+  monitor.Close();
 
   return 0;
 }
