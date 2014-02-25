@@ -1,17 +1,14 @@
 ***** Coisas a serem feitas
-  
-  - Até dia 27 fazer:
+Próxima versão: 
     * Comentar código
     * Criar testes
     - Adicionar suporte a escolher dia especifico para visualizar o histórico.
     - Google Style in everywhere ;)
-  
-  Em progresso:
-    - Adicionar suporte a multiplos dados (temperatura, humidade, pressão)
-    - Adicionar suporte a histórico
-    - Melhorar nomes 
+    - Corrigir problema com nodesOnline
     
 Feito:
+    - Adicionar suporte a histórico
+    - Adicionar suporte a multiplos dados (temperatura, humidade, pressão)
     - Trocar o sistema que imprime o gráfico de C para Node.js
     - Apenas mostrar gráfico de nodes conectados (Não funciona 100% porque é difícil indentificar quem ta online).
     - Escrever relatório PIBIT.
