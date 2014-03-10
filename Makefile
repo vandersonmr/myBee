@@ -2,7 +2,7 @@ ARCH=$(shell uname -m)
 CC=gcc
 CCPP=g++
 SRC= ./src
-CFLAGS= -O0 -g -Wall -Wextra  -Werror
+CFLAGS= -O0 -g -Wall -Wextra  -Werror -pedantic-errors -ansi -Winit-self -Wuninitialized -Woverloaded-virtual -Winit-self
 SHAREDOBJ= repa.so
 LDrepa= -pthread -lpthread $(SHAREDOBJ) -lpython2.7
 LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa)

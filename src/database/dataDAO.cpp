@@ -15,9 +15,9 @@ void getConfData(string conf_path, char* server, char* user, char* pass, char* d
   FILE *fp = fopen(conf_path.c_str(), "r");
   if(fp != NULL){
     char *data, *type, *temp;
-    data = (char*)malloc(LINE_SIZE*sizeof(char));
-    type = (char*)malloc(LINE_SIZE*sizeof(char));
-    temp = (char*)malloc(LINE_SIZE*sizeof(char));
+    data = static_cast<char*>(malloc(LINE_SIZE*sizeof(char)));
+    type = static_cast<char*>(malloc(LINE_SIZE*sizeof(char)));
+    temp = static_cast<char*>(malloc(LINE_SIZE*sizeof(char)));
 
     while (fgets(data,LINE_SIZE,fp) != NULL){
       sscanf(data,"%[^=]=\"%[^\"]",type,temp);
@@ -48,10 +48,10 @@ int connectDatabase(string conf_path) {
     return 0;
   }
 
-  char *server = (char*)malloc(LINE_SIZE*sizeof(char));
-  char *user = (char*)malloc(LINE_SIZE*sizeof(char));
-  char *pass = (char*)malloc(LINE_SIZE*sizeof(char));
-  char *db = (char*)malloc(LINE_SIZE*sizeof(char));
+  char *server = static_cast<char*>(malloc(LINE_SIZE*sizeof(char)));
+  char *user   = static_cast<char*>(malloc(LINE_SIZE*sizeof(char)));
+  char *pass   = static_cast<char*>(malloc(LINE_SIZE*sizeof(char)));
+  char *db     = static_cast<char*>(malloc(LINE_SIZE*sizeof(char)));
 
   getConfData(conf_path,server,user,pass,db);
 
@@ -85,7 +85,7 @@ void saveData(Data data, int status){
   sscanf(date,"%[^\n]",date);
 
   snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%s','%d','%d','%s')",
-      data.nickname.c_str(), date, data.type.c_str(), (int)ceil(data.value), status, 
+      data.nickname.c_str(), date, data.type.c_str(), static_cast<int>(ceil(data.value)), status, 
       data.node.c_str());
 
   if (mysql_query(connection,query)) //return true if get an error.
@@ -105,12 +105,12 @@ vector<Data> load(char* query){
   while ((row = mysql_fetch_row(res_set)) != NULL){
     Data data;
 
-    data.type     = (char*) row[2];
-    data.value    = atoi((char*) row[3]);
-    data.status   = atoi((char*) row[4]);
-    data.nickname = (char*) row[0];
-    data.time     = atof((char*) row[1]);
-    data.node     = (char*) row[5];
+    data.type     = const_cast<char*>(row[2]);
+    data.value    = atoi(const_cast<char*>(row[3]));
+    data.status   = atoi(const_cast<char*>(row[4]));
+    data.nickname = const_cast<char*>(row[0]);
+    data.time     = atof( const_cast<char*>(row[1]));
+    data.node     = const_cast<char*>(row[5]);
 
     result.push_back(data);
   }
@@ -119,19 +119,19 @@ vector<Data> load(char* query){
 }
 
 vector<Data> loadLastsDatasByType(int q, string prefix, string type){
-  char* queryWithOutQ = (char *) "select * from data where Prefix like '%s' and Type like '%s' order by Date desc limit 0,%d;";
+  char* queryWithOutQ = const_cast<char*>("select * from data where Prefix like '%s' and Type like '%s' order by Date desc limit 0,%d;");
   char query[200];
   snprintf(query,200,queryWithOutQ,prefix.c_str(),type.c_str(),q-1);
   return load(query);
 }
 
 int clearNodesOnline() {
-  char* query = (char*) "delete from nodesOnline;";
+  char* query = const_cast<char*>("delete from nodesOnline;");
   return mysql_query(connection, query);
 }
 
 int insertNodeOnline(string prefix) {
-  char* queryWithoutPrefix = (char*) "insert into nodesOnline values ('%s')";
+  char* queryWithoutPrefix =  const_cast<char*>("insert into nodesOnline values ('%s')");
   char query[200];
   snprintf(query,200, queryWithoutPrefix, prefix.c_str());
   return mysql_query(connection, query);

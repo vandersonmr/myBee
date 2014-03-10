@@ -12,7 +12,7 @@ template<class T> class message {
     vector<string> interests;
     vector<T> data;
     string prefix_address;
-    MSGPACK_DEFINE(interests, data, prefix_address);
+    MSGPACK_DEFINE(interests, data, prefix_address)
 };
 
 #endif

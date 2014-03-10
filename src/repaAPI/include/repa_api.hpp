@@ -20,7 +20,7 @@ template<class T>class RepaAPI {
     void* HandleMessage(void*);
 
     static void *RunHelper(void *class_ref){
-      return ((RepaAPI *)class_ref)->HandleMessage(class_ref);
+      return (static_cast<RepaAPI *>(class_ref))->HandleMessage(class_ref);
     }
   public:
     bool InitRepa (vector<string>);

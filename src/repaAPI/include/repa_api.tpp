@@ -86,7 +86,7 @@ vector<string> RepaAPI<T>::GetNodesOnline() {
     nodes.push_back(prefix);
 
     for(lnode = list->head; lnode != NULL; lnode = lnode->next) {
-        repa_print_prefix((intptr_t) lnode->data, prefix);
+        repa_print_prefix(reinterpret_cast<intptr_t>(lnode->data), prefix);
         nodes.push_back(prefix);
     }
 
