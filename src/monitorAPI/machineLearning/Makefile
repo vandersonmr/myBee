@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-std=c++11 -O3 -Wall -Wextra -Werror
-dataDAO= -I../include/
+dataDAO= -I../../include/
 INCLUDES=-I./ $(dataDAO) -g
 SRC_MACHINE=$(wildcard *.cpp)
 OBJ_MACHINE=$(SRC_MACHINE:.cpp=.o)

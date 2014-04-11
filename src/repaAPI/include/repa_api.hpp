@@ -12,7 +12,7 @@ using namespace std;
 
 template<class T>class RepaAPI {
   private:
-    bool terminated       = true;
+    bool terminated = true;
     pthread_t thread;
     repa_sock_t sock;
     function<void(message<T>)> callback;

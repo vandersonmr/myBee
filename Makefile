@@ -12,7 +12,7 @@ HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
 all: repa server client clear.o
 	
 server: machineLearning.o repa monitorAPI.o
-	$(CCPP) $(CFLAGS) $(SRC)/server.cpp $(SRC)/monitorAPI/server_monitor.o $(SRC)/database/dataDAO.cpp  $(SRC)/machineLearning/*.o $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
+	$(CCPP) $(CFLAGS) $(SRC)/server.cpp $(SRC)/monitorAPI/server_monitor.o $(SRC)/database/dataDAO.cpp  $(SRC)/monitorAPI/machineLearning/*.o $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
 
 client: repa monitorAPI.o 
 	$(CCPP) $(CFLAGS) $(SRC)/client.cpp $(SRC)/monitorAPI/client_monitor.o -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
@@ -34,7 +34,7 @@ kill:
 		fi;
 
 machineLearning.o:
-	cd ./$(SRC)/machineLearning;\
+	cd ./$(SRC)/monitorAPI/machineLearning;\
 	make;\
 	cd -;
 
@@ -61,7 +61,7 @@ clear: clear.o
 	rm -f client;\
 	rm -f server;\
 	rm -f $(SRC)/web-UI/getDados;
-	cd ./$(SRC)/machineLearning;\
+	cd ./$(SRC)/monitorAPI/machineLearning;\
 	make clear;\
 	cd -;
 	cd ./$(SRC)/monitorAPI;\
