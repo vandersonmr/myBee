@@ -5,7 +5,7 @@
 #include <vector>
 #include <dlib/svm.h>
 #include <dlib/statistics.h>
-#include "dataDAO.hpp"
+#include "../include/dataDAO.hpp"
 #include <string>
 
 using namespace std;

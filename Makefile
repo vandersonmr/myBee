@@ -4,18 +4,18 @@ CCPP=g++
 SRC= ./src
 CFLAGS= -O0 -g -Wall -Wextra  -Werror -pedantic-errors -ansi -Winit-self -Wuninitialized -Woverloaded-virtual -Winit-self
 SHAREDOBJ= repa.so
-LDrepa= -pthread -lpthread $(SHAREDOBJ) -lpython2.7
+LDrepa= -pthread -lpthread -lpython2.7
 LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa)
 LDmysql=  -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
 
-all: repa server client clear.o
+all: server client clear.o
 	
-server: machineLearning.o repa monitorAPI.o
-	$(CCPP) $(CFLAGS) $(SRC)/server.cpp $(SRC)/monitorAPI/server_monitor.o $(SRC)/database/dataDAO.cpp  $(SRC)/monitorAPI/machineLearning/*.o $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
+server: monitorAPI.o
+	$(CCPP) $(CFLAGS) $(SRC)/server.cpp $(SRC)/monitorAPI/libmonitorapi.a $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
 
-client: repa monitorAPI.o 
-	$(CCPP) $(CFLAGS) $(SRC)/client.cpp $(SRC)/monitorAPI/client_monitor.o -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
+client: monitorAPI.o 
+	$(CCPP) $(CFLAGS) $(SRC)/client.cpp $(SRC)/monitorAPI/libmonitorapi.a -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
 
 init:
 	@echo "Iniciando repd..."
@@ -33,25 +33,10 @@ kill:
 		else echo "Programa inexistente";\
 		fi;
 
-machineLearning.o:
-	cd ./$(SRC)/monitorAPI/machineLearning;\
-	make;\
-	cd -;
-
 monitorAPI.o:
 	cd ./$(SRC)/monitorAPI;\
 	make;\
 	cd -;
-
-repa:
-	cd ./src/repa/ &&\
-	python setup.py build &&\
-	sudo python setup.py install &&\
-	cd ./build/ &&\
-	cd $$(ls | egrep '^lib') &&\
-	cp repa.so ../../../../ &&\
-	sudo cp repa.so /usr/lib/ &&\
-	sudo ldconfig
 
 clear.o:
 	rm -f *.o
