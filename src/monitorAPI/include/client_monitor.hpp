@@ -16,6 +16,10 @@ class ClientMonitor {
     Data GetData(string, double);
     void GeneratorsRunner();
   public: 
+    /**@brief Create a ClientMonitor
+     * @param Name is a string used to indentife this client on the server
+     * @param Freq is the frequence that data is generated and sent to the server
+     */
     ClientMonitor(string,int);
     void AddDataGenerator(string, function<double(void)>);
     void RmDataGenerator(string);
