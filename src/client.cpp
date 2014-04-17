@@ -13,11 +13,17 @@ double aux1 = 0;
 double aux2 = 0;
 
 double GetTemperature() {
-  srand(time(NULL));
-  aux += 0.1;
-  if (aux > 6.3) aux = 0;
-  double temp = (sin(aux)*10+26) + rand() % 2 - 1; // Rand add some noise
-  return temp;
+  FILE *arduino = fopen("/dev/ttyUSB0", "r");
+  char buffer[1024];
+  fgets(buffer, 1024, arduino);
+  float temp;
+  sscanf(buffer, "%f", &temp);
+  return (double) temp;
+  //srand(time(NULL));
+  //aux += 0.1;
+  //if (aux > 6.3) aux = 0;
+  //double temp = (sin(aux)*10+26) + rand() % 2 - 1; // Rand add some noise
+  //return temp;
 }
 
 double GetHumidity(){
@@ -49,13 +55,13 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  ClientMonitor monitor(string(nickname), 4);
+  ClientMonitor monitor(string(nickname), 600);
 
   tempMonitor = &monitor;
 
   monitor.AddDataGenerator("temperature", &GetTemperature);
-  monitor.AddDataGenerator("humidity"   , &GetHumidity);
-  monitor.AddDataGenerator("pressure"   , &GetPressure);
+  //monitor.AddDataGenerator("humidity"   , &GetHumidity);
+  //monitor.AddDataGenerator("pressure"   , &GetPressure);
 
   signal(SIGINT, &handler);
   
