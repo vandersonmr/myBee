@@ -9,13 +9,12 @@ LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa)
 LDmysql=  -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
 
-all: server client clear.o
+all: monitorAPI.o examples clear.o
 	
-server: monitorAPI.o
-	$(CCPP) $(CFLAGS) $(SRC)/server.cpp $(SRC)/monitorAPI/libmonitorapi.a $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
-
-client: monitorAPI.o 
-	$(CCPP) $(CFLAGS) $(SRC)/client.cpp $(SRC)/monitorAPI/libmonitorapi.a -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
+examples: monitorAPI.o
+	cd examples;\
+	make;\
+	cd ..;
 
 init:
 	@echo "Iniciando repd..."
@@ -36,6 +35,7 @@ kill:
 monitorAPI.o:
 	cd ./$(SRC)/monitorAPI;\
 	make;\
+	cp ;\
 	cd -;
 
 clear.o:
@@ -50,5 +50,8 @@ clear: clear.o
 	make clear;\
 	cd -;
 	cd ./$(SRC)/monitorAPI;\
+	make clear;\
+	cd -;\
+	cd ./examples/;\
 	make clear;\
 	cd -;
