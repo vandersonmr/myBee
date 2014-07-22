@@ -9,6 +9,7 @@
 #include "assign_image.h"
 #include "image_pyramid.h"
 #include "../simd.h"
+#include "../image_processing/full_object_detection.h"
 
 namespace dlib
 {
@@ -920,14 +921,39 @@ namespace dlib
             temp.left()  = temp.right()-rect.width()+1; 
             return temp;
         }
+
+        inline rectangle tform_object (
+            const point_transform_affine& tran,
+            const rectangle& rect
+        )
+        {
+            return centered_rect(tran(center(rect)), rect.width(), rect.height());
+        }
+
+        inline full_object_detection tform_object(
+            const point_transform_affine& tran,
+            const full_object_detection& obj
+        )
+        {
+            std::vector<point> parts; 
+            parts.reserve(obj.num_parts());
+            for (unsigned long i = 0; i < obj.num_parts(); ++i)
+            {
+                parts.push_back(tran(obj.part(i)));
+            }
+            return full_object_detection(tform_object(tran,obj.get_rect()), parts);
+        }
     }
 
+// ----------------------------------------------------------------------------------------
+
     template <
-        typename image_type
+        typename image_type,
+        typename T
         >
     void add_image_left_right_flips (
         dlib::array<image_type>& images,
-        std::vector<std::vector<rectangle> >& objects
+        std::vector<std::vector<T> >& objects
     )
     {
         // make sure requires clause is not broken
@@ -939,16 +965,16 @@ namespace dlib
             );
 
         image_type temp;
-        std::vector<rectangle> rects;
+        std::vector<T> rects;
 
         const unsigned long num = images.size();
         for (unsigned long j = 0; j < num; ++j)
         {
-            flip_image_left_right(images[j], temp);
+            const point_transform_affine tran = flip_image_left_right(images[j], temp);
 
             rects.clear();
             for (unsigned long i = 0; i < objects[j].size(); ++i)
-                rects.push_back(impl::flip_rect_left_right(objects[j][i], get_rect(images[j])));
+                rects.push_back(impl::tform_object(tran, objects[j][i]));
 
             images.push_back(temp);
             objects.push_back(rects);
@@ -958,12 +984,14 @@ namespace dlib
 // ----------------------------------------------------------------------------------------
 
     template <
-        typename image_type
+        typename image_type,
+        typename T,
+        typename U
         >
     void add_image_left_right_flips (
         dlib::array<image_type>& images,
-        std::vector<std::vector<rectangle> >& objects,
-        std::vector<std::vector<rectangle> >& objects2
+        std::vector<std::vector<T> >& objects,
+        std::vector<std::vector<U> >& objects2
     )
     {
         // make sure requires clause is not broken
@@ -977,23 +1005,24 @@ namespace dlib
             );
 
         image_type temp;
-        std::vector<rectangle> rects;
+        std::vector<T> rects;
+        std::vector<U> rects2;
 
         const unsigned long num = images.size();
         for (unsigned long j = 0; j < num; ++j)
         {
-            flip_image_left_right(images[j], temp);
+            const point_transform_affine tran = flip_image_left_right(images[j], temp);
             images.push_back(temp);
 
             rects.clear();
             for (unsigned long i = 0; i < objects[j].size(); ++i)
-                rects.push_back(impl::flip_rect_left_right(objects[j][i], get_rect(images[j])));
+                rects.push_back(impl::tform_object(tran, objects[j][i]));
             objects.push_back(rects);
 
-            rects.clear();
+            rects2.clear();
             for (unsigned long i = 0; i < objects2[j].size(); ++i)
-                rects.push_back(impl::flip_rect_left_right(objects2[j][i], get_rect(images[j])));
-            objects2.push_back(rects);
+                rects2.push_back(impl::tform_object(tran, objects2[j][i]));
+            objects2.push_back(rects2);
         }
     }
 
@@ -1196,6 +1225,84 @@ namespace dlib
     }
 
 // ----------------------------------------------------------------------------------------
+
+    template <
+        typename image_type, 
+        typename EXP, 
+        typename T, 
+        typename U
+        >
+    void add_image_rotations (
+        const matrix_exp<EXP>& angles,
+        dlib::array<image_type>& images,
+        std::vector<std::vector<T> >& objects,
+        std::vector<std::vector<U> >& objects2
+    )
+    {
+        // make sure requires clause is not broken
+        DLIB_ASSERT( is_vector(angles) && angles.size() > 0 && 
+                     images.size() == objects.size() &&
+                     images.size() == objects2.size(),
+            "\t void add_image_rotations()"
+            << "\n\t Invalid inputs were given to this function."
+            << "\n\t is_vector(angles): " << is_vector(angles) 
+            << "\n\t angles.size():     " << angles.size() 
+            << "\n\t images.size():     " << images.size() 
+            << "\n\t objects.size():    " << objects.size() 
+            << "\n\t objects2.size():   " << objects2.size() 
+            );
+
+        dlib::array<image_type> new_images;
+        std::vector<std::vector<T> > new_objects;
+        std::vector<std::vector<U> > new_objects2;
+
+        using namespace impl; 
+
+        std::vector<T> objtemp;
+        std::vector<U> objtemp2;
+        image_type temp;
+        for (long i = 0; i < angles.size(); ++i)
+        {
+            for (unsigned long j = 0; j < images.size(); ++j)
+            {
+                const point_transform_affine tran = rotate_image(images[j], temp, angles(i));
+                new_images.push_back(temp);
+
+                objtemp.clear();
+                for (unsigned long k = 0; k < objects[j].size(); ++k)
+                    objtemp.push_back(tform_object(tran, objects[j][k]));
+                new_objects.push_back(objtemp);
+
+                objtemp2.clear();
+                for (unsigned long k = 0; k < objects2[j].size(); ++k)
+                    objtemp2.push_back(tform_object(tran, objects2[j][k]));
+                new_objects2.push_back(objtemp2);
+            }
+        }
+
+        new_images.swap(images);
+        new_objects.swap(objects);
+        new_objects2.swap(objects2);
+    }
+
+// ----------------------------------------------------------------------------------------
+
+    template <
+        typename image_type, 
+        typename EXP,
+        typename T
+        >
+    void add_image_rotations (
+        const matrix_exp<EXP>& angles,
+        dlib::array<image_type>& images,
+        std::vector<std::vector<T> >& objects
+    )
+    {
+        std::vector<std::vector<T> > objects2(objects.size());
+        add_image_rotations(angles, images, objects, objects2);
+    }
+
+// ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
 
     template <
@@ -1291,15 +1398,49 @@ namespace dlib
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
 
+    struct chip_dims
+    {
+        chip_dims (
+            unsigned long rows_,
+            unsigned long cols_
+        ) : rows(rows_), cols(cols_) { }
+
+        unsigned long rows;
+        unsigned long cols;
+    };
+
     struct chip_details
     {
-        chip_details() : size(0), angle(0) {}
-        chip_details(const rectangle& rect_, unsigned long size_) : rect(rect_),size(size_),angle(0) {}
-        chip_details(const rectangle& rect_, unsigned long size_, double angle_) : rect(rect_),size(size_),angle(angle_) {}
+        chip_details() : angle(0), rows(0), cols(0) {}
+        chip_details(const rectangle& rect_, unsigned long size) : rect(rect_),angle(0) 
+        { compute_dims_from_size(size); }
+        chip_details(const rectangle& rect_, unsigned long size, double angle_) : rect(rect_),angle(angle_) 
+        { compute_dims_from_size(size); }
+
+        chip_details(const rectangle& rect_, const chip_dims& dims) : 
+            rect(rect_),angle(0),rows(dims.rows), cols(dims.cols) {}
+        chip_details(const rectangle& rect_, const chip_dims& dims, double angle_) : 
+            rect(rect_),angle(angle_),rows(dims.rows), cols(dims.cols) {}
 
         rectangle rect;
-        unsigned long size;
         double angle;
+        unsigned long rows; 
+        unsigned long cols;
+
+        inline unsigned long size() const 
+        {
+            return rows*cols;
+        }
+
+    private:
+        void compute_dims_from_size (
+            unsigned long size
+        ) 
+        {
+            const double relative_size = std::sqrt(size/(double)rect.area());
+            rows = static_cast<unsigned long>(rect.height()*relative_size + 0.5);
+            cols  = static_cast<unsigned long>(size/(double)rows + 0.5);
+        }
     };
 
 // ----------------------------------------------------------------------------------------
@@ -1318,11 +1459,11 @@ namespace dlib
 #ifdef ENABLE_ASSERTS
         for (unsigned long i = 0; i < chip_locations.size(); ++i)
         {
-            DLIB_CASSERT(chip_locations[i].size != 0 &&
+            DLIB_CASSERT(chip_locations[i].size() != 0 &&
                          chip_locations[i].rect.is_empty() == false,
             "\t void extract_image_chips()"
             << "\n\t Invalid inputs were given to this function."
-            << "\n\t chip_locations["<<i<<"].size:            " << chip_locations[i].size 
+            << "\n\t chip_locations["<<i<<"].size():            " << chip_locations[i].size()
             << "\n\t chip_locations["<<i<<"].rect.is_empty(): " << chip_locations[i].rect.is_empty()
             );
         }
@@ -1340,7 +1481,7 @@ namespace dlib
         {
             long depth = 0;
             rectangle rect = pyr.rect_down(chip_locations[i].rect);
-            while (rect.area() > chip_locations[i].size)
+            while (rect.area() > chip_locations[i].size())
             {
                 rect = pyr.rect_down(rect);
                 ++depth;
@@ -1361,15 +1502,12 @@ namespace dlib
         chips.resize(chip_locations.size());
         for (unsigned long i = 0; i < chips.size(); ++i)
         {
-            const double relative_size = std::sqrt(chip_locations[i].size/(double)chip_locations[i].rect.area());
-            const long chip_height = static_cast<long>(chip_locations[i].rect.height()*relative_size + 0.5);
-            const long chip_width  = static_cast<long>(chip_locations[i].size/(double)chip_height + 0.5);
-            chips[i].set_size(chip_height, chip_width);
+            chips[i].set_size(chip_locations[i].rows, chip_locations[i].cols);
 
             // figure out which level in the pyramid to use to extract the chip
             int level = -1;
             rectangle rect = chip_locations[i].rect;
-            while (pyr.rect_down(rect).area() > chip_locations[i].size)
+            while (pyr.rect_down(rect).area() > chip_locations[i].size())
             {
                 ++level;
                 rect = pyr.rect_down(rect);

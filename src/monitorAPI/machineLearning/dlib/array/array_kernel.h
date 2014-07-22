@@ -77,6 +77,7 @@ namespace dlib
 
 
         typedef T type;
+        typedef T value_type;
         typedef mem_manager mem_manager_type;
 
         array (
@@ -363,7 +364,7 @@ namespace dlib
     )
     {
         // make sure requires clause is not broken
-        DLIB_ASSERT(( size <= this->max_size() ),
+        DLIB_CASSERT(( size <= this->max_size() ),
             "\tvoid array::set_size"
             << "\n\tsize must be <= max_size()"
             << "\n\tsize: " << size 

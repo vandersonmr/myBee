@@ -18,6 +18,7 @@
 #include "../optimization.h"
 #include "svm_nu_trainer.h"
 #include <vector>
+#include <set>
 
 namespace dlib
 {
@@ -309,6 +310,96 @@ namespace dlib
 // ----------------------------------------------------------------------------------------
 
     template <
+        typename detection_type_,
+        typename label_type_ = long
+        >
+    struct labeled_detection
+    {
+        typedef detection_type_ detection_type;
+        typedef label_type_ label_type;
+        detection_type det;
+        label_type label;
+    };
+
+    template <
+        typename detection_type_,
+        typename label_type_ 
+        >
+    inline void serialize ( const labeled_detection<detection_type_,label_type_>& item, std::ostream& out)
+    {
+        serialize(item.det, out);
+        serialize(item.label, out);
+    }
+
+    template <
+        typename detection_type_,
+        typename label_type_ 
+        >
+    inline void deserialize (labeled_detection<detection_type_,label_type_>& item, std::istream& in)
+    {
+        deserialize(item.det, in);
+        deserialize(item.label, in);
+    }
+
+// ----------------------------------------------------------------------------------------
+
+    template <
+        typename detection_type, 
+        typename label_type 
+        >
+    bool is_track_association_problem (
+        const std::vector<std::vector<labeled_detection<detection_type,label_type> > >& samples
+    )
+    {
+        if (samples.size() == 0)
+            return false;
+
+        unsigned long num_nonzero_elements = 0;
+        for (unsigned long i = 0; i < samples.size(); ++i)
+        {
+            if (samples.size() > 0)
+                ++num_nonzero_elements;
+        }
+        if (num_nonzero_elements < 2)
+            return false;
+
+        // now make sure the label_type values are unique within each time step.
+        for (unsigned long i = 0; i < samples.size(); ++i)
+        {
+            std::set<label_type> vals;
+            for (unsigned long j = 0; j < samples[i].size(); ++j)
+                vals.insert(samples[i][j].label);
+            if (vals.size() != samples[i].size())
+                return false;
+        }
+
+        // passed all tests so it's good
+        return true;
+    }
+
+// ----------------------------------------------------------------------------------------
+
+    template <
+        typename detection_type, 
+        typename label_type 
+        >
+    bool is_track_association_problem (
+        const std::vector<std::vector<std::vector<labeled_detection<detection_type,label_type> > > >& samples
+    )
+    {
+        for (unsigned long i = 0; i < samples.size(); ++i)
+        {
+            if (!is_track_association_problem(samples[i]))
+                return false;
+        }
+
+        // passed all tests so it's good
+        return true;
+    }
+
+// ----------------------------------------------------------------------------------------
+
+    template <
         typename trainer_type,
         typename in_sample_vector_type,
         typename in_scalar_vector_type
@@ -329,10 +420,10 @@ namespace dlib
 
         // make sure requires clause is not broken
         DLIB_ASSERT(is_binary_classification_problem(x,y) == true &&
-                    1 < folds && folds <= x.nr(),
+                    1 < folds && folds <= std::min(sum(y>0),sum(y<0)),
             "\tmatrix cross_validate_trainer()"
             << "\n\t invalid inputs were given to this function"
-            << "\n\t x.nr(): " << x.nr() 
+            << "\n\t std::min(sum(y>0),sum(y<0)): " << std::min(sum(y>0),sum(y<0))
             << "\n\t folds:  " << folds 
             << "\n\t is_binary_classification_problem(x,y): " << ((is_binary_classification_problem(x,y))? "true":"false")
             );
@@ -883,11 +974,8 @@ namespace dlib
         long n = t.size()-1;
         while (n > 0)
         {
-            // put a random integer into idx
-            unsigned long idx = r.get_random_32bit_number();
-
-            // make idx be less than n
-            idx %= n;
+            // pick a random index to swap into t[n]
+            const unsigned long idx = r.get_random_32bit_number()%(n+1);
 
             // swap our randomly selected index into the n position
             exchange(t(idx), t(n));
@@ -925,11 +1013,8 @@ namespace dlib
         long n = t.size()-1;
         while (n > 0)
         {
-            // put a random integer into idx
-            unsigned long idx = r.get_random_32bit_number();
-
-            // make idx be less than n
-            idx %= n;
+            // pick a random index to swap into t[n]
+            const unsigned long idx = r.get_random_32bit_number()%(n+1);
 
             // swap our randomly selected index into the n position
             exchange(t[idx], t[n]);
@@ -984,11 +1069,8 @@ namespace dlib
         long n = t.size()-1;
         while (n > 0)
         {
-            // put a random integer into idx
-            unsigned long idx = r.get_random_32bit_number();
-
-            // make idx be less than n
-            idx %= n;
+            // pick a random index to swap into t[n]
+            const unsigned long idx = r.get_random_32bit_number()%(n+1);
 
             // swap our randomly selected index into the n position
             exchange(t(idx), t(n));
@@ -1022,11 +1104,8 @@ namespace dlib
         long n = t.size()-1;
         while (n > 0)
         {
-            // put a random integer into idx
-            unsigned long idx = r.get_random_32bit_number();
-
-            // make idx be less than n
-            idx %= n;
+            // pick a random index to swap into t[n]
+            const unsigned long idx = r.get_random_32bit_number()%(n+1);
 
             // swap our randomly selected index into the n position
             exchange(t[idx], t[n]);
@@ -1073,11 +1152,8 @@ namespace dlib
         long n = t.size()-1;
         while (n > 0)
         {
-            // put a random integer into idx
-            unsigned long idx = r.get_random_32bit_number();
-
-            // make idx be less than n
-            idx %= n;
+            // pick a random index to swap into t[n]
+            const unsigned long idx = r.get_random_32bit_number()%(n+1);
 
             // swap our randomly selected index into the n position
             exchange(t(idx), t(n));
@@ -1100,11 +1176,8 @@ namespace dlib
         long n = t.size()-1;
         while (n > 0)
         {
-            // put a random integer into idx
-            unsigned long idx = r.get_random_32bit_number();
-
-            // make idx be less than n
-            idx %= n;
+            // pick a random index to swap into t[n]
+            const unsigned long idx = r.get_random_32bit_number()%(n+1);
 
             // swap our randomly selected index into the n position
             exchange(t[idx], t[n]);

@@ -4,6 +4,7 @@
 #ifdef DLIB_INTERPOlATION_ABSTRACT_ 
 
 #include "../pixel.h"
+#include "../image_processing/full_object_detection_abstract.h"
 
 namespace dlib
 {
@@ -429,16 +430,18 @@ namespace dlib
 // ----------------------------------------------------------------------------------------
 
     template <
-        typename image_type
+        typename image_type,
+        typename T
         >
     void add_image_left_right_flips (
         dlib::array<image_type>& images,
-        std::vector<std::vector<rectangle> >& objects
+        std::vector<std::vector<T> >& objects
     );
     /*!
         requires
             - image_type == is an implementation of array2d/array2d_kernel_abstract.h
             - pixel_traits<typename image_type::type> is defined
+            - T == rectangle or full_object_detection
             - images.size() == objects.size()
         ensures
             - This function computes all the left/right flips of the contents of images and
@@ -456,12 +459,14 @@ namespace dlib
 // ----------------------------------------------------------------------------------------
 
     template <
-        typename image_type
+        typename image_type,
+        typename T,
+        typename U
         >
     void add_image_left_right_flips (
         dlib::array<image_type>& images,
-        std::vector<std::vector<rectangle> >& objects,
-        std::vector<std::vector<rectangle> >& objects2
+        std::vector<std::vector<T> >& objects,
+        std::vector<std::vector<U> >& objects2
     );
     /*!
         requires
@@ -469,6 +474,8 @@ namespace dlib
             - pixel_traits<typename image_type::type> is defined
             - images.size() == objects.size()
             - images.size() == objects2.size()
+            - T == rectangle or full_object_detection
+            - U == rectangle or full_object_detection
         ensures
             - This function computes all the left/right flips of the contents of images and
               then appends them onto the end of the images array.  It also finds the
@@ -482,6 +489,71 @@ namespace dlib
             - #objects2.size() == objects2.size()*2
             - All the original elements of images, objects, and objects2 are left unmodified.
               That is, this function only appends new elements to each of these containers.
+    !*/
+
+// ----------------------------------------------------------------------------------------
+
+    template <
+        typename image_type, 
+        typename EXP, 
+        typename T, 
+        typename U
+        >
+    void add_image_rotations (
+        const matrix_exp<EXP>& angles,
+        dlib::array<image_type>& images,
+        std::vector<std::vector<T> >& objects,
+        std::vector<std::vector<U> >& objects2
+    );
+    /*!
+        requires
+            - is_vector(angles) == true
+            - angles.size() > 0
+            - image_type == is an implementation of array2d/array2d_kernel_abstract.h
+            - pixel_traits<typename image_type::type> is defined
+            - images.size() == objects.size()
+            - images.size() == objects2.size()
+            - T == rectangle or full_object_detection
+            - U == rectangle or full_object_detection
+        ensures
+            - This function computes angles.size() different rotations of all the given
+              images and then replaces the contents of images with those rotations of the
+              input dataset.  We will also adjust the rectangles inside objects and
+              objects2 so that they still bound the same objects in the new rotated images.
+              That is, we assume objects[i] and objects2[i] are bounding boxes for things
+              in images[i].  So we will adjust the positions of the boxes in objects and
+              objects2 accordingly.
+            - The elements of angles are interpreted as angles in radians and we will
+              rotate the images around their center using the values in angles.  Moreover,
+              the rotation is done counter clockwise.
+            - #images.size()   == images.size()*angles.size()
+            - #objects.size()  == objects.size()*angles.size()
+            - #objects2.size() == objects2.size()*angles.size()
+    !*/
+
+// ----------------------------------------------------------------------------------------
+
+    template <
+        typename image_type, 
+        typename EXP,
+        typename T
+        >
+    void add_image_rotations (
+        const matrix_exp<EXP>& angles,
+        dlib::array<image_type>& images,
+        std::vector<std::vector<T> >& objects
+    );
+    /*!
+        requires
+            - is_vector(angles) == true
+            - angles.size() > 0
+            - image_type == is an implementation of array2d/array2d_kernel_abstract.h
+            - pixel_traits<typename image_type::type> is defined
+            - images.size() == objects.size()
+            - T == rectangle or full_object_detection
+        ensures
+            - This function is identical to the add_image_rotations() define above except
+              that it doesn't have objects2 as an argument.  
     !*/
 
 // ----------------------------------------------------------------------------------------
@@ -788,6 +860,25 @@ namespace dlib
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
 
+    struct chip_dims
+    {
+        /*!
+            WHAT THIS OBJECT REPRESENTS
+                This is a simple tool for passing in a pair of row and column values to the
+                chip_details constructor.
+        !*/
+
+        chip_dims (
+            unsigned long rows_,
+            unsigned long cols_
+        ) : rows(rows_), cols(cols_) { }
+
+        unsigned long rows;
+        unsigned long cols;
+    };
+
+// ----------------------------------------------------------------------------------------
+
     struct chip_details
     {
         /*!
@@ -796,8 +887,8 @@ namespace dlib
                 another image.  In particular, it specifies that the image chip is
                 contained within the rectangle this->rect and that prior to extraction the
                 image should be rotated counter-clockwise by this->angle radians.  Finally,
-                the extracted chip should have this->size pixels in it regardless of the
-                size of this->rect.
+                the extracted chip should have this->rows rows and this->cols columns in it
+                regardless of the shape of this->rect.
 
         !*/
 
@@ -806,8 +897,10 @@ namespace dlib
         /*!
             ensures
                 - #rect.is_empty() == true
-                - #size == 0
+                - #size() == 0
                 - #angle == 0
+                - #rows == 0
+                - #cols == 0
         !*/
 
         chip_details(
@@ -817,8 +910,18 @@ namespace dlib
         /*!
             ensures
                 - #rect == rect_
-                - #size == size_
+                - #size() == size_
                 - #angle == 0
+                - #rows and #cols is set such that the total size of the chip is as close
+                  to size_ as possible but still matches the aspect ratio of rect_.
+                - As long as size_ and the aspect ratio of of rect_ stays constant then
+                  #rows and #cols will always have the same values.  This means that, for
+                  example, if you want all your chips to have the same dimensions then
+                  ensure that size_ is always the same and also that rect_ always has the
+                  same aspect ratio.  Otherwise the calculated values of #rows and #cols
+                  may be different for different chips.  Alternatively, you can use the
+                  chip_details constructor below that lets you specify the exact values for
+                  rows and cols.
         !*/
 
         chip_details(
@@ -829,13 +932,57 @@ namespace dlib
         /*!
             ensures
                 - #rect == rect_
-                - #size == size_
+                - #size() == size_
                 - #angle == angle_
+                - #rows and #cols is set such that the total size of the chip is as close
+                  to size_ as possible but still matches the aspect ratio of rect_.
+                - As long as size_ and the aspect ratio of of rect_ stays constant then
+                  #rows and #cols will always have the same values.  This means that, for
+                  example, if you want all your chips to have the same dimensions then
+                  ensure that size_ is always the same and also that rect_ always has the
+                  same aspect ratio.  Otherwise the calculated values of #rows and #cols
+                  may be different for different chips.  Alternatively, you can use the
+                  chip_details constructor below that lets you specify the exact values for
+                  rows and cols.
+        !*/
+
+        chip_details(
+            const rectangle& rect_, 
+            const chip_dims& dims
+        ); 
+        /*!
+            ensures
+                - #rect == rect_
+                - #size() == dims.rows*dims.cols 
+                - #angle == 0
+                - #rows == dims.rows
+                - #cols == dims.cols
+        !*/
+
+        chip_details(
+            const rectangle& rect_, 
+            const chip_dims& dims,
+            double angle_
+        ); 
+        /*!
+            ensures
+                - #rect == rect_
+                - #size() == dims.rows*dims.cols 
+                - #angle == angle_
+                - #rows == dims.rows
+                - #cols == dims.cols
+        !*/
+
+        inline unsigned long size() const { return rows*cols; }
+        /*!
+            ensures
+                - returns the number of pixels in this chip.  This is just rows*cols.
         !*/
 
         rectangle rect;
-        unsigned long size;
         double angle;
+        unsigned long rows; 
+        unsigned long cols;
     };
 
 // ----------------------------------------------------------------------------------------
@@ -868,21 +1015,11 @@ namespace dlib
             - for all valid i:
                 - #chips[i] == The image chip extracted from the position
                   chip_locations[i].rect in img.
-                - #chips[i].nr()/#chips[i].nc() is approximately equal to
-                  chip_locations[i].rect.height()/chip_locations[i].rect.width() (i.e. the
-                  aspect ratio of the chip is as similar as possible to the aspect ratio of
-                  the rectangle that defines the chip's location in the original image)
-                - #chips[i].size() is as close to chip_locations[i].size as possible given that 
-                  we attempt to keep the chip's aspect ratio similar to chip_locations[i].rect. 
+                - #chips[i].nr() == chip_locations[i].rows
+                - #chips[i].nc() == chip_locations[i].cols
                 - The image will have been rotated counter-clockwise by
                   chip_locations[i].angle radians, around the center of
                   chip_locations[i].rect, before the chip was extracted. 
-                - As long as chip_locations[i].size and the aspect ratio of of
-                  chip_locations[i].rect stays constant then the dimensions of #chips[i] is
-                  always the same.  This means that, for example, if you want all your
-                  chips to have the same dimensions then ensure that chip_location[i].size
-                  is always the same and also that chip_location[i].rect always has the
-                  same aspect ratio.
             - Any pixels in an image chip that go outside img are set to 0 (i.e. black).
     !*/
 
