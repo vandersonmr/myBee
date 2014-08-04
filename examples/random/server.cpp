@@ -15,7 +15,7 @@ void handler(int sig){
 }
 
 int main(void) {
-    server.EnablePersistence("config/db.conf");
+    server.EnablePersistence("../../config/db.conf");
     server.EnableMachineLearning(1);
     server.SetFilter(&filter);
     

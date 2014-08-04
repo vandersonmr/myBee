@@ -11,6 +11,7 @@ void getConfData(string,char*, char*, char*, char*);
 extern int connectDatabase(string);
 extern void saveData(Data,int);
 vector<Data> load(char*);
+void run_mysql_query(char*);
 vector<Data> loadLastsDatas(int,string);
 vector<Data> loadLastsDatasByType(int,string,string);
 void closeConnection();

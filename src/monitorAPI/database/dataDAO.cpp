@@ -77,6 +77,7 @@ int connectDatabase(string conf_path) {
 }
 
 
+
 void saveData(Data data, int status){
   char query[LINE_SIZE];
   char *date;
@@ -88,16 +89,23 @@ void saveData(Data data, int status){
       data.nickname.c_str(), date, data.type.c_str(), static_cast<int>(ceil(data.value)), status, 
       data.node.c_str());
 
-  if (mysql_query(connection,query)) //return true if get an error.
-    printf("%s\n",mysql_error(connection));
+  run_mysql_query(query);
 
+}
+
+void run_mysql_query(char* query){
+    if (mysql_query(connection, query)){
+        printf("%s\n", mysql_error(connection));
+        exit(1);
+    }
 }
 
 vector<Data> load(char* query){
   MYSQL_RES *res_set;
   MYSQL_ROW row;
 
-  mysql_query(connection,query);
+
+  run_mysql_query(query);
 
   res_set = mysql_store_result(connection);
   vector<Data> result; 

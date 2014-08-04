@@ -14,7 +14,6 @@ libmonitorapi.a: db	ml repa.so $(OBJ_MACHINE)
 	$(CC) -c $< $(CFLAGS) $(INCLUDES) $(dataDAO) -o $@
 
 repa.so:
-	echo "oi";\
 	cd ./repa/ &&\
 	python setup.py build &&\
 	sudo python setup.py install &&\

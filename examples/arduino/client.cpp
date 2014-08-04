@@ -19,11 +19,6 @@ double GetTemperature() {
   float temp;
   sscanf(buffer, "%f", &temp);
   return (double) temp;
-  //srand(time(NULL));
-  //aux += 0.1;
-  //if (aux > 6.3) aux = 0;
-  //double temp = (sin(aux)*10+26) + rand() % 2 - 1; // Rand add some noise
-  //return temp;
 }
 
 double GetHumidity(){
