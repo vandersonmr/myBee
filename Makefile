@@ -9,10 +9,10 @@ LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa)
 LDmysql=  -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
 
-all: monitorAPI.o examples clear.o
+all: monitorAPI.o examples.o clear.o
 	
-examples: monitorAPI.o
-	cd examples;\
+examples.o:
+	cd ./examples;\
 	make;\
 	cd ..;
 
@@ -35,7 +35,6 @@ kill:
 monitorAPI.o:
 	cd ./$(SRC)/monitorAPI;\
 	make;\
-	cp ;\
 	cd -;
 
 clear.o:
@@ -43,8 +42,6 @@ clear.o:
 	rm -f *.so
 
 clear: clear.o
-	rm -f client;\
-	rm -f server;\
 	rm -f $(SRC)/web-UI/getDados;
 	cd ./$(SRC)/monitorAPI/machineLearning;\
 	make clear;\

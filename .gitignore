@@ -1,6 +1,7 @@
 *.o
 *.class
 *.so
+*.a
 
 *.jar
 *.swp

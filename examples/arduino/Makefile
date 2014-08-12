@@ -14,8 +14,13 @@ all: server client clear.o
 server: monitorAPI.o
 	$(CCPP) $(CFLAGS) server.cpp $(SRC)/monitorAPI/libmonitorapi.a $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
 
-client: monitorAPI.o
+client: monitorClient
 	$(CCPP) $(CFLAGS) client.cpp $(SRC)/monitorAPI/libmonitorapi.a -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
+
+monitorClient:
+	cd ./$(SRC)/monitorAPI;\
+	make apiClient;\
+	cd -;
 
 monitorAPI.o:
 		cd ./$(SRC)/monitorAPI;\
@@ -27,6 +32,6 @@ clear.o:
 	rm -f *.so
 
 clear:
-	rm client
-	rm server
+	rm -f client
+	rm -f server
 

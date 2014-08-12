@@ -13,6 +13,10 @@ libmonitorapi.a: db	ml repa.so $(OBJ_MACHINE)
 .cpp.o: 
 	$(CC) -c $< $(CFLAGS) $(INCLUDES) $(dataDAO) -o $@
 
+apiClient: repa.so
+	$(CC) -c client_monitor.cpp $(CFLAGS) $(INCLUDES)
+	ar -cvq libmonitorapi.a *.o repa.so
+
 repa.so:
 	cd ./repa/ &&\
 	python setup.py build &&\
