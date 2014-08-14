@@ -36,7 +36,7 @@ ServerMonitor::ServerMonitor() {
   vector<string> interests;
   interests.push_back(string("server"));
   
-  if (!repa.InitRepa(interests)) throw;
+  if (!repa.InitRepa(interests)) exit(1);
 
   repa.GetMessage([this](message<Data> msg) { HandleMessage(msg); });
 }

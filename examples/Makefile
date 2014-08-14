@@ -11,11 +11,14 @@ FOLDERS= random arduino raspberry
 
 all: server examples clear.o
 
-server:
+server: monitorAPI.o
+	$(CCPP) $(CFLAGS) server.cpp $(SRC)/monitorAPI/libmonitorapi.a $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
+
+monitorAPI.o:
 	cd $(SRC)/monitorAPI;\
 	make;\
 	cd -;
-	$(CCPP) $(CFLAGS) server.cpp $(SRC)/monitorAPI/libmonitorapi.a $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
+
 examples:
 	$(foreach i, $(FOLDERS), cd $(i); make; cd ..;)
 
