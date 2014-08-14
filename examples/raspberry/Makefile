@@ -12,7 +12,7 @@ HEADERS= -I$(SRC)/include/ -I$(SRC) -I../../repd/
 all: monitorClient client clear.o
 
 client:
-	$(CCPP) $(CFLAGS) client.cpp $(SRC)/monitorAPI/libmonitorapi.a -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
+	$(CCPP) $(CFLAGS) client.cpp lib/dht11.cpp $(SRC)/monitorAPI/libmonitorapi.a -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
 
 monitorClient:
 	cd ./$(SRC)/monitorAPI;\

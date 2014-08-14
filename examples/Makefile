@@ -7,10 +7,15 @@ LDrepa= -pthread -lpthread -lpython2.7
 LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa)
 LDmysql=  -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
-FOLDERS= random arduino
+FOLDERS= random arduino raspberry
 
-all: examples clear.o
-	
+all: server examples clear.o
+
+server:
+	cd $(SRC)/monitorAPI;\
+	make;\
+	cd -;
+	$(CCPP) $(CFLAGS) server.cpp $(SRC)/monitorAPI/libmonitorapi.a $(LDrepaAPI) $(LDmysql) $(HEADERS) -o server
 examples:
 	$(foreach i, $(FOLDERS), cd $(i); make; cd ..;)
 
