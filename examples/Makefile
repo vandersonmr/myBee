@@ -6,7 +6,7 @@ SHAREDOBJ= repa.so
 LDrepa= -pthread -lpthread -lpython2.7
 LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa)
 LDmysql=  -lmysqlclient
-HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
+HEADERS= -I$(SRC) -I/usr/include/mysql/ -I./repd/
 FOLDERS= random arduino raspberry
 
 all: server examples clear.o

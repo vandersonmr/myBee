@@ -5,7 +5,7 @@ SRC= ../../src
 CFLAGS= -O0 -g -Wall -Wextra -Werror -pedantic-errors -ansi -Winit-self -Wuninitialized -Woverloaded-virtual -Winit-self
 SHAREDOBJ= repa.so
 LDrepa= -pthread -lpthread -lpython2.7
-LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa) -lwiringPi
+LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa)
 LDmysql= -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I$(SRC) -I../../repd/ 
 
