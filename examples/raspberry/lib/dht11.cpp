@@ -11,6 +11,10 @@ DHT11::DHT11(int pin){
 }
 
 
+void DHT11::init(){
+    this->thr = new std::thread(&DHT11::read_data_non_stop, this);
+}
+
 bool DHT11::has_timeout(timeval_t& init, timeval_t& end, uint32_t max_time){
     uint32_t diff_secs = (end.tv_sec - init.tv_sec) * 1000000;
     if ((diff_secs + end.tv_usec) - init.tv_usec > max_time) return true;
@@ -26,6 +30,12 @@ void DHT11::waitForSignal(int signal, uint32_t max_time){
     }
 }
 
+void DHT11::close(){
+    this->running = false;
+    this->thr->join();
+    delete this->thr;
+}
+
 void DHT11::handshake(){
     pinMode(this->pin, OUTPUT);
     digitalWrite(this->pin, LOW);
@@ -35,6 +45,13 @@ void DHT11::handshake(){
     pinMode(this->pin, INPUT);
     waitForSignal(HIGH, 100);
     waitForSignal(LOW, 100);
+}
+
+void DHT11::read_data_non_stop(){
+    while (running){
+        read_data();
+        sleep(INTERVAL_TIME);
+    }
 }
 
 void DHT11::read_data(){ 

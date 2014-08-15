@@ -10,20 +10,9 @@
 ClientMonitor *tempMonitor;
 DHT11 dht(1);
 
-int GetTemperature() {
-    dht.read_data();
-    while (dht.has_errors()){
-        dht.read_data();
-    }
-    return dht.get_temperature();
-}
-
-int GetHumidity(){
-    return dht.get_humidity();
-}
-
 void handler(int sig){
     cout << "Signal " << sig << endl;
+    dht.close();
     tempMonitor->Close();
 }
 
@@ -37,12 +26,14 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
+  dht.init();
+
   ClientMonitor monitor(string(nickname), 4);
 
   tempMonitor = &monitor;
 
-  monitor.AddDataGenerator("temperature", &GetTemperature);
-  monitor.AddDataGenerator("humidity"   , &GetHumidity);
+  monitor.AddDataGenerator("temperature", &dht.get_temperature);
+  monitor.AddDataGenerator("humidity"   , &dht.get_humidity);
 
   signal(SIGINT, &handler);
   
