@@ -1,5 +1,5 @@
-#ifndef _DHT11
-#define _DHT11
+#ifndef _DHT
+#define _DHT
 
 #include <wiringPi.h>
 #include <unistd.h>
@@ -12,9 +12,10 @@ typedef struct timeval timeval_t;
 
 #define INTERVAL_TIME 1
 
-class DHT11{
-    private:
-        int pin, error, temperature, humidity;
+class DHT{
+    protected:
+        int pin, error;
+        double temperature, humidity;
         void waitForSignal(int, uint32_t);
         void handshake();
         bool has_timeout(timeval_t&, timeval_t&, uint32_t);
@@ -23,13 +24,13 @@ class DHT11{
         bool running = true;
 
     public:
-        DHT11(int);
+        DHT(int);
         void init();
         void close();
         bool has_errors();
-        void read_data();
-        int get_humidity();
-        int get_temperature();
+        virtual void read_data();
+        double get_humidity();
+        double get_temperature();
 };
 
 #endif
