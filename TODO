@@ -1,5 +1,12 @@
 ***** Coisas a serem feitas
+
+Fix-me:
+    * Múltiplos temperatures no gráfico, mesmo quando só tem um.
+    * Calibrar o machine learning para os dados reais.
+    * Poucos dados nos gráficos em tempo real.
+    
 Próxima versão: 
+    * Passar o tipo dos dados de int para double (database).
     * Comentar código
     * Criar testes
     - Adicionar suporte a escolher dia especifico para visualizar o histórico.
