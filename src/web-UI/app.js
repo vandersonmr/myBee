@@ -47,6 +47,7 @@ function connectToDatabase() {
         throw err;                                  // server variable configures this)
       }
     });
+    mysql.query('use ' + DATABASE);
     if (dataDAO != null)
         delete dataDAO;
     dataDAO = new dataDB.dataDAO(mysql);
@@ -54,7 +55,6 @@ function connectToDatabase() {
 
 connectToDatabase();
 
-mysql.query('use ' + DATABASE);
 
 // Instaciation
 var app = module.exports = express.createServer();
