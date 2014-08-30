@@ -85,8 +85,8 @@ void saveData(Data data, int status){
   date = ctime(&data.time);
   sscanf(date,"%[^\n]",date);
 
-  snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%s','%d','%d','%s')",
-      data.nickname.c_str(), date, data.type.c_str(), static_cast<int>(ceil(data.value)), status, 
+  snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%s','%.2f','%d','%s')",
+      data.nickname.c_str(), date, data.type.c_str(), data.value, status, 
       data.node.c_str());
 
   run_mysql_query(query);
@@ -114,7 +114,7 @@ vector<Data> load(char* query){
     Data data;
 
     data.type     = const_cast<char*>(row[2]);
-    data.value    = atoi(const_cast<char*>(row[3]));
+    data.value    = atof(const_cast<char*>(row[3]));
     data.status   = atoi(const_cast<char*>(row[4]));
     data.nickname = const_cast<char*>(row[0]);
     data.time     = atof( const_cast<char*>(row[1]));
