@@ -27,8 +27,11 @@ class ServerMonitor {
 
     void UpdateListOfNodesOnline();
     void HandleMessage(message<Data>);
+    void InitMonitor();
+    static void Handler(int);
  
   public: 
+    ServerMonitor();
     ServerMonitor(int*, char**);
     ~ServerMonitor();
     void SetFilter(function<Data(Data)>);
@@ -38,5 +41,4 @@ class ServerMonitor {
     void Run();
     void GetTimeServer();
     void GetTimeClient();
-    static void Handler(int);
 };
