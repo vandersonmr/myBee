@@ -21,10 +21,10 @@ void ServerMonitor::HandleMessage(message<Data> msg) {
       data = filter(data);
 
     if (is_machine_learning_enable) 
-      status = CheckData(data); 
-    
+      status = CheckData(data);
+
     data.node = msg.prefix_address; 
-  
+
     if (is_persistence_enable)
       saveData(data,status); 
 
@@ -35,7 +35,7 @@ void ServerMonitor::HandleMessage(message<Data> msg) {
 ServerMonitor::ServerMonitor() {
   vector<string> interests;
   interests.push_back(string("server"));
-  
+
   if (!repa.InitRepa(interests)) exit(1);
 
   repa.GetMessage([this](message<Data> msg) { HandleMessage(msg); });

@@ -25,6 +25,8 @@ examples:
 clear.o:
 	rm -f *.o
 	rm -f *.so
+	cd ..;\
+	make clear;
 
 clear:
 	$(foreach i, $(FOLDERS), cd $(i); make clear; cd ..;)

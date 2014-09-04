@@ -6,7 +6,6 @@
 #include <vector>
 #include <string>
 
-ClientMonitor *tempMonitor;
 /* Randomize a temperature based on the sin function */
 double aux  = 0;
 double aux1 = 0;
@@ -36,30 +35,14 @@ double GetPressure(){
   return pressure;
 }
 
-void handler(int sig){
-    cout << "Signal " << sig << endl;
-    tempMonitor->Close();
-}
-
 int main(int argc, char **argv) {
-  char* nickname = argv[argc-1];
-
-  if (nickname == 0 || argc == 1) {
-    printf("Formato incorreto! Tente ./client nomeDoNode\n");
-    exit(1);
-  }
-
-  ClientMonitor monitor(string(nickname), 4);
-
-  tempMonitor = &monitor;
+  ClientMonitor monitor(&argc, argv);
 
   monitor.AddDataGenerator("temperature", &GetTemperature);
   monitor.AddDataGenerator("humidity"   , &GetHumidity);
   monitor.AddDataGenerator("pressure"   , &GetPressure);
 
-  signal(SIGINT, &handler);
-  
-  while(true) sleep(1);
+  monitor.Run();
 
   return 0;
 }
