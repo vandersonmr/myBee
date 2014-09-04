@@ -29,5 +29,6 @@ clear.o:
 	make clear;
 
 clear:
+	rm -f server
 	$(foreach i, $(FOLDERS), cd $(i); make clear; cd ..;)
 

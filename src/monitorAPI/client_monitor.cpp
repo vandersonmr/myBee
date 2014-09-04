@@ -89,6 +89,7 @@ void ClientMonitor::ParseArgs(int* argc, char** argv){
           else Usage();
         }
         else if (arg[1] == 'h') Usage();
+        else Usage();
       }
       else Usage();
     }
@@ -108,7 +109,7 @@ void ClientMonitor::Usage(){
   cout << "\t-i time : Interval time in seconds to send data." << endl;
   cout << "\t-n name : Client name." << endl;
   cout << "\t-h      : Display this message." << endl;
-  exit(1);
+  exit(0);
 }
 
 void ClientMonitor::AddDataGenerator(string name, function<double(void)> callback) {

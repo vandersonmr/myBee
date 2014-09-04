@@ -108,5 +108,5 @@ bool RepaAPI<T>::CloseRepa() {
     pthread_join(thread, NULL);
   }
   cout << "Repa has closed successfully." << endl;
-  return true;
+  exit(0);
 }
