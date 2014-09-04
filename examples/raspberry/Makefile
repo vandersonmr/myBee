@@ -10,13 +10,13 @@ LDmysql= -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I$(SRC) -I../../repd/ 
 SENSORLIB=./lib/dht/dht.cpp
 
-all: monitorClient client-dht22 clear.o
+all: clear monitorClient client-dht22 clear.o
 
-client-dht11:
+client-dht11: clear
 	$(CCPP) $(CFLAGS) client.cpp lib/dht11/dht11.cpp $(SENSORLIB)\
 	    $(SRC)/monitorAPI/libmonitorapi.a -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
 
-client-dht22:
+client-dht22: clear
 	$(CCPP) $(CFLAGS) client.cpp lib/dht22/dht22.cpp $(SENSORLIB)\
 	    $(SRC)/monitorAPI/libmonitorapi.a -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
 
@@ -35,5 +35,3 @@ clear.o:
 
 clear:
 	rm -f client
-	rm -f server
-

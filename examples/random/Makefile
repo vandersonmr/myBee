@@ -9,9 +9,9 @@ LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa)
 LDmysql= -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I$(SRC) -I../../repd/ 
 
-all: monitorClient client clear.o
+all: clear monitorClient client clear.o
 
-client:
+client: clear
 	$(CCPP) $(CFLAGS) client.cpp $(SRC)/monitorAPI/libmonitorapi.a -o client $(CFLAGS) $(LDrepaAPI) $(HEADERS) -lm
 
 monitorClient:
@@ -29,5 +29,4 @@ clear.o:
 
 clear:
 	rm -f client
-	rm -f server
 

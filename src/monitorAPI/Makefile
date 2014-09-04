@@ -8,14 +8,14 @@ OBJ_MACHINE=$(SRC_MACHINE:.cpp=.o)
 all: libmonitorapi.a
 
 libmonitorapi.a: db	ml repa.so $(OBJ_MACHINE)
-	ar -cvq libmonitorapi.a *.o database/*.o machineLearning/*.o repa.so
+	ar -cvr libmonitorapi.a *.o database/*.o machineLearning/*.o repa.so
 
 .cpp.o: 
 	$(CC) -c $< $(CFLAGS) $(INCLUDES) $(dataDAO) -o $@
 
 apiClient: repa.so
 	$(CC) -c client_monitor.cpp $(CFLAGS) $(INCLUDES)
-	ar -cvq libmonitorapi.a *.o repa.so
+	ar -cvr libmonitorapi.a *.o repa.so
 
 repa.so:
 	cd ./repa/ &&\

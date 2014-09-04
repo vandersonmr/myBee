@@ -9,7 +9,7 @@ LDrepaAPI= -lmsgpack --std=c++11 $(LDrepa)
 LDmysql=  -lmysqlclient
 HEADERS= -I$(SRC)/include/ -I/usr/include/mysql/ -I./repd/
 
-all: monitorAPI.o examples.o clear.o
+all: examples.o
 	
 examples.o:
 	cd ./examples;\
