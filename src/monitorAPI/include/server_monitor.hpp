@@ -16,7 +16,6 @@ class ServerMonitor {
     bool has_a_filter               = false;
     bool is_machine_learning_enable = false;
     bool is_running                 = false;
-    bool is_ack_enable              = false;
     bool is_time_client;
 
     int  CheckData(Data data);
@@ -40,5 +39,4 @@ class ServerMonitor {
     void Run();
     void GetTimeServer();
     void GetTimeClient();
-    void EnableACK(bool);
 };

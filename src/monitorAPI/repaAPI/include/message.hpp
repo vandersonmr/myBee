@@ -14,7 +14,8 @@ template<class T> class message {
     string prefix_address;
     uint32_t id;
     time_t time;
-    MSGPACK_DEFINE(interests, data, prefix_address, id, time)
+    bool has_ack;
+    MSGPACK_DEFINE(interests, data, prefix_address, id, time, has_ack)
 };
 
 #endif

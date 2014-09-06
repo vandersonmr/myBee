@@ -8,6 +8,7 @@ void* RepaAPI<T>::HandleMessage(void*) {
   terminated = false;
   while (!terminated) {
     message<T> msg = GetMessage();
+    if (terminated) break;
     callback(msg);
   }
   return 0; 

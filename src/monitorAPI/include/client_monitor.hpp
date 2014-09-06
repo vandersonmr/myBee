@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#define TIMEOUT_TIME 3
+#define TIMEOUT_TIME 60
 #define MAX_MESSAGES 100
 
 class ClientMonitor {

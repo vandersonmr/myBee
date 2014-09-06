@@ -37,7 +37,7 @@ void ServerMonitor::HandleMessage(message<Data> msg) {
 
   }
 
-  if (this->is_ack_enable) {
+  if (msg.has_ack) {
     string nickname = msg.data.back().nickname;
     msg.data.clear();
     msg.interests = {"client-" + nickname};
@@ -105,7 +105,6 @@ void ServerMonitor::ParseArgs(int* argc, char** argv){
       else if (arg[1] == 'c') GetTimeClient();
       else if (arg[1] == 's') GetTimeServer();
       else if (arg[1] == 'h') Usage();
-      else if (arg[1] == 'a') EnableACK(true);
       else Usage();
     }
     else Usage();
@@ -117,14 +116,8 @@ void ServerMonitor::Usage(){
   cout << "\t-m disable/enable : Disable/Enable machine learning." << endl;
   cout << "\t-c                : Use time from client." << endl;
   cout << "\t-s                : Use time from server." << endl;
-  cout << "\t-a                : Enable ACK confirmation to client." << endl;
   cout << "By default machine learning is enable and time is from client." << endl;
   exit(0);
-}
-
-void ServerMonitor::EnableACK(bool value) {
-  if (value == true) cout << "ACK is set" << endl;
-  this->is_ack_enable = value;
 }
 
 void ServerMonitor::SetFilter(function<Data(Data)> filter) {

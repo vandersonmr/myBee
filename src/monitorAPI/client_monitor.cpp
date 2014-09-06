@@ -34,8 +34,9 @@ void ClientMonitor::GeneratorsRunner() {
     msg.data      = data;
     msg.interests = interests;
     msg.time      = time_now;
+    msg.has_ack   = this->is_ack_enable;
 
-    if (this->is_ack_enable) {
+    if (msg.has_ack) {
       msg.id = this->id;
       message_list[this->id++ % MAX_MESSAGES] = msg;
     }
@@ -86,8 +87,8 @@ ClientMonitor::~ClientMonitor(){
 }
 
 void ClientMonitor::HandleMessage(message<Data>& msg) {
-  cout << "Message " << msg.id << " has been received." << endl;
   message_list.erase(msg.id % MAX_MESSAGES);
+  cout << "Message " << msg.id << " has been received." << endl;
 }
 
 void ClientMonitor::Run(){
