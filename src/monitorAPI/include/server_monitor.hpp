@@ -7,8 +7,6 @@
 
 using namespace std;
 
-extern bool quit;
-
 class ServerMonitor {
   private:
     function<Data(Data)> filter;
@@ -18,6 +16,7 @@ class ServerMonitor {
     bool has_a_filter               = false;
     bool is_machine_learning_enable = false;
     bool is_running                 = false;
+    bool is_ack_enable              = false;
     bool is_time_client;
 
     int  CheckData(Data data);
@@ -29,7 +28,7 @@ class ServerMonitor {
     void HandleMessage(message<Data>);
     void InitMonitor();
     static void Handler(int);
- 
+
   public: 
     ServerMonitor();
     ServerMonitor(int*, char**);
@@ -41,4 +40,5 @@ class ServerMonitor {
     void Run();
     void GetTimeServer();
     void GetTimeClient();
+    void EnableACK(bool);
 };
