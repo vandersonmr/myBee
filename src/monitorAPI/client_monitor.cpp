@@ -171,8 +171,7 @@ void ClientMonitor::Usage(){
   cout << "Usage: ClientMonitor [Options]" << endl;
   cout << "\t-i time : Interval time in seconds to send data." << endl;
   cout << "\t-n name : Client name." << endl;
+  cout << "\t-a      : Enable ACK to resend messages to the server." << endl;
   cout << "\t-h      : Display this message." << endl;
-  cout << "\t-lt     : Resend lost messages." << endl;
-  cout << "\t-lf     : Don't send lost messages." << endl;
   exit(0);
 }
