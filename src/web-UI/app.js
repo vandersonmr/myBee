@@ -16,7 +16,7 @@ var express     =  require('express')
 var HOST       = 'localhost';
 var PORT       = 3306;
 var MYSQL_USER = 'root';
-var MYSQL_PASS = '123';
+var MYSQL_PASS = '123456';
 var DATABASE   = 'monitorAbelhas';
 
 var db_config = {
@@ -81,7 +81,7 @@ app.configure('production', function(){
 // Routes
 
 app.get('/'                     , routes.index);
-app.get('/getDados'             , getDados.getDados);
+app.get('/getDados/:interval'   , getDados.getDados);
 app.get('/getNodes'             , getNodes.getNodes);
 app.get('/getHistoric/:nodeName', getHistoric.getHistoric);
 

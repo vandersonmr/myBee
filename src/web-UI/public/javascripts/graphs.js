@@ -79,7 +79,6 @@ function nodeGraphManager(name, divId, options){
 
     $("#"+divId).append(
         "<div id=\"g"+name+"\" class=\"graph\">"+
-        
           "<h2>Node: "+name+
           (options.lastTemp ? " (<b id=\"lastTemp"+name+"\"></b>)</h2>" : "</h2>")+
           (options.closeBox ? "<a class=\"boxclose\" id=\"boxclose"+name+"\"></a>" : "") +
@@ -470,7 +469,7 @@ function plotData(data, divId, options) {
     graphList[nodeKey].setNodeStatus(tempData[2][highestKey][tempData[2][highestKey].length-1], highestKey)
     
     graphList[nodeKey].setData(tempData[0],tempData[1],tempData[2])
-    graphList[nodeKey].update()
+    graphList[nodeKey].update();
 
   }
 }
@@ -491,14 +490,13 @@ function showTooltip(x, y, contents) {
 var updateInterval = 1000
 
 function update() {
-  var input
-    $.get('getDados').success(
-        function(data){	
-          var res = parseData(data)
-          plotData(res,"GraphsGrid", {lastTemp: true , showStatus : true})
-        });
+    $.get('getDados/'+$("#intervalVal").val()).success(
+      function(data){	
+        var res = parseData(data)
+        plotData(res,"GraphsGrid", {lastTemp: true , showStatus : true})
+    });
 
-  setTimeout(update, updateInterval)
+    setTimeout(update, updateInterval)
 }
 
 function fillNodesOptions() {

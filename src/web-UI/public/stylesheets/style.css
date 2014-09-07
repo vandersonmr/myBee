@@ -9,13 +9,19 @@
 }
 
 .image {
-    position: fixed;
+  position:fixed;
+}
+
+#interval {
+  position: relative;
+  float:right;
 }
 
 #menu {
   margin: 15px auto 30px;
   width: 960px;
-height: 5px;}
+  height: 5px;
+}
 
 #menu ul { list-style:none; }
 #menu ul li { display:inline; float:left; margin-bottom:20px; }
