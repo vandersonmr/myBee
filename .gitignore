@@ -7,3 +7,4 @@
 *.swp
 
 src/web-UI/node_modules/
+docs/
