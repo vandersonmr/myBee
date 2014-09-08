@@ -31,7 +31,7 @@ void ServerMonitor::HandleMessage(message<Data> msg) {
     data.node = msg.prefix_address; 
 
     if (is_persistence_enable)
-      saveData(data,status); 
+      saveData(data, status); 
 
     UpdateListOfNodesOnline();
 

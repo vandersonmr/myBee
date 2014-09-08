@@ -10,7 +10,7 @@
 
 using namespace std;
 
-template<class T>class RepaAPI {
+template<class T> class RepaAPI {
   private:
     bool terminated = true;
     pthread_t thread;

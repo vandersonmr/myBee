@@ -8,15 +8,23 @@
 
 using namespace std;
 
-class Data{
+enum Type { None = -1, Temperature = 0, Humidity = 1};
+
+union Type_t {
+  Type sensor;
+  int  typeVal;
+};
+
+class Data {
   public:
     string type;
+    Type_t definedType;
     string node;
     double value;
     string nickname;
     int status;
     time_t time;
-    MSGPACK_DEFINE(type,node,value,nickname,status,time)
+    MSGPACK_DEFINE(type, definedType.typeVal, node, value, nickname, status, time)
 };
 
 #endif

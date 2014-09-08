@@ -7,11 +7,17 @@ static bool quit = false;
 
 Data ClientMonitor::GetData(string type, double value){
   time_t timenow;
-  Data data;
+  Data data; 
   data.type = type;
+  if (type == string("temperature"))
+    data.definedType.sensor = Type::Temperature;
+  else if (type == string("humidity")) 
+    data.definedType.sensor = Type::Humidity;
+  else
+    data.definedType.sensor = Type::None;
   data.value = value;
   time(&timenow);
-  data.time = timenow;
+  data.time     = timenow;
   data.nickname = node_name;
   return data;
 }
@@ -23,7 +29,7 @@ void ClientMonitor::GeneratorsRunner() {
 
     vector<Data> data;
     for (auto generator : data_generators) { 
-      data.push_back(GetData(generator.first,generator.second()));
+      data.push_back(GetData(generator.first, generator.second()));
     }
 
     vector<string> interests = {"server"}; 
