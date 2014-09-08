@@ -7,3 +7,6 @@
 *.swp
 
 src/web-UI/node_modules/
+
+client
+server

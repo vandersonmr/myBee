@@ -21,6 +21,7 @@ class ClientMonitor {
     void ParseArgs(int*, char**);
     void Usage();
     map<string, function<double(void)>> data_generators;
+    map<string, Type> data_generators_type;
     Data GetData(string, double);
     void GeneratorsRunner();
     void InitMonitor();
@@ -37,6 +38,7 @@ class ClientMonitor {
     ClientMonitor(int*, char**);
     ~ClientMonitor();
     void AddDataGenerator(string, function<double(void)>);
+    void AddDataGenerator(string, Type  , function<double(void)>);
     void RmDataGenerator(string);
     void SetFreq(int);
     void Close();

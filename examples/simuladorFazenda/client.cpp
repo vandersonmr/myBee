@@ -44,8 +44,8 @@ int main(int argc, char **argv) {
   getline(*tempFile, temp); // throw away the header
   getline(*humFile , hum); // throw away the header
 
-  monitor.AddDataGenerator("temperature", &GetTemperature);
-  monitor.AddDataGenerator("humidity"   , &GetHumidity);
+  monitor.AddDataGenerator("temperature", Type::Temperature, &GetTemperature);
+  monitor.AddDataGenerator("humidity"   , Type::Humidity   ,&GetHumidity);
 
   monitor.Run();
 

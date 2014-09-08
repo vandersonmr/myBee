@@ -9,12 +9,7 @@ Data ClientMonitor::GetData(string type, double value){
   time_t timenow;
   Data data; 
   data.type = type;
-  if (type == string("temperature"))
-    data.definedType.sensor = Type::Temperature;
-  else if (type == string("humidity")) 
-    data.definedType.sensor = Type::Humidity;
-  else
-    data.definedType.sensor = Type::None;
+  data.definedType.sensor = Type::None;
   data.value = value;
   time(&timenow);
   data.time     = timenow;
@@ -29,7 +24,9 @@ void ClientMonitor::GeneratorsRunner() {
 
     vector<Data> data;
     for (auto generator : data_generators) { 
-      data.push_back(GetData(generator.first, generator.second()));
+      Data d = GetData(generator.first, generator.second());
+      d.definedType.sensor = data_generators_type[generator.first];
+      data.push_back(d);
     }
 
     vector<string> interests = {"server"}; 
@@ -123,8 +120,18 @@ void ClientMonitor::EnableACK(bool value) {
   this->is_ack_enable = value;
 }
 
-void ClientMonitor::AddDataGenerator(string name, function<double(void)> callback) {
-  data_generators[name] = callback;
+void ClientMonitor::AddDataGenerator(string name, 
+                                              function<double(void)> callback) {
+
+  data_generators[name]      = callback;
+  data_generators_type[name] = Type::None; 
+}
+
+void ClientMonitor::AddDataGenerator(string name, Type type, 
+                                              function<double(void)> callback) {
+
+  data_generators[name]      = callback;
+  data_generators_type[name] = type; 
 }
 
 void ClientMonitor::RmDataGenerator(string name) {
