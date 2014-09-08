@@ -7,10 +7,7 @@
 *.swp
 
 src/web-UI/node_modules/
-<<<<<<< HEAD
 docs/
-=======
 
 client
 server
->>>>>>> 322f127e964b52e2c3aad6e4ac18860657464bff
