@@ -109,6 +109,7 @@ void ClientMonitor::ResendLostMessages() {
       message<Data> msg = value.second;
       uint32_t time_diff = time(NULL) - msg.time;
       if (time_diff > TIMEOUT_TIME) {
+        msg.time = time(NULL);
         repa_api.SendMessage(msg);
       }
     }
