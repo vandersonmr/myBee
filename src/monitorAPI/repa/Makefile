@@ -5,5 +5,5 @@ repa.so:
 		cd ./build/ &&\
 		cd $$(ls | egrep '^lib') &&\
 		cp repa.so ../../librepa.so &&\
-		sudo cp repa.so /usr/lib/ &&\
+		sudo cp repa.so /usr/lib/librepa.so &&\
 		sudo ldconfig

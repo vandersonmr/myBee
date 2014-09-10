@@ -14,13 +14,13 @@ add_custom_command(
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/repa
   )
 
-add_library(repa SHARED IMPORTED)
-set_target_properties(repa PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/repa/librepa.so )
-
 add_custom_target(
   extern_lib_repa
   DEPENDS ${PROJECT_SOURCE_DIR}/repa/librepa.so
   )
+
+add_library(repa STATIC IMPORTED)
+set_target_properties(repa PROPERTIES IMPORTED_LOCATION /usr/lib/librepa.so )
 
 include_directories("${PROJECT_SOURCE_DIR}/machineLearning/")
 
@@ -38,47 +38,40 @@ add_library(monitorapi STATIC
 
 target_link_libraries(monitorapi ML)
 
-add_dependencies(monitorapi ML)
+add_dependencies(monitorapi ML extern_lib_repa)
 
 include_directories("./src/")
 
 ############## SERVER ################
 add_executable(server examples/server.cpp)
 
-link_directories(${PROJECT_SOURCE_DIR}/repa/)
-
 target_link_libraries(server monitorapi repa pthread python2.7 mysqlclient msgpack)
 
-add_dependencies(server monitorapi extern_lib_repa)
+add_dependencies(server monitorapi repa)
 
 ############## RANDOM ################
 add_executable(clientrandom examples/random/client.cpp)
 
-link_directories(${PROJECT_SOURCE_DIR}/repa/)
-
 target_link_libraries(clientrandom monitorapi repa pthread python2.7 mysqlclient msgpack)
 
-add_dependencies(clientrandom monitorapi extern_lib_repa)
+add_dependencies(clientrandom monitorapi repa)
 
 ############## SimuladorFazenda ################
 add_executable(clientsim examples/simuladorFazenda/client.cpp)
 
-link_directories(${PROJECT_SOURCE_DIR}/repa/)
-
 target_link_libraries(clientsim monitorapi repa pthread python2.7 mysqlclient msgpack)
 
-add_dependencies(clientsim monitorapi extern_lib_repa)
+add_dependencies(clientsim monitorapi repa)
 
 ############## RASP  ################
 if(EXISTS "/opt/vc/include/bcm_host.h")
   add_executable(clientrasp examples/raspberry/client.cpp examples/raspberry/lib/dht/dht.cpp)
 
-  link_directories(${PROJECT_SOURCE_DIR}/repa/)
   include_directories("./example/raspberry/")
 
   target_link_libraries(clientrasp monitorapi repa pthread python2.7 mysqlclient msgpack wiringPi)
 
-  add_dependencies(clientrasp monitorapi extern_lib_repa)
+  add_dependencies(clientrasp monitorapi repa)
 
   INSTALL_FILES("examples/raspberry" clientrasp)
 endif()
