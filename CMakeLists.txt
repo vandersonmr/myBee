@@ -31,49 +31,56 @@ add_library(ML STATIC
   ${PROJECT_SOURCE_DIR}/machineLearning/machineLearning.cpp
   ${PROJECT_SOURCE_DIR}/machineLearning/ManipulateData.cpp)
 
-add_library(monitorapi STATIC
-      ${PROJECT_SOURCE_DIR}/client_monitor.cpp
-      ${PROJECT_SOURCE_DIR}/server_monitor.cpp
-      ${PROJECT_SOURCE_DIR}/database/dataDAO.cpp)
+add_library(monitorapiClient STATIC
+      ${PROJECT_SOURCE_DIR}/client_monitor.cpp)
 
-target_link_libraries(monitorapi ML)
+add_library(monitorapiServer STATIC
+  ${PROJECT_SOURCE_DIR}/server_monitor.cpp
+  ${PROJECT_SOURCE_DIR}/database/dataDAO.cpp)
 
-add_dependencies(monitorapi ML extern_lib_repa)
+target_link_libraries(monitorapiServer ML)
+
+target_link_libraries(monitorapiClient)
+
+add_dependencies(monitorapiServer ML extern_lib_repa)
+add_dependencies(monitorapiClient extern_lib_repa)
 
 include_directories("./src/")
 
 ############## SERVER ################
 add_executable(server examples/server.cpp)
 
-target_link_libraries(server monitorapi repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(server monitorapiServer repa pthread python2.7 mysqlclient msgpack)
 
-add_dependencies(server monitorapi repa)
+add_dependencies(server monitorapiServer repa)
 
 ############## RANDOM ################
 add_executable(clientrandom examples/random/client.cpp)
 
-target_link_libraries(clientrandom monitorapi repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(clientrandom monitorapiClient repa pthread python2.7 mysqlclient msgpack)
 
-add_dependencies(clientrandom monitorapi repa)
+add_dependencies(clientrandom monitorapiClient repa)
 
 ############## SimuladorFazenda ################
 add_executable(clientsim examples/simuladorFazenda/client.cpp)
 
-target_link_libraries(clientsim monitorapi repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(clientsim monitorapiClient repa pthread python2.7 mysqlclient msgpack)
 
-add_dependencies(clientsim monitorapi repa)
+add_dependencies(clientsim monitorapiClient repa)
 
 ############## RASP  ################
 if(EXISTS "/opt/vc/include/bcm_host.h")
-  add_executable(clientrasp examples/raspberry/client.cpp examples/raspberry/lib/dht/dht.cpp)
+  add_executable(client examples/raspberry/client.cpp
+      examples/raspberry/lib/dht/dht.cpp examples/raspberry/lib/dht22/dht22.cpp)
 
   include_directories("./example/raspberry/")
 
-  target_link_libraries(clientrasp monitorapi repa pthread python2.7 mysqlclient msgpack wiringPi)
+  target_link_libraries(client monitorapiClient repa pthread python2.7 mysqlclient msgpack wiringPi)
 
-  add_dependencies(clientrasp monitorapi repa)
+  add_dependencies(client monitorapiClient repa)
+  
+  INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/client DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/raspberry/)
 
-  INSTALL_FILES("examples/raspberry" clientrasp)
 endif()
 
 INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/server DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/)
