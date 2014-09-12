@@ -7,7 +7,7 @@ exports.exportData = function(req, res) {
     res.render('exportData', { layout : false, result : data })
   }
   if (req.params.mode === 'all') {
-    dataDAO.getAllNodes(renderize);
+    dataDAO.getAllValues(renderize);
   } else {
     var request = req.params.mode.split('&');
     if (request.length == 0) return;

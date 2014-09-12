@@ -26,8 +26,19 @@ exports.dataDAO = function(mysql) {
             else {
               callBack(result);
             }
-          });
-  }  
+      });
+  }
+
+  this.getAllValues = function(callBack) {
+    var queryText = "select * from data order by Prefix;"
+    mysql.query(queryText,
+      function(err, result, fields) {
+        if (err) throw err;
+        else {
+          callBack(result);
+        }
+    });
+  }
 
   this.getAllFrom = function(nodeName, callBack) {
     var queryText = "select * from data where Prefix = '"+nodeName+"'";
@@ -42,8 +53,18 @@ exports.dataDAO = function(mysql) {
 
   this.getValuesFrom = function(nodeName, types, callBack) {
     var query  = "select * from data where Prefix = '" + nodeName + "'";
-    if (types.length > 0) query += this.addFilter(types);
-    console.log(query);
+    if (types != null || types.length > 0) query += this.addFilter(types);
+    mysql.query(query,
+      function(err, result, fields) {
+        if (err) throw err;
+        else {
+          callBack(result);
+        }
+    });
+  }
+
+  this.deleteAllValues = function(callBack) {
+    var query = "delete from data";
     mysql.query(query,
       function(err, result, fields) {
         if (err) throw err;
@@ -55,8 +76,7 @@ exports.dataDAO = function(mysql) {
 
   this.deleteValuesFrom = function(nodeName, types, callBack) {
     var query  = "delete from data where Prefix = '" + nodeName + "'";
-    if (types.length > 0) query += this.addFilter(types);
-    console.log(query);
+    if (types != null || types.length > 0) query += this.addFilter(types);
     mysql.query(query,
       function(err, result, fields) {
         if (err) throw err;
@@ -67,9 +87,9 @@ exports.dataDAO = function(mysql) {
   }
 
   this.addFilter = function(types) {
-    var filter = " and (Prefix = '" + types[0] + "'";
+    var filter = " and (Type = '" + types[0] + "'";
     for (var i = 1; i < types.length; i++) {
-      filter += " or Prefix = '" + types[i] + "'";
+      filter += " or Type = '" + types[i] + "'";
     }
     filter += ");";
     return filter;
