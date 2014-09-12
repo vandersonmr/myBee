@@ -592,11 +592,13 @@ $("#lexportar").click(function() {
 });
 
 $("#llimpar").click(function() {
-  var query = "delete from data;";
-  $.get('deleteData/'+query).success(
-    function(data) {
-      alert("Todos os dados foram deletados com sucesso.");
-    });
+  if (confirm('Você deseja apagar todos os dados?')) {
+    var query = "delete from data;";
+    $.get('deleteData/'+query).success(
+      function(data) {
+        alert("Todos os dados foram deletados com sucesso.");
+      });
+  }
 });
 
 $("#addHist").click(function() {
