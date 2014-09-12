@@ -329,14 +329,12 @@ function nodeGraphManager(name, divId, options){
           filter.push(pai.data[$(this).attr("name")].label.replace(' ', ''));
         });
       if (filter.length > 0) {
-        var query = "select * from data where Prefix='" + node_name + "'";
-        query += " and (Type='" + filter[0] + "'";
-        for (var i = 1; i < filter.length; i++) {
-          query += " or Type='" + filter[i] + "'";
+        var mode = node_name;
+        for (var i in filter) {
+          mode += "&" + filter[i];
         }
-        query += ");";
         // make the data downloadable for the user.
-        $.get('exportData/'+query).success(
+        $.get('exportData/'+mode).success(
             function(data){
               saveOnFile(data);
             });
@@ -584,8 +582,8 @@ $("#lhistorico").click(function() {
 $("#historico").hide();
 
 $("#lexportar").click(function() {
-  var query = "select * from data order by Prefix;";
-  $.get('exportData/'+query).success(
+  var mode = "all";
+  $.get('exportData/'+mode).success(
     function(data) {
       saveOnFile(data);
     });
@@ -593,16 +591,15 @@ $("#lexportar").click(function() {
 
 $("#llimpar").click(function() {
   if (confirm('Você deseja apagar todos os dados?')) {
-    var query = "delete from data;";
-    $.get('deleteData/'+query).success(
+    var mode = "all";
+    $.get('deleteData/'+mode).success(
       function(data) {
         alert("Todos os dados foram deletados com sucesso.");
       });
-  }
+    }
 });
 
 $("#addHist").click(function() {
   $("#HistoricGrid").empty();
   addHistoric($("#nodesBox").val()); 
 });
-

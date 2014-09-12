@@ -87,8 +87,8 @@ app.get('/'                     , routes.index);
 app.get('/getDados/:interval'   , getDados.getDados);
 app.get('/getNodes'             , getNodes.getNodes);
 app.get('/getHistoric/:nodeName', getHistoric.getHistoric);
-app.get('/exportData/:query'    , exportData.exportData);
-app.get('/deleteData/:query'    , deleteData.deleteData);
+app.get('/exportData/:mode'    , exportData.exportData);
+app.get('/deleteData/:mode'    , deleteData.deleteData);
 
 //Extra
 

@@ -40,13 +40,38 @@ exports.dataDAO = function(mysql) {
         });
   }
 
-  this.runQuery = function(query, callBack) {
+  this.getValuesFrom = function(nodeName, types, callBack) {
+    var query  = "select * from data where Prefix = '" + nodeName + "'";
+    if (types.length > 0) query += this.addFilter(types);
+    console.log(query);
     mysql.query(query,
-        function(err, result, fields) {
-          if (err) throw err;
-          else {
-            if (callBack != null) callBack(result);
-          }
-        });
+      function(err, result, fields) {
+        if (err) throw err;
+        else {
+          callBack(result);
+      }
+    });
+  }
+
+  this.deleteValuesFrom = function(nodeName, types, callBack) {
+    var query  = "delete from data where Prefix = '" + nodeName + "'";
+    if (types.length > 0) query += this.addFilter(types);
+    console.log(query);
+    mysql.query(query,
+      function(err, result, fields) {
+        if (err) throw err;
+        else {
+          callBack(result);
+      }
+    });
+  }
+
+  this.addFilter = function(types) {
+    var filter = " and (Prefix = '" + types[0] + "'";
+    for (var i = 1; i < types.length; i++) {
+      filter += " or Prefix = '" + types[i] + "'";
+    }
+    filter += ");";
+    return filter;
   }
 }
