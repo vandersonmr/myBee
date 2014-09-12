@@ -20,23 +20,33 @@ exports.dataDAO = function(mysql) {
 
   this.getAllNodes = function(callBack) {  
     var queryText = "select distinct Prefix from data;"
-    mysql.query(queryText,
-     function(err, result, fields) {
-      if (err) throw err;
-      else {
-        callBack(result);
-      }
-     });
+      mysql.query(queryText,
+          function(err, result, fields) {
+            if (err) throw err;
+            else {
+              callBack(result);
+            }
+          });
   }  
 
   this.getAllFrom = function(nodeName, callBack) {
     var queryText = "select * from data where Prefix = '"+nodeName+"'";
     mysql.query(queryText,
-      function(err, result, fields) {
-        if (err) throw err;
-        else {
-          callBack(result);
-        }
-      });
+        function(err, result, fields) {
+          if (err) throw err;
+          else {
+            callBack(result);
+          }
+        });
+  }
+
+  this.runQuery = function(query, callBack) {
+    mysql.query(query,
+        function(err, result, fields) {
+          if (err) throw err;
+          else {
+            if (callBack != null) callBack(result);
+          }
+        });
   }
 }

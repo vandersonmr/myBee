@@ -8,6 +8,7 @@ var express     =  require('express')
   , getDados    =  require('./routes/getDados')
   , getHistoric =  require('./routes/getHistoric')
   , getNodes    =  require('./routes/getNodes')
+  , exportData  =  require('./routes/exportData')
   , _mysql      =  require('mysql')
   , dataDB      =  require('./public/javascripts/dataDAO');
 
@@ -16,7 +17,7 @@ var express     =  require('express')
 var HOST       = 'localhost';
 var PORT       = 3306;
 var MYSQL_USER = 'root';
-var MYSQL_PASS = '123456';
+var MYSQL_PASS = '123';
 var DATABASE   = 'monitorAbelhas';
 
 var db_config = {
@@ -27,6 +28,7 @@ var db_config = {
 };
 
 var mysql;
+
 dataDAO = null;
 
 function connectToDatabase() {
@@ -84,10 +86,13 @@ app.get('/'                     , routes.index);
 app.get('/getDados/:interval'   , getDados.getDados);
 app.get('/getNodes'             , getNodes.getNodes);
 app.get('/getHistoric/:nodeName', getHistoric.getHistoric);
+app.get('/exportData/:query'    , exportData.exportData);
 
 //Extra
 
-
+function saveOnFile(data){
+  alert(data);
+}
 
 app.listen(3000, function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
