@@ -9,6 +9,7 @@ var express     =  require('express')
   , getHistoric =  require('./routes/getHistoric')
   , getNodes    =  require('./routes/getNodes')
   , exportData  =  require('./routes/exportData')
+  , deleteData  =  require('./routes/deleteData')
   , _mysql      =  require('mysql')
   , dataDB      =  require('./public/javascripts/dataDAO');
 
@@ -87,6 +88,7 @@ app.get('/getDados/:interval'   , getDados.getDados);
 app.get('/getNodes'             , getNodes.getNodes);
 app.get('/getHistoric/:nodeName', getHistoric.getHistoric);
 app.get('/exportData/:query'    , exportData.exportData);
+app.get('/deleteData/:query'    , deleteData.deleteData);
 
 //Extra
 

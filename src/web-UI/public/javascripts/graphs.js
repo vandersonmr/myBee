@@ -338,12 +338,7 @@ function nodeGraphManager(name, divId, options){
         // make the data downloadable for the user.
         $.get('exportData/'+query).success(
             function(data){
-              var a      = document.createElement('a');
-              a.href     = 'data:attachment/csv;charset=utf-8,' + encodeURIComponent(data);
-              a.target   = '_blank';
-              a.download = 'data.csv';
-              document.body.appendChild(a);
-              a.click();
+              saveOnFile(data);
             });
       } else {
         alert("Selecione pelo menos um tipo de dado.");
@@ -393,6 +388,15 @@ function nodeGraphManager(name, divId, options){
 
   $("#"+divId+" #tabs"+name ).tabs();
 
+}
+
+function saveOnFile(data) {
+  var a      = document.createElement('a');
+  a.href     = 'data:attachment/csv;charset=utf-8,' + encodeURIComponent(data);
+  a.target   = '_blank';
+  a.download = 'data.csv';
+  document.body.appendChild(a);
+  a.click();
 }
 
 var graphList = {}
@@ -578,6 +582,22 @@ $("#lhistorico").click(function() {
 });
 
 $("#historico").hide();
+
+$("#lexportar").click(function() {
+  var query = "select * from data order by Prefix;";
+  $.get('exportData/'+query).success(
+    function(data) {
+      saveOnFile(data);
+    });
+});
+
+$("#llimpar").click(function() {
+  var query = "delete from data;";
+  $.get('deleteData/'+query).success(
+    function(data) {
+      alert("Todos os dados foram deletados com sucesso.");
+    });
+});
 
 $("#addHist").click(function() {
   $("#HistoricGrid").empty();
