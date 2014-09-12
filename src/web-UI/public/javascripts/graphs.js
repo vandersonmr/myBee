@@ -242,26 +242,25 @@ function nodeGraphManager(name, divId, options){
   }
 
   this.update = function(){
-    this.plot.setData(this.data)
-      this.plot.setupGrid()
-      this.plot.draw()
+    this.plot.setData(this.data);
+    this.plot.setupGrid();
+    this.plot.draw();
 
-      for(var i in this.plot.getData()) 
-        this.plot.getData()[i].highlightColor = "#D80000"
+    for(var i in this.plot.getData()) 
+      this.plot.getData()[i].highlightColor = "#D80000";
 
-          this.highlight()
+      this.highlight();
 
-          $("#"+divId+" [id='g"+name+"']").show()
+      $("#"+divId+" [id='g"+name+"']").show();
 
-          lastDataByType = this.data[this.data.length-1]
-          $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+lastDataByType.data[this.data.length-1][1]) //!TODO
+      lastDataByType = this.data[this.data.length-1];
+      $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+lastDataByType.data[this.data.length-1][1]); //!TODO
 
-          if(options.tabs) {
-            this.fillDataTextArea()
-              this.fillDataStatistics()
-              this.fillOptions()
-          }
-
+      if(options.tabs) {
+        this.fillDataTextArea();
+        this.fillDataStatistics();
+        this.fillOptions();
+      }
   }
 
   if (options.closeBox)
@@ -409,8 +408,6 @@ function clearEmptyGraphs(divId) {
   for (var index in graphList) {
     if (!hasData(graphList[index])) {
       $("#"+divId+" [id='g"+index.replace(divId,"")+"']").hide();
-    } else {
-      $("#"+divId+" [id='g"+index.replace(divId,"")+"']").show();
     }
   }
 }
@@ -480,18 +477,17 @@ function parseData(input) {
 
 function plotData(data, divId, options) {
   for(var node in data){
-    nodeKey = node;
+    nodeKey = node + divId;
 
-    if(data[node].length < 2) {
+    if(data[node].length == 0) {
       alert("Não possui dados suficientes.");
       continue
     }
 
-    if (graphList[nodeKey] != undefined)
-      delete graphList[nodeKey];
-
-    graphList[nodeKey] = [];
-    graphList[nodeKey] = new nodeGraphManager(node,divId,options);
+    if (graphList[nodeKey] == undefined){
+      graphList[nodeKey] = [];
+      graphList[nodeKey] = new nodeGraphManager(node,divId,options);
+    }
 
     var tempData = insertIndex(data[node])
 
@@ -531,7 +527,6 @@ function update() {
         var res = parseData(data);
         plotData(res,"GraphsGrid", {lastTemp: true , showStatus : true});
       });
-
   setTimeout(update, updateInterval)
 }
 
@@ -554,6 +549,9 @@ function fillNodesOptions() {
 }
 
 function addHistoric(nodeName) {
+  name = nodeName.replace(/ /g, '');
+  if (graphList[name+'HistoricGrid'] != undefined)
+    delete graphList[name+'HistoricGrid'];
   $.get('getHistoric/'+nodeName).success(
       function(data) {
         var res = parseData(data);
@@ -562,10 +560,9 @@ function addHistoric(nodeName) {
 }
 
 $(document).ready(function (e) {
-  var tc = new timeControl()
-  tc.startClockUpdate()
-  update()
-  window.setInterval(function() { clearEmptyGraphs("GraphsGrid") } ,1500);
+  var tc = new timeControl();
+  tc.startClockUpdate();
+  update();
 });
 
 
