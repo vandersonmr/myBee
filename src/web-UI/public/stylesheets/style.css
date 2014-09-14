@@ -23,6 +23,10 @@
   height: 5px;
 }
 
+#loading {
+  display: none;
+}
+
 #menu ul { list-style:none; }
 #menu ul li { display:inline; float:left; margin-bottom:20px; }
 

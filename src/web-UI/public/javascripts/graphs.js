@@ -29,6 +29,10 @@ function timeControl() {
   }
 }
 
+function alertLoading() {
+  alert("Tenha paciência! Em alguns minutos os dados estarão prontos.");
+}
+
 /* Get an statusID (Number) and return a html tag with a text that rigth 
  * represent the status. */
 function getStatusMsg(statusID, name){
@@ -334,10 +338,17 @@ function nodeGraphManager(name, divId, options){
           mode += "&" + filter[i];
         }
         // make the data downloadable for the user.
-        $.get('exportData/'+mode).success(
-            function(data){
-              saveOnFile(data);
-            });
+        if (!is_loading) {
+          is_loading = true;
+          $("#loading").show();
+          $.get('exportData/'+mode).success(
+              function(data){
+                saveOnFile(data);
+              });
+          $("#loading").hide();
+          is_loading = false;
+        }
+        else alertLoading();
       } else {
         alert("Selecione pelo menos um tipo de dado.");
       }
@@ -398,6 +409,7 @@ function saveOnFile(data) {
 }
 
 var graphList = {}
+var is_loading = false;
 
 function hasData(graphData) {
   for(i in graphData.data) {
@@ -582,11 +594,18 @@ $("#lhistorico").click(function() {
 $("#historico").hide();
 
 $("#lexportar").click(function() {
-  var mode = "all";
-  $.get('exportData/'+mode).success(
-    function(data) {
-      saveOnFile(data);
-    });
+  if (!is_loading) {
+    is_loading = true;
+    $("#loading").show();
+    var mode = "all";
+    $.get('exportData/'+mode).success(
+      function(data) {
+        saveOnFile(data);
+      });
+    $("#loading").hide();
+    is_loading = false;
+  }
+  else alertLoading();
 });
 
 $("#llimpar").click(function() {
