@@ -7,7 +7,7 @@ exports.deleteData = function(req, res) {
     res.render('layoutEmpty', { layout : false, result : data })
   }
   if (req.params.mode === 'all') {
-    dataDAO.deleteAllValues(renderize);
+    dataDAO.createBackup(renderize);
   } else {
     var request = req.params.mode.split('&');
     if (request.length == 0) return;

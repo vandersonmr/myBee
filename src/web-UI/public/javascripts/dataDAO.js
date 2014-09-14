@@ -86,6 +86,17 @@ exports.dataDAO = function(mysql) {
     });
   }
 
+  this.createBackup = function(callBack) {
+    var d = new Date();
+    var query = "create table data_bak_" + d.getTime() + " as select * from data";
+    mysql.query(query, function(err, result, fields) {
+      if (!err) {
+        mysql.query("delete from data");
+        callBack(result);
+      }
+    });
+  }
+
   this.addFilter = function(types) {
     var filter = " and (Type = '" + types[0] + "'";
     for (var i = 1; i < types.length; i++) {
