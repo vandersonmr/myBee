@@ -1,5 +1,5 @@
 #include "monitorAPI/include/client_monitor.hpp"
-#include "lib/dht22/dht22.hpp"
+#include "lib/bcm2835-dht/BcmDHT.hpp"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,14 +8,14 @@
 #include <string>
 #include <bcm2835.h>
 
-DHT22 dht(1);
+BcmDHT dht(22, 18);
 
 double GetTemperature(){
-    return dht.get_temperature();
+    return dht.getTemperature();
 }
 
 double GetHumidity(){
-    return dht.get_humidity();
+    return dht.getHumidity();
 }
 
 int main(int argc, char **argv) {

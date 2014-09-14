@@ -24,8 +24,11 @@ int BcmDHT::readDHT() {
     bcm2835_gpio_fsel(this->pin, BCM2835_GPIO_FSEL_INPT);
     data[0] = data[1] = data[2] = data[3] = data[4] = 0;
     // wait for pin to drop?
+    int timeout_counter = 0;
     while (bcm2835_gpio_lev(this->pin) == 1) {
         usleep(1);
+        if (timeout_counter == 5000) return 0;
+        timeout_counter++;
     }
     // read data!
     for (int i=0; i< MAXTIMINGS; i++) {
@@ -81,7 +84,7 @@ void BcmDHT::close() {
 
 void BcmDHT::readData() {
     while (this->running) {
-        while (!readDHT());
+        while (!readDHT()) sleep(1);
         sleep(INTERVAL_TIME);
     }
 }

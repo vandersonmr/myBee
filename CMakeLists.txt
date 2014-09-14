@@ -71,11 +71,12 @@ add_dependencies(clientsim monitorapiClient repa)
 ############## RASP  ################
 if(EXISTS "/opt/vc/include/bcm_host.h")
   add_executable(clientrasp examples/raspberry/client.cpp
-      examples/raspberry/lib/dht/dht.cpp examples/raspberry/lib/dht22/dht22.cpp)
+      examples/raspberry/lib/bcm2835-dht/BcmDHT.cpp)
 
   include_directories("./example/raspberry/")
 
-  target_link_libraries(clientrasp monitorapiClient repa pthread python2.7 mysqlclient msgpack wiringPi)
+  target_link_libraries(clientrasp monitorapiClient repa pthread python2.7
+      mysqlclient msgpack bcm2835)
 
   add_dependencies(clientrasp monitorapiClient repa)
   
