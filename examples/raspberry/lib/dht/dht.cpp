@@ -47,15 +47,9 @@ void DHT::handshake(){
 }
 
 void DHT::read_data_non_stop(){
-  uint8_t counter = 0;
   while (running){
     read_data();
     sleep(INTERVAL_TIME);
-    if (counter == 60) {
-      counter = 0;
-      wiringPiSetup();
-    }
-    counter++;
   }
 }
 
