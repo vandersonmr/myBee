@@ -9,8 +9,9 @@
 src/web-UI/node_modules/
 docs/
 
-client
 server
 clientrandom
 clientsim
+clientrasp
 build/
+*.log
