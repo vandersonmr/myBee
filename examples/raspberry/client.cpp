@@ -8,7 +8,7 @@
 #include <string>
 #include <bcm2835.h>
 
-BcmDHT dht(22, 18);
+BcmDHT dht(22, 18, 7);
 
 double GetTemperature(){
     return dht.getTemperature();

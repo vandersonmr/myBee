@@ -27,14 +27,14 @@
 class BcmDHT{
     private:
         double temperature, humidity;
-        int type, pin;
+        int type, pin, pin_v;
         std::thread *thr;
         bool running = true;
         int readDHT();
         void readData();
 
     public:
-        BcmDHT(int, int);
+        BcmDHT(int, int, int);
         void init();
         void close();
         double getTemperature();

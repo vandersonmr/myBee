@@ -5,9 +5,10 @@
 // 15-January-2012
 // Dom and Gert
 
-BcmDHT::BcmDHT(int type, int pin) {
-    this->type = type;
-    this->pin  = pin;
+BcmDHT::BcmDHT(int type, int pin, int pin_v) {
+    this->type  = type;
+    this->pin   = pin;
+    this->pin_v = pin_v;
 }
 
 int BcmDHT::readDHT() {
@@ -15,6 +16,7 @@ int BcmDHT::readDHT() {
     int laststate = HIGH;
     int j=0;
     int data[5];
+    
     // Set GPIO pin to output
     bcm2835_gpio_fsel(this->pin, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_write(this->pin, HIGH);
@@ -27,7 +29,13 @@ int BcmDHT::readDHT() {
     int timeout_counter = 0;
     while (bcm2835_gpio_lev(this->pin) == 1) {
         usleep(1);
-        if (timeout_counter == 5000) return 0;
+        if (timeout_counter == 5000) {
+            //turns sensor off to cool down
+            bcm2835_gpio_write(this->pin_v, LOW);
+            sleep(30);
+            bcm2835_gpio_write(this->pin_v, HIGH);
+            return 0;
+        }
         timeout_counter++;
     }
     // read data!
@@ -73,6 +81,9 @@ int BcmDHT::readDHT() {
 
 void BcmDHT::init() {
     bcm2835_init();
+    //turns sensor on
+    bcm2835_gpio_fsel(this->pin_v, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_write(this->pin_v, HIGH);
     this->thr = new std::thread(&BcmDHT::readData, this);
 }
 
