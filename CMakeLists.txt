@@ -9,18 +9,18 @@ set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/monitorAPI")
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 add_custom_command(
-  OUTPUT ${PROJECT_SOURCE_DIR}/repa/librepa.so
+  OUTPUT ${PROJECT_SOURCE_DIR}/repa/repa.so
   COMMAND make
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/repa
   )
 
 add_custom_target(
   extern_lib_repa
-  DEPENDS ${PROJECT_SOURCE_DIR}/repa/librepa.so
+  DEPENDS ${PROJECT_SOURCE_DIR}/repa/repa.so
   )
 
 add_library(repa STATIC IMPORTED)
-set_target_properties(repa PROPERTIES IMPORTED_LOCATION /usr/lib/librepa.so )
+set_target_properties(repa PROPERTIES IMPORTED_LOCATION /usr/lib/repa.so )
 
 include_directories("${PROJECT_SOURCE_DIR}/machineLearning/")
 
