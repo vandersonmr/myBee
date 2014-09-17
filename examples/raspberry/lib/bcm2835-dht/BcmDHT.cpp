@@ -71,6 +71,8 @@ int BcmDHT::readDHT() {
             f = (data[2] & 0x7F)* 256 + data[3];
             f /= 10.0;
             if (data[2] & 0x80) f *= -1;
+            if (h < 0 || h > 100) return 0;
+            if (f < -100 || f > 100) return 0;
             this->temperature = f;
             this->humidity    = h;
         }
