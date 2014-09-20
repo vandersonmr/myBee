@@ -22,6 +22,8 @@ void ClientMonitor::GeneratorsRunner() {
     if (data_generators.size() == 0)
       continue;
 
+    this_thread::sleep_for(chrono::seconds(freq));
+    
     vector<Data> data;
     for (auto generator : data_generators) { 
       Data d = GetData(generator.first, generator.second());
@@ -45,8 +47,6 @@ void ClientMonitor::GeneratorsRunner() {
     }
 
     repa_api.SendMessage(msg);  
-
-    this_thread::sleep_for(chrono::seconds(freq));
   }
 }
 
