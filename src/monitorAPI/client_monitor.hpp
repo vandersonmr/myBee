@@ -19,6 +19,7 @@ class ClientMonitor {
     bool is_running;
     uint32_t id;
     string node_name;
+    vector<string> interests = {"server"};
     bool is_ack_enable = false;
     unordered_map<uint32_t, message<Data<T>>> message_list;
     RepaAPI<Data<T>> repa_api;
@@ -45,12 +46,19 @@ class ClientMonitor {
     void AddDataGenerator(string, Type  , function<T(void)>);
     void RmDataGenerator(string);
     void SetFreq(int);
+    void SetInterest(vector<string>);
     void Close();
     void EnableACK(bool);
     void Run();
 };
 
 static bool quit = false;
+
+template <typename T>
+void ClientMonitor<T>::SetInterest(vector<string> interests) {
+  for (string node: interests)
+    this->interests.push_back(node);
+}
 
 template <typename T>
 Data<T> ClientMonitor<T>::GetData(string type, T value){
@@ -80,8 +88,6 @@ void ClientMonitor<T>::GeneratorsRunner() {
       data.push_back(d);
     }
     
-    vector<string> interests = {"server"};
-
     time_t time_now;
     time(&time_now);
     message<Data<T>> msg;
