@@ -6,8 +6,6 @@ include(ExternalProject)
 set(CMAKE_CXX_FLAGS "-std=c++11 -O0 -Wall -Wextra -Werror ${CMAKE_CXX_FLAGS} -g")
 set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/monitorAPI")
 
-include_directories("${PROJECT_SOURCE_DIR}/include")
-
 add_custom_command(
   OUTPUT ${PROJECT_SOURCE_DIR}/repa/repa.so
   COMMAND make
@@ -24,49 +22,30 @@ set_target_properties(repa PROPERTIES IMPORTED_LOCATION /usr/lib/repa.so )
 
 include_directories("${PROJECT_SOURCE_DIR}/machineLearning/")
 
-add_library(ML STATIC
-  ${PROJECT_SOURCE_DIR}/machineLearning/KCentroid.cpp
-  ${PROJECT_SOURCE_DIR}/machineLearning/limit.cpp
-  ${PROJECT_SOURCE_DIR}/machineLearning/Krls.cpp
-  ${PROJECT_SOURCE_DIR}/machineLearning/machineLearning.cpp
-  ${PROJECT_SOURCE_DIR}/machineLearning/ManipulateData.cpp)
-
-add_library(monitorapiClient STATIC
-      ${PROJECT_SOURCE_DIR}/client_monitor.cpp)
-
-add_library(monitorapiServer STATIC
-  ${PROJECT_SOURCE_DIR}/server_monitor.cpp
-  ${PROJECT_SOURCE_DIR}/database/dataDAO.cpp)
-
-target_link_libraries(monitorapiServer ML)
-
-target_link_libraries(monitorapiClient)
-
-add_dependencies(monitorapiServer ML extern_lib_repa)
-add_dependencies(monitorapiClient extern_lib_repa)
-
 include_directories("./src/")
 
 ############## SERVER ################
+set_source_files_properties(examples/server.cpp PROPERTIES COMPILE_FLAGS -DDAO_ML)
+
 add_executable(server examples/server.cpp)
 
-target_link_libraries(server monitorapiServer repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(server repa pthread python2.7 mysqlclient msgpack -DDAO_ML)
 
-add_dependencies(server monitorapiServer repa)
+add_dependencies(server repa)
 
 ############## RANDOM ################
 add_executable(clientrandom examples/random/client.cpp)
 
-target_link_libraries(clientrandom monitorapiClient repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(clientrandom repa pthread python2.7 mysqlclient msgpack)
 
-add_dependencies(clientrandom monitorapiClient repa)
+add_dependencies(clientrandom repa)
 
 ############## SimuladorFazenda ################
 add_executable(clientsim examples/simuladorFazenda/client.cpp)
 
-target_link_libraries(clientsim monitorapiClient repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(clientsim repa pthread python2.7 mysqlclient msgpack)
 
-add_dependencies(clientsim monitorapiClient repa)
+add_dependencies(clientsim repa)
 
 ############## RASP  ################
 if(EXISTS "/opt/vc/include/bcm_host.h")
@@ -75,15 +54,30 @@ if(EXISTS "/opt/vc/include/bcm_host.h")
 
   include_directories("./example/raspberry/")
 
-  target_link_libraries(clientrasp monitorapiClient repa pthread python2.7
+  target_link_libraries(clientrasp repa pthread python2.7
       mysqlclient msgpack bcm2835)
 
-  add_dependencies(clientrasp monitorapiClient repa)
+  add_dependencies(clientrasp repa)
   
   INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientrasp DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/raspberry/)
 
 endif()
 
+############## GENERIC ################
+add_executable(clientgeneric examples/generic/clientgeneric.cpp)
+
+target_link_libraries(clientgeneric repa pthread python2.7 mysqlclient msgpack)
+
+add_dependencies(clientgeneric repa)
+
+add_executable(servergeneric examples/generic/servergeneric.cpp)
+
+target_link_libraries(servergeneric repa pthread python2.7 mysqlclient msgpack)
+
+add_dependencies(servergeneric repa)
+
 INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/server DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/)
 INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientrandom DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/random/)
 INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientsim DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/simuladorFazenda/)
+INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientgeneric DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/generic/)
+INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/servergeneric DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/generic/)

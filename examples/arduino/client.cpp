@@ -6,34 +6,36 @@
 #include <vector>
 #include <string>
 
+#define TYPE double
+
 ClientMonitor *tempMonitor;
 /* Randomize a temperature based on the sin function */
-double aux  = 0;
-double aux1 = 0;
-double aux2 = 0;
+TYPE aux  = 0;
+TYPE aux1 = 0;
+TYPE aux2 = 0;
 
-double GetTemperature() {
+TYPE GetTemperature() {
   FILE *arduino = fopen("/dev/ttyUSB0", "r");
   char buffer[1024];
   fgets(buffer, 1024, arduino);
   float temp;
   sscanf(buffer, "%f", &temp);
-  return (double) temp;
+  return (TYPE) temp;
 }
 
-double GetHumidity(){
+TYPE GetHumidity(){
   srand(time(NULL));
   aux1 += 0.1;
   if (aux1 > 6.3) aux1 = 0;
-  double humidity = (sin(aux1)*8+26) + rand() % 2 - 1; // Rand add some noise
+  TYPE humidity = (sin(aux1)*8+26) + rand() % 2 - 1; // Rand add some noise
   return humidity;
 }
 
-double GetPressure(){
+TYPE GetPressure(){
   srand(time(NULL));
   aux2 += 0.1;
   if (aux2 > 6.3) aux2 = 0;
-  double pressure = (sin(aux2)*12+26) + rand() % 2 - 1; // Rand add some noise
+  TYPE pressure = (sin(aux2)*12+26) + rand() % 2 - 1; // Rand add some noise
   return pressure;
 }
 
@@ -50,7 +52,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  ClientMonitor monitor(string(nickname), 600);
+  ClientMonitor<TYPE> monitor(string(nickname), 600);
 
   tempMonitor = &monitor;
 

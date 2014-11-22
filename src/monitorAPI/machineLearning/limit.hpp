@@ -1,4 +1,6 @@
-#include <../include/dataDAO.hpp>
+#ifndef LIMIT_H
+#define LIMIT_H
+#include "../database/dataDAO.hpp"
 
 using namespace std;
 
@@ -11,8 +13,16 @@ using namespace std;
 #define UPPER_PRESSURE 10 //kPa
 #define LOWER_PRESSURE 5
 
-int testLimit(Data data){
-  double value = data.value;
+template <typename T>
+class Limit {
+  public:
+    int testLimit(Data<T> data);
+
+};
+
+template <typename T>
+int Limit<T>::testLimit(Data<T> data){
+  T value = data.value;
   if(data.definedType.sensor != Type::None) { 
     switch(data.definedType.sensor) {
       case Type::Humidity:
@@ -29,3 +39,5 @@ int testLimit(Data data){
   }
   return 1;	
 }
+
+#endif

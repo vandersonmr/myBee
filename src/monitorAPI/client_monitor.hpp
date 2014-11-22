@@ -1,13 +1,61 @@
+#include "../repaAPI/include/repa_api.hpp"
+#include "data.hpp"
+#include <string>
+#include <unordered_map>
+#include <functional>
 #include <chrono>
 #include <ctime>
 #include <thread>
-#include "include/client_monitor.hpp"
+
+using namespace std;
+
+#define TIMEOUT_TIME 30
+#define MAX_MESSAGES 100
+
+template <typename T>
+class ClientMonitor {
+  private:
+    int freq;
+    bool is_running;
+    uint32_t id;
+    string node_name;
+    bool is_ack_enable = false;
+    unordered_map<uint32_t, message<Data<T>>> message_list;
+    RepaAPI<Data<T>> repa_api;
+    void ParseArgs(int*, char**);
+    void Usage();
+    map<string, function<T(void)>> data_generators;
+    map<string, Type> data_generators_type;
+    Data<T> GetData(string, T);
+    void GeneratorsRunner();
+    void InitMonitor();
+    void ResendLostMessages();
+    void HandleMessage(message<Data<T>>&);
+    static void Handler(int);
+
+  public:
+    /**@brief Create a ClientMonitor
+     * @param Name is a string used to identify this client on the server
+     * @param Freq is the frequence that data is generated and sent to the server
+     */
+    ClientMonitor(string, int);
+    ClientMonitor(int*, char**);
+    ~ClientMonitor();
+    void AddDataGenerator(string, function<T(void)>);
+    void AddDataGenerator(string, Type  , function<T(void)>);
+    void RmDataGenerator(string);
+    void SetFreq(int);
+    void Close();
+    void EnableACK(bool);
+    void Run();
+};
 
 static bool quit = false;
 
-Data ClientMonitor::GetData(string type, double value){
+template <typename T>
+Data<T> ClientMonitor<T>::GetData(string type, T value){
   time_t timenow;
-  Data data; 
+  Data<T> data; 
   data.type = type;
   data.definedType.sensor = Type::None;
   data.value = value;
@@ -17,25 +65,26 @@ Data ClientMonitor::GetData(string type, double value){
   return data;
 }
 
-void ClientMonitor::GeneratorsRunner() {
+template <typename T>
+void ClientMonitor<T>::GeneratorsRunner() {
   while (is_running) { 
     if (data_generators.size() == 0)
       continue;
 
     this_thread::sleep_for(chrono::seconds(freq));
-    
-    vector<Data> data;
+
+    vector<Data<T>> data;
     for (auto generator : data_generators) { 
-      Data d = GetData(generator.first, generator.second());
+      Data<T> d = GetData(generator.first, generator.second());
       d.definedType.sensor = data_generators_type[generator.first];
       data.push_back(d);
     }
-
-    vector<string> interests = {"server"}; 
+    
+    vector<string> interests = {"server"};
 
     time_t time_now;
     time(&time_now);
-    message<Data> msg;
+    message<Data<T>> msg;
     msg.data      = data;
     msg.interests = interests;
     msg.time      = time_now;
@@ -50,13 +99,15 @@ void ClientMonitor::GeneratorsRunner() {
   }
 }
 
-ClientMonitor::ClientMonitor(string node_name, int freq) {
+template <typename T>
+ClientMonitor<T>::ClientMonitor(string node_name, int freq) {
   this->freq = freq;
   this->node_name = node_name;
   InitMonitor();
 }
 
-ClientMonitor::ClientMonitor(int* argc, char** argv) {
+template <typename T>
+ClientMonitor<T>::ClientMonitor(int* argc, char** argv) {
   if (argc != NULL && argv != NULL) ParseArgs(argc, argv);
   else {
     cout << "Using default:" << endl;
@@ -68,7 +119,8 @@ ClientMonitor::ClientMonitor(int* argc, char** argv) {
   InitMonitor();
 }
 
-void ClientMonitor::InitMonitor() {
+template <typename T>
+void ClientMonitor<T>::InitMonitor() {
   this->is_running = true;
   this->id = 0;
 
@@ -79,34 +131,38 @@ void ClientMonitor::InitMonitor() {
   signal(SIGINT, ClientMonitor::Handler);
 }
 
-
-void ClientMonitor::Handler(int sig){
+template <typename T>
+void ClientMonitor<T>::Handler(int sig){
   cout << "Signal: " << sig << endl;
   quit = true;
 }
 
-ClientMonitor::~ClientMonitor(){
+template <typename T>
+ClientMonitor<T>::~ClientMonitor(){
   Close();
 }
 
-void ClientMonitor::HandleMessage(message<Data>& msg) {
+template <typename T>
+void ClientMonitor<T>::HandleMessage(message<Data<T>>& msg) {
   message_list.erase(msg.id % MAX_MESSAGES);
   cout << "Message " << msg.id << " has been received." << endl;
 }
 
-void ClientMonitor::Run(){
+template <typename T>
+void ClientMonitor<T>::Run(){
   thread (&ClientMonitor::GeneratorsRunner,this).detach();
   if (this->is_ack_enable) {
-    repa_api.GetMessage([this](message<Data> msg) { HandleMessage(msg); });
+    repa_api.GetMessage([this](message<Data<T>> msg) { HandleMessage(msg); });
     thread(&ClientMonitor::ResendLostMessages, this).detach();
   }
   while (!quit) sleep(1);
 }
 
-void ClientMonitor::ResendLostMessages() {
+template <typename T>
+void ClientMonitor<T>::ResendLostMessages() {
   while (is_running) {
     for (auto& value: message_list) {
-      message<Data> msg = value.second;
+      message<Data<T>> msg = value.second;
       uint32_t time_diff = time(NULL) - msg.time;
       if (time_diff > TIMEOUT_TIME) {
         msg.time = time(NULL);
@@ -117,38 +173,45 @@ void ClientMonitor::ResendLostMessages() {
   }
 }
 
-void ClientMonitor::EnableACK(bool value) {
+template <typename T>
+void ClientMonitor<T>::EnableACK(bool value) {
   this->is_ack_enable = value;
 }
 
-void ClientMonitor::AddDataGenerator(string name, 
-                                              function<double(void)> callback) {
+template <typename T>
+void ClientMonitor<T>::AddDataGenerator(string name, 
+    function<T(void)> callback) {
 
   data_generators[name]      = callback;
   data_generators_type[name] = Type::None; 
 }
 
-void ClientMonitor::AddDataGenerator(string name, Type type, 
-                                              function<double(void)> callback) {
+template <typename T>
+void ClientMonitor<T>::AddDataGenerator(string name, Type type, 
+    function<T(void)> callback) {
 
   data_generators[name]      = callback;
   data_generators_type[name] = type; 
 }
 
-void ClientMonitor::RmDataGenerator(string name) {
+template <typename T>
+void ClientMonitor<T>::RmDataGenerator(string name) {
   data_generators.erase(name);
 }
 
-void ClientMonitor::SetFreq(int freq) {
+template <typename T>
+void ClientMonitor<T>::SetFreq(int freq) {
   this->freq = freq;
 }
 
-void ClientMonitor::Close() {
+template <typename T>
+void ClientMonitor<T>::Close() {
   this->is_running = false;
   repa_api.CloseRepa();
 }
 
-void ClientMonitor::ParseArgs(int* argc, char** argv){
+template <typename T>
+void ClientMonitor<T>::ParseArgs(int* argc, char** argv){
   int num_args = *argc;
   if (num_args <= 1) Usage();
   else {
@@ -182,7 +245,8 @@ void ClientMonitor::ParseArgs(int* argc, char** argv){
   }
 }
 
-void ClientMonitor::Usage(){
+template <typename T>
+void ClientMonitor<T>::Usage(){
   cout << "Usage: ClientMonitor [Options]" << endl;
   cout << "\t-i time : Interval time in seconds to send data." << endl;
   cout << "\t-n name : Client name." << endl;

@@ -13,5 +13,8 @@ server
 clientrandom
 clientsim
 clientrasp
+clientgeneric
+servergeneric
 build/
 *.log
+tags
