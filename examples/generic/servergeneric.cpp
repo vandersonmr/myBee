@@ -2,7 +2,7 @@
 #include "monitorAPI/server_monitor.hpp"
 #include "generic.h"
 
-#define TYPE string
+#define TYPE Generic
 
 Data<TYPE> filter(Data<TYPE> d) {
   cout << " Prefix: " <<
