@@ -45,6 +45,8 @@ int main(int argc, char **argv) {
   monitor.AddDataGenerator("humidity"   , &GetHumidity);
   monitor.AddDataGenerator("pressure"   , &GetPressure);
 
+  monitor.SendMessageForEachGenerator(true);
+
   monitor.Run();
 
   return 0;

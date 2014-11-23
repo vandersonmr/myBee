@@ -21,6 +21,7 @@ class ClientMonitor {
     string node_name;
     vector<string> interests = {"server"};
     bool is_ack_enable = false;
+    bool send_message_for_each_generator = false;
     unordered_map<uint32_t, message<Data<T>>> message_list;
     RepaAPI<Data<T>> repa_api;
     void ParseArgs(int*, char**);
@@ -32,6 +33,7 @@ class ClientMonitor {
     void InitMonitor();
     void ResendLostMessages();
     void HandleMessage(message<Data<T>>&);
+    message<Data<T>> CreateMessage(vector<Data<T>>);
     static void Handler(int);
 
   public:
@@ -45,6 +47,7 @@ class ClientMonitor {
     void AddDataGenerator(string, function<T(void)>);
     void AddDataGenerator(string, Type  , function<T(void)>);
     void RmDataGenerator(string);
+    void SendMessageForEachGenerator(bool);
     void SetFreq(int);
     void SetInterest(vector<string>);
     void Close();
@@ -58,6 +61,11 @@ template <typename T>
 void ClientMonitor<T>::SetInterest(vector<string> interests) {
   for (string node: interests)
     this->interests.push_back(node);
+}
+
+template <typename T>
+void ClientMonitor<T>::SendMessageForEachGenerator(bool val) {
+  send_message_for_each_generator = val;
 }
 
 template <typename T>
@@ -86,23 +94,33 @@ void ClientMonitor<T>::GeneratorsRunner() {
       Data<T> d = GetData(generator.first, generator.second());
       d.definedType.sensor = data_generators_type[generator.first];
       data.push_back(d);
-    }
-    
-    time_t time_now;
-    time(&time_now);
-    message<Data<T>> msg;
-    msg.data      = data;
-    msg.interests = interests;
-    msg.time      = time_now;
-    msg.has_ack   = this->is_ack_enable;
-
-    if (msg.has_ack) {
-      msg.id = this->id;
-      message_list[this->id++ % MAX_MESSAGES] = msg;
+      if (send_message_for_each_generator) {
+        repa_api.SendMessage(CreateMessage(data));
+        data.pop_back();
+      }
     }
 
-    repa_api.SendMessage(msg);  
+    if (!send_message_for_each_generator)
+      repa_api.SendMessage(CreateMessage(data));
   }
+}
+
+template <typename T>
+message<Data<T>> ClientMonitor<T>::CreateMessage(vector<Data<T>> data) {
+  time_t time_now;
+  time(&time_now);
+  message<Data<T>> msg;
+  msg.data      = data;
+  msg.interests = interests;
+  msg.time      = time_now;
+  msg.has_ack   = this->is_ack_enable;
+
+  if (msg.has_ack) {
+    msg.id = this->id;
+    message_list[this->id++ % MAX_MESSAGES] = msg;
+  }
+
+  return msg;
 }
 
 template <typename T>
