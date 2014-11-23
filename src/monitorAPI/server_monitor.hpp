@@ -12,17 +12,16 @@ class ServerMonitor {
     function<Data<T>(Data<T>)> filter;
     RepaAPI<Data<T>>        repa;
 
-#ifdef DAO_ML
-    DataDAO<double> dao;
-    MachineLearning<double> ml;
-
-    int  CheckData(Data<T> data);
+    DataDAO<T> dao;
     bool is_persistence_enable      = false;
-    bool is_machine_learning_enable = true;
     void UpdateListOfNodesOnline();
 
+#ifdef ML
+    MachineLearning<double> ml;
+    int  CheckData(Data<T> data);
+    bool is_machine_learning_enable = true;
+
   public:
-    int  EnablePersistence(string);
     void EnableMachineLearning(int);
 #endif
 
@@ -45,6 +44,7 @@ class ServerMonitor {
     ServerMonitor(int*, char**);
     ~ServerMonitor();
     void SetFilter(function<Data<T>(Data<T>)>);
+    int  EnablePersistence(string);
     void Close();
     void Run();
     void GetTimeServer();
@@ -65,16 +65,18 @@ void ServerMonitor<T>::HandleMessage(message<Data<T>> msg) {
     if (has_a_filter)
       data = filter(data);
       
-#ifdef DAO_ML
     int status = 0;
+      
+#ifdef ML
     if (is_machine_learning_enable) 
       status = CheckData(data);
-
-    if (is_persistence_enable)
-      dao.saveData(data, status); 
-      
-    UpdateListOfNodesOnline();
 #endif
+
+    if (is_persistence_enable) {
+      dao.saveData(data, status);
+    }
+    
+    UpdateListOfNodesOnline();
 
   }
 
@@ -144,7 +146,7 @@ void ServerMonitor<T>::ParseArgs(int* argc, char** argv){
     string arg = string(argv[i]);
     if (arg[0] == '-') {
       if (arg[1] == 'c') GetTimeClient();
-#ifdef DAO_ML
+#ifdef ML
       else if (arg[1] == 'm'){
         if (++i < num_args && string(argv[i]).compare("disable"))
           EnableMachineLearning(1);
@@ -164,7 +166,7 @@ void ServerMonitor<T>::ParseArgs(int* argc, char** argv){
 template <typename T>
 void ServerMonitor<T>::Usage(){
   cout << "Usage: ServerMonitor [Options]" << endl;
-#ifdef DAO_ML
+#ifdef ML
   cout << "\t-m disable/enable : Disable/Enable machine learning." << endl;
 #endif
   cout << "\t-c                : Use time from client." << endl;
@@ -178,7 +180,6 @@ void ServerMonitor<T>::SetFilter(function<Data<T>(Data<T>)> filter) {
   this->has_a_filter = true;
 }
 
-#ifdef DAO_ML
 template <typename T>
 int ServerMonitor<T>::EnablePersistence(string config_path) {
   if (!dao.connectDatabase(config_path)){
@@ -186,10 +187,13 @@ int ServerMonitor<T>::EnablePersistence(string config_path) {
   }
 
   this->is_persistence_enable = true;
+#ifdef ML
   ml.setDAO(this->dao);
+#endif
   return EXIT_SUCCESS;
 }
 
+#ifdef ML
 template <typename T>
 void ServerMonitor<T>::EnableMachineLearning(int sensible) {
   if (sensible) {
@@ -206,6 +210,7 @@ template <typename T>
 int ServerMonitor<T>::CheckData(Data<T> data) {
   return ml.testData(data);
 }
+#endif
 
 template <typename T>
 void ServerMonitor<T>::UpdateListOfNodesOnline() {
@@ -215,7 +220,6 @@ void ServerMonitor<T>::UpdateListOfNodesOnline() {
     dao.insertNodeOnline(nodeOnline);
   }
 }
-#endif
 
 template <typename T>
 void ServerMonitor<T>::GetTimeServer(){
@@ -231,8 +235,6 @@ void ServerMonitor<T>::GetTimeClient(){
 
 template <typename T>
 void ServerMonitor<T>::Close() {
-#ifdef DAO_ML
   dao.closeConnection();
-#endif
   repa.CloseRepa();
 }

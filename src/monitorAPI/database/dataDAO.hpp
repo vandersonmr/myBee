@@ -4,6 +4,7 @@
 #include "mysql/mysql.h"
 #include "../data.hpp"
 #include <string>
+#include <sstream>
 #define LINE_SIZE 255
 
 template <typename T>
@@ -51,7 +52,7 @@ void DataDAO<T>::getConfData(string conf_path, char* server, char* user,
     free(type);
     free(temp);
   }else{
-    printf("Arquivo não encontrado");
+    printf("File not found.\n");
     exit(1);
   }
 }
@@ -101,9 +102,12 @@ void DataDAO<T>::saveData(Data<T> data, int status){
   date = ctime(&data.time);
   sscanf(date,"%[^\n]",date);
 
-  snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%s','%.2f','%d','%s')",
-      data.nickname.c_str(), date, data.type.c_str(), data.value, status, 
-      data.node.c_str());
+  stringstream ss;
+  ss << data.value;
+
+  snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%s','%s','%d','%s')",
+      data.nickname.c_str(), date, data.type.c_str(), ss.str().c_str(), status, 
+      (char*) data.node.c_str());
 
   run_mysql_query(query);
 

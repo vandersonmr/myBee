@@ -32,7 +32,18 @@ class Generic {
     uint16_t getSize() {
       return this->size;
     };
+
     MSGPACK_DEFINE(name, size);
+};
+
+std::stringstream& operator<<(std::stringstream& ss, Generic& g) {
+  ss << g.getName();
+  return ss;
+};
+
+std::ostream& operator<<(std::ostream& os, Generic& g) {
+  os << g.getName();
+  return os;
 };
 
 #endif

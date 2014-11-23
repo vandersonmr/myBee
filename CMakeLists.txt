@@ -25,11 +25,11 @@ include_directories("${PROJECT_SOURCE_DIR}/machineLearning/")
 include_directories("./src/")
 
 ############## SERVER ################
-set_source_files_properties(examples/server.cpp PROPERTIES COMPILE_FLAGS -DDAO_ML)
+set_source_files_properties(examples/server.cpp PROPERTIES COMPILE_FLAGS -DML)
 
 add_executable(server examples/server.cpp)
 
-target_link_libraries(server repa pthread python2.7 mysqlclient msgpack -DDAO_ML)
+target_link_libraries(server repa pthread python2.7 mysqlclient msgpack)
 
 add_dependencies(server repa)
 
