@@ -7,14 +7,14 @@
 class Generic {
   private:
     std::string name;
-    uint16_t size;
+    int type;
+    double temperature, humidity, pressure;
 
   public:
     Generic() {};
 
-    Generic(std::string name, uint16_t size) {
+    Generic(std::string name) {
       this->name = name;
-      this->size = size;
     };
 
     void setName(std::string name) {
@@ -25,24 +25,47 @@ class Generic {
       return this->name;
     };
 
-    void setSize(uint16_t size) {
-      this->size = size;
-    };
+    void setType(int t) { type = t; };
 
-    uint16_t getSize() {
-      return this->size;
-    };
+    int getType() { return type; };
 
-    MSGPACK_DEFINE(name, size);
+    double getTemperature() { return temperature; };
+
+    void setTemperature(double t) { temperature = t; };
+
+    double getHumidity() { return humidity; };
+
+    void setHumidity(double h) { humidity = h; };
+
+    double getPressure() { return pressure; };
+
+    void setPressure(double p) { pressure = p; };
+
+    MSGPACK_DEFINE(name, type, temperature, pressure, humidity);
 };
 
+//this overload must be implemented to persist data on database
 std::stringstream& operator<<(std::stringstream& ss, Generic& g) {
-  ss << g.getName();
+  if (g.getType() == 0)
+    ss << g.getTemperature();
+  else if (g.getType() == 1)
+    ss << g.getHumidity();
+  else if (g.getType() == 2)
+    ss << g.getPressure();
+  else
+    ss << g.getName();
   return ss;
 };
 
 std::ostream& operator<<(std::ostream& os, Generic& g) {
-  os << g.getName();
+  if (g.getType() == 0)
+    os << g.getTemperature();
+  else if (g.getType() == 1)
+    os << g.getHumidity();
+  else if (g.getType() == 2)
+    os << g.getPressure();
+  else
+    os << g.getName();
   return os;
 };
 

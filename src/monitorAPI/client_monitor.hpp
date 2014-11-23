@@ -28,8 +28,10 @@ class ClientMonitor {
     void Usage();
     map<string, function<T(void)>> data_generators;
     map<string, Type> data_generators_type;
+    map<string, int> data_generators_freq;
     Data<T> GetData(string, T);
     void GeneratorsRunner();
+    void GeneratorRunner(string);
     void InitMonitor();
     void ResendLostMessages();
     void HandleMessage(message<Data<T>>&);
@@ -45,6 +47,7 @@ class ClientMonitor {
     ClientMonitor(int*, char**);
     ~ClientMonitor();
     void AddDataGenerator(string, function<T(void)>);
+    void AddDataGenerator(string, int, function<T(void)>);
     void AddDataGenerator(string, Type  , function<T(void)>);
     void RmDataGenerator(string);
     void SendMessageForEachGenerator(bool);
@@ -94,14 +97,9 @@ void ClientMonitor<T>::GeneratorsRunner() {
       Data<T> d = GetData(generator.first, generator.second());
       d.definedType.sensor = data_generators_type[generator.first];
       data.push_back(d);
-      if (send_message_for_each_generator) {
-        repa_api.SendMessage(CreateMessage(data));
-        data.pop_back();
-      }
     }
 
-    if (!send_message_for_each_generator)
-      repa_api.SendMessage(CreateMessage(data));
+    repa_api.SendMessage(CreateMessage(data));
   }
 }
 
@@ -173,8 +171,32 @@ void ClientMonitor<T>::HandleMessage(message<Data<T>>& msg) {
 }
 
 template <typename T>
+void ClientMonitor<T>::GeneratorRunner(string name) {
+  int freq = this->freq;
+
+  if (data_generators_freq.find(name) != data_generators_freq.end())
+    freq = data_generators_freq[name];
+
+  while (is_running) {
+    this_thread::sleep_for(chrono::seconds(freq));
+
+    vector<Data<T>> data;
+    Data<T> d = GetData(name, data_generators[name]());
+    d.definedType.sensor = data_generators_type[name];
+    data.push_back(d);
+
+    repa_api.SendMessage(CreateMessage(data));
+  }
+}
+
+template <typename T>
 void ClientMonitor<T>::Run(){
-  thread (&ClientMonitor::GeneratorsRunner,this).detach();
+  if (!send_message_for_each_generator)
+    thread (&ClientMonitor::GeneratorsRunner, this).detach();
+  else {
+    for (auto& generator: data_generators)
+      thread(&ClientMonitor::GeneratorRunner, this, generator.first).detach();
+  }
   if (this->is_ack_enable) {
     repa_api.GetMessage([this](message<Data<T>> msg) { HandleMessage(msg); });
     thread(&ClientMonitor::ResendLostMessages, this).detach();
@@ -208,6 +230,15 @@ void ClientMonitor<T>::AddDataGenerator(string name,
 
   data_generators[name]      = callback;
   data_generators_type[name] = Type::None; 
+}
+
+template <typename T>
+void ClientMonitor<T>::AddDataGenerator(string name, int freq,
+    function<T(void)> callback) {
+
+  data_generators[name]      = callback;
+  data_generators_type[name] = Type::None; 
+  data_generators_freq[name] = freq; 
 }
 
 template <typename T>
