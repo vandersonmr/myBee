@@ -103,11 +103,6 @@ bool RepaAPI<T>::CloseRepa() {
   cout << "Closing repa..." << endl;
   terminated = true;
   repa_close(sock);
-  if(pthread_kill(thread, 0) == 0)
-  {
-    /* still running */
-    pthread_join(thread, NULL);
-  }
   cout << "Repa has closed successfully." << endl;
   exit(0);
 }
