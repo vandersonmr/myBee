@@ -2,7 +2,7 @@
 # on Debian Linux using the gcc compiler.
 
 # this is the name of the output executable
-TARGET = test 
+TARGET = dtest 
 
 # these are the compile time flags passed to gcc
 CFLAGS = -ggdb  -DDEBUG -DDLIB_NO_GUI_SUPPORT  -I ../..  -Wall
@@ -59,6 +59,7 @@ SRC += ekm_and_lisf.cpp
 SRC += empirical_kernel_map.cpp
 SRC += entropy_coder.cpp
 SRC += entropy_encoder_model.cpp
+SRC += face.cpp
 SRC += fft.cpp
 SRC += fhog.cpp
 SRC += filtering.cpp

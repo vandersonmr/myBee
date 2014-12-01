@@ -562,18 +562,23 @@ namespace dlib
         const double begin = -1e200,
         const double end = 1e200,
         const double eps = 1e-3,
-        const long max_iter = 100
+        const long max_iter = 100,
+        const double initial_search_radius = 1
     )
     {
         DLIB_CASSERT( eps > 0 &&
                       max_iter > 1 &&
-                      begin <= starting_point && starting_point <= end,
+                      begin <= starting_point && starting_point <= end && 
+                      initial_search_radius > 0,
                       "eps: " << eps
                       << "\n max_iter: "<< max_iter 
                       << "\n begin: "<< begin 
                       << "\n end:   "<< end 
                       << "\n starting_point: "<< starting_point 
+                      << "\n initial_search_radius: "<< initial_search_radius 
         );
+
+        double search_radius = initial_search_radius;
 
         double p1=0, p2=0, p3=0, f1=0, f2=0, f3=0;
         long f_evals = 1;
@@ -594,8 +599,8 @@ namespace dlib
 
 
         // The first thing we do is get a starting set of 3 points that are inside the [begin,end] bounds
-        p1 = max(starting_point-1, begin);
-        p3 = min(starting_point+1, end);
+        p1 = max(starting_point-search_radius, begin);
+        p3 = min(starting_point+search_radius, end);
         f1 = f(p1);
         f3 = f(p3);
 
@@ -614,7 +619,6 @@ namespace dlib
 
         // Now we have 3 points on the function.  Start looking for a bracketing set such that
         // f1 > f2 < f3 is the case.
-        double jump_size = 1;
         while ( !(f1 > f2 && f2 < f3))
         {
             // check for hitting max_iter or if the interval is now too small
@@ -641,15 +645,36 @@ namespace dlib
                 starting_point = p3;
                 return f3;
             }
+            
+            // If the left most points are identical in function value then expand out the
+            // left a bit, unless it's already at bound or we would drop that left most
+            // point anyway because it's bad.
+            if (f1==f2 && f1<f3 && p1!=begin)
+            {
+                p1 = max(p1 - search_radius, begin);
+                f1 = f(p1);
+                ++f_evals;
+                search_radius *= 2;
+                continue;
+            }
+            if (f2==f3 && f3<f1 && p3!=end)
+            {
+                p3 = min(p3 + search_radius, end);
+                f3 = f(p3);
+                ++f_evals;
+                search_radius *= 2;
+                continue;
+            }
+
 
             // if f1 is small then take a step to the left
-            if (f1 < f3)
+            if (f1 <= f3)
             { 
                 // check if the minimum is butting up against the bounds and if so then pick
                 // a point between p1 and p2 in the hopes that shrinking the interval will
                 // be a good thing to do.  Or if p1 and p2 aren't differentiated then try and
                 // get them to obtain different values.
-                if (p1 == begin || (f1 == f2 && (end-begin) < jump_size ))
+                if (p1 == begin || (f1 == f2 && (end-begin) < search_radius ))
                 {
                     p3 = p2;
                     f3 = f2;
@@ -666,10 +691,10 @@ namespace dlib
                     p2 = p1;
                     f2 = f1;
 
-                    p1 = max(p1 - jump_size, begin);
+                    p1 = max(p1 - search_radius, begin);
                     f1 = f(p1);
 
-                    jump_size *= 2;
+                    search_radius *= 2;
                 }
 
             }
@@ -680,7 +705,7 @@ namespace dlib
                 // a point between p2 and p3 in the hopes that shrinking the interval will
                 // be a good thing to do.  Or if p2 and p3 aren't differentiated then try and
                 // get them to obtain different values.
-                if (p3 == end || (f2 == f3 && (end-begin) < jump_size))
+                if (p3 == end || (f2 == f3 && (end-begin) < search_radius))
                 {
                     p1 = p2;
                     f1 = f2;
@@ -697,10 +722,10 @@ namespace dlib
                     p2 = p3;
                     f2 = f3;
 
-                    p3 = min(p3 + jump_size, end);
+                    p3 = min(p3 + search_radius, end);
                     f3 = f(p3);
 
-                    jump_size *= 2;
+                    search_radius *= 2;
                 }
             }
 
@@ -746,7 +771,7 @@ namespace dlib
             // make sure one side of the bracket isn't super huge compared to the other
             // side.  If it is then contract it.
             const double bracket_ratio = abs(p1-p2)/abs(p2-p3);
-            if ( !( bracket_ratio < 100 && bracket_ratio > 0.01) )
+            if ( !( bracket_ratio < 10 && bracket_ratio > 0.1) )
             {
                 // Force p_min to be on a reasonable side.  But only if lagrange_poly_min_extrap()
                 // didn't put it on a good side already.
@@ -810,16 +835,38 @@ namespace dlib
 // ----------------------------------------------------------------------------------------
 
     template <typename funct>
+    class negate_function_object 
+    {
+    public:
+        negate_function_object(const funct& f_) : f(f_){}
+
+        template <typename T>
+        double operator()(const T& x) const
+        {
+            return -f(x);
+        }
+
+    private:
+        const funct& f;
+    };
+
+    template <typename funct>
+    const negate_function_object<funct> negate_function(const funct& f) { return negate_function_object<funct>(f); }
+
+// ----------------------------------------------------------------------------------------
+
+    template <typename funct>
     double find_max_single_variable (
         const funct& f,
         double& starting_point,
         const double begin = -1e200,
         const double end = 1e200,
         const double eps = 1e-3,
-        const long max_iter = 100
+        const long max_iter = 100,
+        const double initial_search_radius = 1
     )
     {
-        return -find_min_single_variable(negate_function(f), starting_point, begin, end, eps, max_iter);
+        return -find_min_single_variable(negate_function(f), starting_point, begin, end, eps, max_iter, initial_search_radius);
     }
 
 // ----------------------------------------------------------------------------------------

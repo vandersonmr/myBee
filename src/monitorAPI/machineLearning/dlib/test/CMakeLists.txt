@@ -44,6 +44,7 @@ set (tests
    entropy_coder.cpp
    entropy_encoder_model.cpp
    example_args.cpp
+   face.cpp
    fft.cpp
    fhog.cpp
    filtering.cpp
@@ -140,13 +141,13 @@ set (tests
    vectorstream.cpp
    )
 
-# create a variable called target_name and set it to the string "test"
-set (target_name test)
+# create a variable called target_name and set it to the string "dtest"
+set (target_name dtest)
 
 PROJECT(${target_name})
 
 # add all the cpp files we want to compile to this list.  This tells
-# cmake that they are part of our target (which is the executable named test)
+# cmake that they are part of our target (which is the executable named dtest)
 ADD_EXECUTABLE(${target_name} main.cpp tester.cpp ${tests})
 
 # Turn on all warnings when using gcc.
@@ -162,7 +163,7 @@ TARGET_LINK_LIBRARIES(${target_name} dlib )
 
 if (NOT DLIB_NO_GUI_SUPPORT)
    add_subdirectory(gui)
-   add_subdirectory(../../examples examples_build)
+   add_subdirectory(examples)
 endif()
 
 
