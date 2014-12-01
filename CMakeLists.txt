@@ -22,6 +22,8 @@ set_target_properties(repa PROPERTIES IMPORTED_LOCATION /usr/lib/repa.so )
 
 include_directories("${PROJECT_SOURCE_DIR}/machineLearning/")
 
+include_directories("${PROJECT_SOURCE_DIR}/repaAPI/include/msgpack-c/include/")
+
 include_directories("./src/")
 
 ############## SERVER ################
@@ -29,21 +31,21 @@ set_source_files_properties(examples/server.cpp PROPERTIES COMPILE_FLAGS -DML)
 
 add_executable(server examples/server.cpp)
 
-target_link_libraries(server repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(server repa pthread python2.7 mysqlclient)
 
 add_dependencies(server repa)
 
 ############## RANDOM ################
 add_executable(clientrandom examples/random/client.cpp)
 
-target_link_libraries(clientrandom repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(clientrandom repa pthread python2.7 mysqlclient)
 
 add_dependencies(clientrandom repa)
 
 ############## SimuladorFazenda ################
 add_executable(clientsim examples/simuladorFazenda/client.cpp)
 
-target_link_libraries(clientsim repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(clientsim repa pthread python2.7 mysqlclient)
 
 add_dependencies(clientsim repa)
 
@@ -55,29 +57,35 @@ if(EXISTS "/opt/vc/include/bcm_host.h")
   include_directories("./example/raspberry/")
 
   target_link_libraries(clientrasp repa pthread python2.7
-      mysqlclient msgpack bcm2835)
+      mysqlclient bcm2835)
 
   add_dependencies(clientrasp repa)
   
-  INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientrasp DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/raspberry/)
+  INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientrasp DESTINATION
+    ${PROJECT_SOURCE_DIR}/../../examples/raspberry/)
 
 endif()
 
 ############## GENERIC ################
 add_executable(clientgeneric examples/generic/clientgeneric.cpp)
 
-target_link_libraries(clientgeneric repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(clientgeneric repa pthread python2.7 mysqlclient)
 
 add_dependencies(clientgeneric repa)
 
 add_executable(servergeneric examples/generic/servergeneric.cpp)
 
-target_link_libraries(servergeneric repa pthread python2.7 mysqlclient msgpack)
+target_link_libraries(servergeneric repa pthread python2.7 mysqlclient)
 
 add_dependencies(servergeneric repa)
 
-INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/server DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/)
-INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientrandom DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/random/)
-INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientsim DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/simuladorFazenda/)
-INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientgeneric DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/generic/)
-INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/servergeneric DESTINATION ${PROJECT_SOURCE_DIR}/../../examples/generic/)
+INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/server DESTINATION 
+  ${PROJECT_SOURCE_DIR}/../../examples/)
+INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientrandom DESTINATION 
+  ${PROJECT_SOURCE_DIR}/../../examples/random/)
+INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientsim DESTINATION 
+  ${PROJECT_SOURCE_DIR}/../../examples/simuladorFazenda/)
+INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/clientgeneric DESTINATION 
+  ${PROJECT_SOURCE_DIR}/../../examples/generic/)
+INSTALL(PROGRAMS ${PROJECT_BINARY_DIR}/servergeneric DESTINATION 
+  ${PROJECT_SOURCE_DIR}/../../examples/generic/)
