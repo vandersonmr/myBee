@@ -1,4 +1,4 @@
-#include "monitorAPI/include/client_monitor.hpp"
+#include "monitorAPI/client_monitor.hpp"
 #include "lib/bcm2835-dht/BcmDHT.hpp"
 #include <string.h>
 #include <stdio.h>
@@ -10,18 +10,20 @@
 
 BcmDHT dht(22, 18, 7);
 
-double GetTemperature(){
+#define TYPE double
+
+TYPE GetTemperature(){
     return dht.getTemperature();
 }
 
-double GetHumidity(){
+TYPE GetHumidity(){
     return dht.getHumidity();
 }
 
 int main(int argc, char **argv) {
   dht.init();
 
-  ClientMonitor monitor(&argc, argv);
+  ClientMonitor<TYPE> monitor(&argc, argv);
 
   monitor.AddDataGenerator("temperature", &GetTemperature);
   monitor.AddDataGenerator("humidity"   , &GetHumidity);

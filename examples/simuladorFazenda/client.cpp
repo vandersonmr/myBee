@@ -1,4 +1,4 @@
-#include "monitorAPI/include/client_monitor.hpp"
+#include "monitorAPI/client_monitor.hpp"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,27 +10,29 @@
 
 using namespace std;
 
+#define TYPE double
+
 ifstream* tempFile;
 ifstream* humFile;
 string temp;
 string hum;
 
-double GetTemperature() {
+TYPE GetTemperature() {
   getline(*tempFile, temp);
   istringstream iss(temp);
   string sub;
-  double t = 0;
+  TYPE t = 0;
   while(sub != string("temperature")) 
     iss >> sub;
   iss >> t;
   return t;
 }
 
-double GetHumidity(){
+TYPE GetHumidity(){
   getline(*humFile, hum);
   istringstream iss(hum);
   string sub;
-  double h = 0;
+  TYPE h = 0;
   while(sub != string("humidity")) 
     iss >> sub;
   iss >> h;
@@ -38,7 +40,7 @@ double GetHumidity(){
 }
 
 int main(int argc, char **argv) {
-  ClientMonitor monitor(&argc, argv);
+  ClientMonitor<TYPE> monitor(&argc, argv);
   tempFile = new ifstream("temp_abelhas.txt");
   humFile  = new ifstream("hum_abelhas.txt");
   getline(*tempFile, temp); // throw away the header

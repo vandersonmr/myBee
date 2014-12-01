@@ -15,12 +15,13 @@ union Type_t {
   int  typeVal;
 };
 
+template <typename T>
 class Data {
   public:
     string type;
     Type_t definedType;
     string node;
-    double value;
+    T value;
     string nickname;
     int status;
     time_t time;

@@ -1,17 +1,34 @@
-#include <stdio.h>
-#include <iostream>
-#include <cmath>
+#ifndef DATADAO_H
+#define DATADAO_H
 #include <vector>
+#include "mysql/mysql.h"
+#include "../data.hpp"
 #include <string>
-#include "dataDAO.hpp" 
-#include <time.h>
-#include <cstdlib>
-#include <cstring>
-#include <stdlib.h>
+#include <sstream>
+#define LINE_SIZE 255
 
-MYSQL* connection;
+template <typename T>
+class DataDAO {
+  private:
+    MYSQL* connection;
 
-void getConfData(string conf_path, char* server, char* user, char* pass, char* db){
+  public:
+    int connectDatabase(string);
+    void saveData(Data<T>, int);
+    vector<Data<T>> loadLastsDatasByMinutes(int);
+    void getConfData(string,char*, char*, char*, char*);
+    vector<Data<T>> load(char*);
+    void run_mysql_query(char*);
+    vector<Data<T>> loadLastsDatas(int,string);
+    vector<Data<T>> loadLastsDatasByType(int,string,string);
+    void closeConnection();
+    int clearNodesOnline();
+    int insertNodeOnline(string);
+};
+
+template <typename T>
+void DataDAO<T>::getConfData(string conf_path, char* server, char* user, 
+    char* pass, char* db){
   FILE *fp = fopen(conf_path.c_str(), "r");
   if(fp != NULL){
     char *data, *type, *temp;
@@ -35,13 +52,14 @@ void getConfData(string conf_path, char* server, char* user, char* pass, char* d
     free(type);
     free(temp);
   }else{
-    printf("Arquivo não encontrado");
+    printf("File not found.\n");
     exit(1);
   }
 }
 
-int connectDatabase(string conf_path) {
-  connection=mysql_init(NULL);
+template <typename T>
+int DataDAO<T>::connectDatabase(string conf_path) {
+  connection = mysql_init(NULL);
 
   if(connection == NULL){
     fprintf(stderr,"Inicialização no Mysql falhou.\n");
@@ -76,42 +94,45 @@ int connectDatabase(string conf_path) {
   return 1;
 }
 
-
-
-void saveData(Data data, int status){
+template <typename T>
+void DataDAO<T>::saveData(Data<T> data, int status){
   char query[LINE_SIZE];
   char *date;
 
   date = ctime(&data.time);
   sscanf(date,"%[^\n]",date);
 
-  snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%s','%.2f','%d','%s')",
-      data.nickname.c_str(), date, data.type.c_str(), data.value, status, 
-      data.node.c_str());
+  stringstream ss;
+  ss << data.value;
+
+  snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%s','%s','%d','%s')",
+      data.nickname.c_str(), date, data.type.c_str(), ss.str().c_str(), status, 
+      (char*) data.node.c_str());
 
   run_mysql_query(query);
 
 }
 
-void run_mysql_query(char* query){
-    if (mysql_query(connection, query)){
-        printf("%s\n", mysql_error(connection));
-        exit(1);
-    }
+template <typename T>
+void DataDAO<T>::run_mysql_query(char* query){
+  if (mysql_query(connection, query)){
+    printf("%s\n", mysql_error(connection));
+    exit(1);
+  }
 }
 
-vector<Data> load(char* query){
+template <typename T>
+vector<Data<T>> DataDAO<T>::load(char* query){
   MYSQL_RES *res_set;
   MYSQL_ROW row;
-
 
   run_mysql_query(query);
 
   res_set = mysql_store_result(connection);
-  vector<Data> result; 
+  vector<Data<T>> result; 
 
   while ((row = mysql_fetch_row(res_set)) != NULL){
-    Data data;
+    Data<T> data;
 
     data.type     = const_cast<char*>(row[2]);
     data.value    = atof(const_cast<char*>(row[3]));
@@ -126,25 +147,31 @@ vector<Data> load(char* query){
   return result;	
 }
 
-vector<Data> loadLastsDatasByType(int q, string prefix, string type){
+template <typename T>
+vector<Data<T>> DataDAO<T>::loadLastsDatasByType(int q, string prefix, string type){
   char* queryWithOutQ = const_cast<char*>("select * from data where Prefix like '%s' and Type like '%s' order by Date desc limit 0,%d;");
   char query[200];
   snprintf(query,200,queryWithOutQ,prefix.c_str(),type.c_str(),q-1);
   return load(query);
 }
 
-int clearNodesOnline() {
+template <typename T>
+int DataDAO<T>::clearNodesOnline() {
   char* query = const_cast<char*>("delete from nodesOnline;");
   return mysql_query(connection, query);
 }
 
-int insertNodeOnline(string prefix) {
+template <typename T>
+int DataDAO<T>::insertNodeOnline(string prefix) {
   char* queryWithoutPrefix =  const_cast<char*>("insert into nodesOnline values ('%s')");
   char query[200];
   snprintf(query,200, queryWithoutPrefix, prefix.c_str());
   return mysql_query(connection, query);
 }
 
-void closeConnection() {
+template <typename T>
+void DataDAO<T>::closeConnection() {
   mysql_close(connection);
 }
+
+#endif
