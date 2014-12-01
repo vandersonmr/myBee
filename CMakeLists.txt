@@ -6,6 +6,9 @@ include(ExternalProject)
 set(CMAKE_CXX_FLAGS "-std=c++11 -O0 -Wall -Wextra -Werror ${CMAKE_CXX_FLAGS} -g")
 set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/monitorAPI")
 
+include_directories("${PROJECT_SOURCE_DIR}/include/")
+include_directories("${PROJECT_SOURCE_DIR}/database/")
+
 add_custom_command(
   OUTPUT ${PROJECT_SOURCE_DIR}/repa/repa.so
   COMMAND make
@@ -24,6 +27,15 @@ include_directories("${PROJECT_SOURCE_DIR}/machineLearning/")
 
 include_directories("${PROJECT_SOURCE_DIR}/repaAPI/include/msgpack-c/include/")
 
+add_library(ML STATIC
+ ${PROJECT_SOURCE_DIR}/machineLearning/KCentroid.cpp
+ ${PROJECT_SOURCE_DIR}/machineLearning/limit.cpp
+ ${PROJECT_SOURCE_DIR}/machineLearning/Krls.cpp
+ ${PROJECT_SOURCE_DIR}/machineLearning/machineLearning.cpp
+ ${PROJECT_SOURCE_DIR}/machineLearning/ManipulateData.cpp)
+
+target_link_libraries(ML)
+
 include_directories("./src/")
 
 ############## SERVER ################
@@ -31,7 +43,7 @@ set_source_files_properties(examples/server.cpp PROPERTIES COMPILE_FLAGS -DML)
 
 add_executable(server examples/server.cpp)
 
-target_link_libraries(server repa pthread python2.7 mysqlclient)
+target_link_libraries(server repa pthread python2.7 mysqlclient ML)
 
 add_dependencies(server repa)
 

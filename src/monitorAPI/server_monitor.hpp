@@ -1,7 +1,7 @@
 #include "../repaAPI/include/repa_api.hpp"
 #include "data.hpp"
 #include "database/dataDAO.hpp"
-#include "machineLearning/machineLearning.hpp"
+#include "machineLearning.h"
 #include <string>
 #include <map>
 #include <functional>
@@ -17,7 +17,6 @@ class ServerMonitor {
     void UpdateListOfNodesOnline();
 
 #ifdef ML
-    MachineLearning<double> ml;
     int  CheckData(Data<T> data);
     bool is_machine_learning_enable = true;
 
@@ -68,8 +67,11 @@ void ServerMonitor<T>::HandleMessage(message<Data<T>> msg) {
     int status = 0;
       
 #ifdef ML
-    if (is_machine_learning_enable) 
+    if (is_machine_learning_enable) { 
+      assert((typeid(T) == typeid(double) || typeid(T) == typeid(int)) 
+          && "To use machine learning the data MUST be double or int");
       status = CheckData(data);
+    }
 #endif
 
     if (is_persistence_enable) {
@@ -187,9 +189,6 @@ int ServerMonitor<T>::EnablePersistence(string config_path) {
   }
 
   this->is_persistence_enable = true;
-#ifdef ML
-  ml.setDAO(this->dao);
-#endif
   return EXIT_SUCCESS;
 }
 
@@ -208,7 +207,7 @@ void ServerMonitor<T>::EnableMachineLearning(int sensible) {
 
 template <typename T>
 int ServerMonitor<T>::CheckData(Data<T> data) {
-  return ml.testData(data);
+  return testData(data, dao);
 }
 #endif
 
