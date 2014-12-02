@@ -1,34 +1,3 @@
-/* timeControl is responsable for the clock */
-function timeControl() {
-  this.getTime = function() {
-    var today = new Date()
-      var h = today.getHours()
-      var m = today.getMinutes()
-      var s = today.getSeconds()
-
-      m=this.checkTime(m)
-      s=this.checkTime(s)
-      return h+":"+m+":"+s
-  }
-
-  this.updateClock = function(){	
-    document.getElementById('horario').innerHTML=this.getTime()
-  }
-
-  this.checkTime = function(i){
-    if (i<10)
-    {
-      i="0" + i
-    }
-    return i
-  }
-
-  this.startClockUpdate = function(){
-    var func = this
-      setInterval(function(){ func.updateClock() },300)
-  }
-}
-
 function alertLoading() {
   alert("Tenha paciência! Em alguns minutos os dados estarão prontos.");
 }
@@ -323,7 +292,7 @@ function nodeGraphManager(name, divId, options){
 
     //insert export option
     var exportContainer = $("#export"+name);
-    exportContainer.append("<button type='button'>Exportar dados.</button>");
+    exportContainer.append("<button type='button'>Exportar dados</button>");
     exportContainer.find("button").click(exportData);
 
     var node_name = this.name;
@@ -438,17 +407,17 @@ function insertIndex(stack){
       if(stats[temp[3]] == undefined)
         stats[temp[3]] = []
 
-          stats[temp[3]].push(temp[2])
+      stats[temp[3]].push(temp[2])
 
-          if(time[temp[3]] == undefined)
-            time[temp[3]] = []
+      if(time[temp[3]] == undefined)
+        time[temp[3]] = []
 
-              time[temp[3]].push(temp[1])
+      time[temp[3]].push(temp[1])
 
-              if (res[temp[3]] == undefined) 
-                res[temp[3]] = []
+      if (res[temp[3]] == undefined) 
+        res[temp[3]] = []
 
-                  res[temp[3]].push([Date.parse(temp[1]), temp[0]])
+      res[temp[3]].push([Date.parse(temp[1]), temp[0]])
     }
 
   var keys = Object.keys(res);
@@ -456,9 +425,9 @@ function insertIndex(stack){
 
 
   var finalData = []
-    for(var i in keys) finalData.push({ label: keys[i], data: res[keys[i]] })
+  for(var i in keys) finalData.push({ label: keys[i], data: res[keys[i]] })
 
-      return [finalData,time,stats]
+  return [finalData,time,stats]
 }
 
 function parseData(input) {
@@ -513,7 +482,8 @@ function plotData(data, divId, options) {
           highestKey = keys[i]
     }
 
-    graphList[nodeKey].setNodeStatus(tempData[2][highestKey][tempData[2][highestKey].length-1], highestKey)
+    graphList[nodeKey].setNodeStatus(
+        tempData[2][highestKey][tempData[2][highestKey].length-1], highestKey)
 
     graphList[nodeKey].setData(tempData[0],tempData[1],tempData[2])
     graphList[nodeKey].update();
@@ -536,12 +506,16 @@ function showTooltip(x, y, contents) {
 var updateInterval = 1000
 
 function update() {
-  $.get('getDados/'+$("#intervalVal").val()).success(
+  if($("#GraphsGrid").is(":visible") ) {
+    $.get('getDados/'+$("#intervalVal").val()).success(
       function(data){	
         var res = parseData(data);
         plotData(res,"GraphsGrid", {lastTemp: true , showStatus : true});
-      });
-  setTimeout(update, updateInterval)
+        $("#loading").hide();
+        setTimeout(update, updateInterval)
+      }
+    );
+  }
 }
 
 function fillNodesOptions() {
@@ -563,22 +537,24 @@ function fillNodesOptions() {
 }
 
 function addHistoric(nodeName) {
+  $("#loading").show();
   name = nodeName.replace(/ /g, '');
   if (graphList[name+'HistoricGrid'] != undefined)
     delete graphList[name+'HistoricGrid'];
   $.get('getHistoric/'+nodeName).success(
       function(data) {
         var res = parseData(data);
-        plotData(res,"HistoricGrid", {closeBox : true, tabs: true, miniGraph: true});
+        plotData(res, 
+          "HistoricGrid", {closeBox : true, tabs: true, miniGraph: true});
+        $("#loading").hide();
       }); 
+
 }
 
 $(document).ready(function (e) {
-  var tc = new timeControl();
-  tc.startClockUpdate();
+  $("#loading").show();
   update();
 });
-
 
 $("#ltempoReal").click(function() {
   $("#historico").hide();

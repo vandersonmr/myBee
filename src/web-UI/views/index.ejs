@@ -1,6 +1,5 @@
 <body>
     <center><h1>Sistema de Monitoramento<h1></center>
-    <center><h3>Horário atual: <div id="horario"></div></h3></center>
     
     <div class="image">
         <center><img src="bee.gif" style="display:none" id="theBee"></center>
@@ -17,17 +16,11 @@
 
     <br>
 
-    <div id="loading">
-      <center>
-        <img src="loading.gif" alt="Carregando" style="width:32px;height:32px">
-        <p>Aguarde enquanto buscamos os dados...</p>
-      </center>
-    </div>
     
     <div id="GraphsGrid">
       <center>
       <br><br>
-      Time Interval (minutes): <input type="number" id="intervalVal" min="1" value="15"> 
+      Intervalo de tempo (minutos): <input type="number" id="intervalVal" min="1" value="15"> 
       </center>
     </div>
 
@@ -40,6 +33,14 @@
       </center>
       <div id="HistoricGrid"></div>
     
+    </div>
+
+    <br><br><br>
+    <div id="loading">
+      <center>
+        <img src="loading.gif" alt="Carregando" style="width:32px;height:32px">
+        <p>Aguarde enquanto buscamos os dados...</p>
+      </center>
     </div>
 
     <script language="javascript" type="text/javascript" src="/lang/statusMsgPT.json"></script>
