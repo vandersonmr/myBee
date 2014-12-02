@@ -215,6 +215,8 @@ function nodeGraphManager(name, divId, options){
   }
 
   this.update = function(){
+    for(var i = 0; i < this.data.length; i++)
+      this.data[i].data = simplify(this.data[i].data, 0.7, false);
     this.plot.setData(this.data);
     this.plot.setupGrid();
     this.plot.draw();
@@ -222,18 +224,18 @@ function nodeGraphManager(name, divId, options){
     for(var i in this.plot.getData()) 
       this.plot.getData()[i].highlightColor = "#D80000";
 
-      this.highlight();
+    this.highlight();
 
-      $("#"+divId+" [id='g"+name+"']").show();
+    $("#"+divId+" [id='g"+name+"']").show();
 
-      lastDataByType = this.data[this.data.length-1];
-      $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+lastDataByType.data[this.data.length-1][1]); //!TODO
+    lastDataByType = this.data[this.data.length-1];
+    $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+lastDataByType.data[this.data.length-1][1]); //!TODO
 
-      if(options.tabs) {
-        this.fillDataTextArea();
-        this.fillDataStatistics();
-        this.fillOptions();
-      }
+    if(options.tabs) {
+      this.fillDataTextArea();
+      this.fillDataStatistics();
+      this.fillOptions();
+    }
   }
 
   if (options.closeBox)
@@ -397,32 +399,31 @@ function clearEmptyGraphs(divId) {
 
 function insertIndex(stack){
   var res   = []
-    var time  = []
-    var stats = []
-    var i = 0
-    var size = stack.length
-    for(var j=0; j < size; j++){
-      var temp = stack.pop();
+  var time  = []
+  var stats = []
+  var i = 0
+  var size = stack.length
+  for(var j=0; j < size; j++){
+    var temp = stack.pop();
 
-      if(stats[temp[3]] == undefined)
-        stats[temp[3]] = []
+    if(stats[temp[3]] == undefined)
+      stats[temp[3]] = []
 
-      stats[temp[3]].push(temp[2])
+    stats[temp[3]].push(temp[2])
 
-      if(time[temp[3]] == undefined)
-        time[temp[3]] = []
+    if(time[temp[3]] == undefined)
+      time[temp[3]] = []
 
-      time[temp[3]].push(temp[1])
+    time[temp[3]].push(temp[1])
 
-      if (res[temp[3]] == undefined) 
-        res[temp[3]] = []
+    if (res[temp[3]] == undefined) 
+      res[temp[3]] = []
 
-      res[temp[3]].push([Date.parse(temp[1]), temp[0]])
-    }
+    res[temp[3]].push([Date.parse(temp[1]), temp[0]])
+  }
 
   var keys = Object.keys(res);
   keys.sort();
-
 
   var finalData = []
   for(var i in keys) finalData.push({ label: keys[i], data: res[keys[i]] })
@@ -474,19 +475,19 @@ function plotData(data, divId, options) {
 
     var tempData = insertIndex(data[node])
 
-    var keys = Object.keys(tempData[2])
-    var highestKey = keys[0]
-    for(var i in keys) {
-      var lastStatus = tempData[2][keys[i]][tempData[2][keys[i]].length-1]
-        if(lastStatus > tempData[2][highestKey][tempData[2][highestKey].length-1]) 
-          highestKey = keys[i]
-    }
+      var keys = Object.keys(tempData[2])
+      var highestKey = keys[0]
+      for(var i in keys) {
+        var lastStatus = tempData[2][keys[i]][tempData[2][keys[i]].length-1]
+          if(lastStatus > tempData[2][highestKey][tempData[2][highestKey].length-1]) 
+            highestKey = keys[i]
+      }
 
     graphList[nodeKey].setNodeStatus(
         tempData[2][highestKey][tempData[2][highestKey].length-1], highestKey)
 
-    graphList[nodeKey].setData(tempData[0],tempData[1],tempData[2])
-    graphList[nodeKey].update();
+      graphList[nodeKey].setData(tempData[0],tempData[1],tempData[2])
+      graphList[nodeKey].update();
   }
 }
 
@@ -508,13 +509,13 @@ var updateInterval = 1000
 function update() {
   if($("#GraphsGrid").is(":visible") ) {
     $.get('getDados/'+$("#intervalVal").val()).success(
-      function(data){	
-        var res = parseData(data);
-        plotData(res,"GraphsGrid", {lastTemp: true , showStatus : true});
-        $("#loading").hide();
-        setTimeout(update, updateInterval)
-      }
-    );
+        function(data){	
+          var res = parseData(data);
+          plotData(res,"GraphsGrid", {lastTemp: true , showStatus : true});
+          $("#loading").hide();
+          setTimeout(update, updateInterval)
+        }
+        );
   } else {
     setTimeout(update, updateInterval)
   }
@@ -550,7 +551,6 @@ function addHistoric(nodeName) {
           "HistoricGrid", {closeBox : true, tabs: true, miniGraph: true});
         $("#loading").hide();
       }); 
-
 }
 
 $(document).ready(function (e) {
@@ -593,7 +593,7 @@ $("#llimpar").click(function() {
       function(data) {
         alert("Todos os dados foram deletados com sucesso.");
       });
-    }
+  }
 });
 
 $("#addHist").click(function() {
