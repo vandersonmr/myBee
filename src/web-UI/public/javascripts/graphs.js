@@ -515,6 +515,8 @@ function update() {
         setTimeout(update, updateInterval)
       }
     );
+  } else {
+    setTimeout(update, updateInterval)
   }
 }
 
