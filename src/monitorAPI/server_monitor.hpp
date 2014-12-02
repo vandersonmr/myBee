@@ -28,7 +28,7 @@ class ServerMonitor {
 
     bool has_a_filter               = false;
     bool is_running                 = false;
-    bool is_time_client;
+    bool is_time_client             = false;
 
     void GetTime(Data<T>&);
     void ParseArgs(int*, char**);
@@ -68,8 +68,6 @@ void ServerMonitor<T>::HandleMessage(message<Data<T>> msg) {
       
 #ifdef ML
     if (is_machine_learning_enable) { 
-      assert((typeid(T) == typeid(double) || typeid(T) == typeid(int)) 
-          && "To use machine learning the data MUST be double or int");
       status = CheckData(data);
     }
 #endif
@@ -104,8 +102,6 @@ ServerMonitor<T>::ServerMonitor(){
 
 template <typename T>
 ServerMonitor<T>::ServerMonitor(int* argc, char** argv) {
-  this->is_time_client = true;
-
   if (argc != NULL && argv != NULL) ParseArgs(argc, argv);
   else Usage();
 
