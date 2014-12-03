@@ -46,7 +46,7 @@ function interateAsyncData(index, graph, callBack, endFunction, result) {
 
 
 function nodeGraphManager(name, divId, options){
-  this.name = name
+    this.name = name
     this.data = []
     var times = []
     var stats = []
@@ -56,7 +56,11 @@ function nodeGraphManager(name, divId, options){
         "<div id=\"g"+name+"\" class=\"panel panel-default graph\">"+
         "<div class=\"panel-heading\">" +
         "<h2 class=\"panel-title\">Node: "+name+
-        (options.lastTemp ? " (<b id=\"lastTemp"+name+"\"></b>)</h2>" : "</h2>")+
+        (options.lastTemp ? " (<b id=\"lastTemp"+name+"\"></b>)" : "")+
+        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
+        "<button id=\"save"+name+"\" type=\"button\" class=\"btn btn-sm btn-primary\">Salvar gráfico</button>"+
+        "&nbsp;&nbsp;&nbsp;&nbsp;"+
+        (options.tabs ? "<a id=\"export"+name+"\" ></a></h2>" : "</h2>")+
         (options.closeBox ? "<a class=\"boxclose\" id=\"boxclose"+name+"\"></a>" : "") +
         "</div>"+
         "<div class=\"panel-body\">"+
@@ -91,7 +95,6 @@ function nodeGraphManager(name, divId, options){
         (options.tabs ? "<div id=\"tabs-4"+name+"\" style=\"width:100%;height:50%\">" : "")+
         (options.tabs ? "Mostrar os dados: <br>" : "") +
         (options.tabs ? "<p id=\"choices"+name+"\" style=\"float:left; width:90%;\"></p>" : "")+
-        (options.tabs ? "<p id=\"export"+name+"\" style=\"float:left; width:90%;\"></p>" : "")+
         (options.tabs ? "</div>" : "")+
         "<\div>"+
         "</div>");
@@ -111,7 +114,19 @@ function nodeGraphManager(name, divId, options){
       timezone: "browser",
       timeformat: "%H:%M"
     }
-      });
+  });
+
+  this.saveToImage = function() {
+    html2canvas($("#"+name), {
+      onrendered: function(canvas) { 
+        var image = canvas.toDataURL("image/png");
+        image = image.replace("image/png","image/octet-stream");
+        document.location.href=image;
+    }});
+  }
+
+  var saveBtn = $("#save"+name);
+  saveBtn.click(this.saveToImage);
 
   this.highlight = function() {
     this.plot.unhighlight();
@@ -217,12 +232,14 @@ function nodeGraphManager(name, divId, options){
 
   this.setNodeStatus = function(nodeStatus, name){
     this.nodeStatus = nodeStatus
-      $("#"+divId+" [id='status"+this.name+"']").html(getStatusMsg(nodeStatus,name)) 
+      $("#"+divId+" [id='status"+this.name+"']")
+                                            .html(getStatusMsg(nodeStatus,name)) 
   }
 
   this.update = function(){
     for(var i = 0; i < this.data.length; i++)
       this.data[i].data = simplify(this.data[i].data, 1, false);
+
     this.plot.setData(this.data);
     this.plot.setupGrid();
     this.plot.draw();
@@ -235,7 +252,8 @@ function nodeGraphManager(name, divId, options){
     $("#"+divId+" [id='g"+name+"']").show();
 
     lastDataByType = this.data[this.data.length-1];
-    $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+lastDataByType.data[this.data.length-1][1]); //!TODO
+    $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+
+                            lastDataByType.data[this.data.length-1][1]); //!TODO
 
     if(options.tabs) {
       this.fillDataTextArea();
@@ -256,8 +274,8 @@ function nodeGraphManager(name, divId, options){
         previousPoint = item.dataIndex;
         $("#tooltip").remove();
         var x = item.dataIndex,
-    y = item.datapoint[1];
-  showTooltip(item.pageX, item.pageY,
+        y = item.datapoint[1];
+        showTooltip(item.pageX, item.pageY,
        "Data: "+ times[item.series.label][x] + "<br> "+item.series.label+": " + y + " "
     + "<br> Status: " + getStatusMsg(parseInt(stats[item.series.label][x])));
       }
@@ -300,7 +318,9 @@ function nodeGraphManager(name, divId, options){
 
     //insert export option
     var exportContainer = $("#export"+name);
-    exportContainer.append("<button type='button'>Exportar dados</button>");
+    exportContainer.append("<button type='button'"+ 
+                           "class='btn btn-sm btn-primary'"+
+                           ">Exportar dados</button>");
     exportContainer.find("button").click(exportData);
 
     var node_name = this.name;
@@ -510,7 +530,7 @@ function showTooltip(x, y, contents) {
   }).appendTo("body").fadeIn(300)
 }
 
-var updateInterval = 1000
+var updateInterval = 3000
 
 function update() {
   if($("#GraphsGrid").is(":visible") ) {
@@ -521,7 +541,7 @@ function update() {
           $("#loading").hide();
           setTimeout(update, updateInterval)
         }
-        );
+     );
   } else {
     setTimeout(update, updateInterval)
   }

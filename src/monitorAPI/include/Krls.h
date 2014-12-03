@@ -3,7 +3,6 @@
 #include "ManipulateData.h"
 #include <time.h>
 
-
 class Krls: public ManipulateData{
   protected:
     krls<kernel_type> krlsTest;

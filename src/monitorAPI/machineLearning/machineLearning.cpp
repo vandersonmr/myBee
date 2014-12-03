@@ -17,8 +17,8 @@ int testData(Data<double> data, const DataDAO<double>& dao){
   if(Nodes[nodeName] == nullptr)
     Nodes[nodeName] = unique_ptr<Node>(new Node(dao));
 
-  int resKCentroid = Nodes[nodeName]->kcentroidControl.testData(data,data.nickname);
-  int resKrls = Nodes[nodeName]->krlsControl.testData (data,data.nickname);
+  //int resKCentroid = Nodes[nodeName]->kcentroidControl.testData(data,data.nickname);
+  //int resKrls = Nodes[nodeName]->krlsControl.testData (data,data.nickname);
 
-  return resLimit | resKCentroid | resKrls;
+  return resLimit ;//| resKCentroid | resKrls;
 }
