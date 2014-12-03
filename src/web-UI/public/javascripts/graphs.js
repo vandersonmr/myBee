@@ -6,9 +6,10 @@ function alertLoading() {
  * represent the status. */
 function getStatusMsg(statusID, name){
   if(statusID == 0) { // If is a good status
-    return "<div style=\"color:blue\">"+statusMsg[0]+"</div>"
+    return "<div class=\"alert alert-danger\" role=\"alert\">"+statusMsg[0]+"</div>"
   } else { 
-    return "<div style=\"color:red\">"+(name!=undefined?name+" : ":"")+statusMsg[parseInt(statusID)]+"</div>"
+    return "<div class=\"alert alert-danger\" role=\"alert\">"+
+      (name!=undefined?name+" : ":"")+statusMsg[parseInt(statusID)]+"</div>"
   }
 }
 
@@ -52,11 +53,13 @@ function nodeGraphManager(name, divId, options){
     this.nodeStatus = "OK"
 
     $("#"+divId).append(
-        "<div id=\"g"+name+"\" class=\"graph\">"+
-        "<h2>Node: "+name+
+        "<div id=\"g"+name+"\" class=\"panel panel-default graph\">"+
+        "<div class=\"panel-heading\">" +
+        "<h2 class=\"panel-title\">Node: "+name+
         (options.lastTemp ? " (<b id=\"lastTemp"+name+"\"></b>)</h2>" : "</h2>")+
         (options.closeBox ? "<a class=\"boxclose\" id=\"boxclose"+name+"\"></a>" : "") +
-
+        "</div>"+
+        "<div class=\"panel-body\">"+
         (options.tabs ? "<div id=\"tabs"+name+"\">" +
          "<ul>"+
          "<li><a href=\"#tabs-1"+name+"\">Gráfico</a></li>"+
@@ -65,30 +68,32 @@ function nodeGraphManager(name, divId, options){
          "<li><a href=\"#tabs-4"+name+"\">Opções</a></li>"+
          "</ul>" : "") +
 
-        (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:90%;height:75%\">" : "")+
-        "<div id=\""+name+"\"  style=\"width:100%;height:80%;\"></div>"+
+        (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:100%;height:50%\">" : "")+
+        (options.tabs ? "<div id=\""+name+"\"  style=\"width:100%;height:80%;\"></div>" : 
+                        "<div id=\""+name+"\"  style=\"width:100%;height:50%;\"></div>")+
         (options.showStatus ? "<h3>Status: <br> "+
          "<div id=\"status"+name+"\">"+
          "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
          "</div></h3>" : "") + 
-        (options.miniGraph ? "<br><div id=\"smallgraph"+name+"\" style=\"width: 100%;height: 18%;\"></div>" : "")+ 
+        (options.miniGraph ? "<br><div id=\"smallgraph"+name+"\" style=\"width: 100%;height: 20%;\"></div>" : "")+ 
         (options.tabs ? "</div>" : "")+
 
-        (options.tabs ? "<div id=\"tabs-2"+name+"\" style=\"width:90%;height:77%\">" : "")+
+        (options.tabs ? "<div id=\"tabs-2"+name+"\" style=\"width:100%;height:50%\">" : "")+
         (options.tabs ? "<select id=\"selectRawData"+name+"\" ></select>": "")+
         (options.tabs ? "<textarea id=\"rawData"+name+"\" readonly style=\"resize: none; width:100%;height:100%\"></textarea>" : "")+
         (options.tabs ? "</div>" : "")+
 
-        (options.tabs ? "<div id=\"tabs-3"+name+"\" style=\"width:90%;height:77%\">" : "")+
+        (options.tabs ? "<div id=\"tabs-3"+name+"\" style=\"width:100%;height:50%\">" : "")+
         (options.tabs ? "<select id=\"selectStatistics"+name+"\" ></select>": "")+
         (options.tabs ? "<textarea id=\"statistics"+name+"\" readonly style=\"resize: none; width:100%;height:100%\"></textarea>" : "")+
         (options.tabs ? "</div>" : "")+
 
-        (options.tabs ? "<div id=\"tabs-4"+name+"\" style=\"width:90%;height:77%\">" : "")+
+        (options.tabs ? "<div id=\"tabs-4"+name+"\" style=\"width:100%;height:50%\">" : "")+
         (options.tabs ? "Mostrar os dados: <br>" : "") +
         (options.tabs ? "<p id=\"choices"+name+"\" style=\"float:left; width:90%;\"></p>" : "")+
         (options.tabs ? "<p id=\"export"+name+"\" style=\"float:left; width:90%;\"></p>" : "")+
         (options.tabs ? "</div>" : "")+
+        "<\div>"+
         "</div>");
 
   this.plot = $.plot("#"+divId+" [id='"+name+"']", [{data:[], label: name+" temp."}],
@@ -102,9 +107,9 @@ function nodeGraphManager(name, divId, options){
     },
     xaxis:{
       mode    : "time",
-    minTickSize: [1, "minute"],
-    timezone: "browser",
-    timeformat: "%H:%M"
+      minTickSize: [1, "minute"],
+      timezone: "browser",
+      timeformat: "%H:%M"
     }
       });
 
@@ -253,7 +258,7 @@ function nodeGraphManager(name, divId, options){
         var x = item.dataIndex,
     y = item.datapoint[1];
   showTooltip(item.pageX, item.pageY,
-    "Data: "+ times[item.series.label][x] + "<br> "+item.series.label+": " + y + " "
+       "Data: "+ times[item.series.label][x] + "<br> "+item.series.label+": " + y + " "
     + "<br> Status: " + getStatusMsg(parseInt(stats[item.series.label][x])));
       }
     } else {
@@ -498,11 +503,11 @@ function showTooltip(x, y, contents) {
   display  : "none",
   top      : y + 5,
   left     : x + 5,
-  border   : "1px solid #fdd",
+  border   : "1px solid #ffd",
   padding  : "2px",
-  "background-color": "#fee",
-  opacity  : 0.80
-  }).appendTo("body").fadeIn(200)
+  "background-color": "#ffff",
+  opacity  : 0.95
+  }).appendTo("body").fadeIn(300)
 }
 
 var updateInterval = 1000
@@ -523,6 +528,8 @@ function update() {
 }
 
 function fillNodesOptions() {
+  $("#loading").show();
+  $("#historico").hide();
   $.get('getNodes').success(
       function(data) {
         $("#nodesBox").empty();
@@ -536,6 +543,8 @@ function fillNodesOptions() {
           }));
 
         });
+        $("#loading").hide();
+        $("#historico").show();
       }
       );
 }
