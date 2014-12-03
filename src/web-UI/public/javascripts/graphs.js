@@ -11,6 +11,7 @@ function getStatusMsg(statusID, name){
     return "<div style=\"color:red\">"+(name!=undefined?name+" : ":"")+statusMsg[parseInt(statusID)]+"</div>"
   }
 }
+
 function interateAsyncData(index, graph, callBack, endFunction, result) {
   var loopid   = null
     var stopped  = false
@@ -216,7 +217,7 @@ function nodeGraphManager(name, divId, options){
 
   this.update = function(){
     for(var i = 0; i < this.data.length; i++)
-      this.data[i].data = simplify(this.data[i].data, 0.7, false);
+      this.data[i].data = simplify(this.data[i].data, 1, false);
     this.plot.setData(this.data);
     this.plot.setupGrid();
     this.plot.draw();
@@ -567,6 +568,15 @@ $("#lhistorico").click(function() {
   $("#GraphsGrid").hide();
   $("#historico").show();
   fillNodesOptions();
+});
+
+$('.nav li a').click(function(e) {
+  $('.nav li').removeClass('active');
+  var $parent = $(this).parent();
+  if (!$parent.hasClass('active')) {
+    $parent.addClass('active');
+  }
+  e.preventDefault();
 });
 
 $("#historico").hide();
