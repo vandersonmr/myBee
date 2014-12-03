@@ -21,7 +21,7 @@
       </div>
     </nav>
 	
-    <br><br>
+    <br>
     
     <div class="image">
         <center><img src="bee.gif" style="display:none" id="theBee"></center>
@@ -29,14 +29,13 @@
 
     <br>
 
-    <div id="GraphsGrid">
+    <div id="GraphsGrid" class="jumbotron">
       <center>
-      <br><br>
-      Intervalo de tempo (minutos): <input type="number" id="intervalVal" min="1" value="30"> 
+      Intervalo de tempo (minutos): <input type="number" id="intervalVal" min="1" value="15"> 
       </center>
     </div>
 
-    <div id="historico">
+    <div id="historico" class="jumbotron">
       <center>
       <br>
       Nome do ponto: <select id="nodesBox" name="node">
@@ -50,8 +49,8 @@
     <br><br><br>
     <div id="loading">
       <center>
-        <img src="loading.gif" alt="Carregando" style="width:32px;height:32px">
-        <p>Aguarde enquanto buscamos os dados...</p>
+        <img src="loading.gif" alt="Carregando" style="width:64px;height:64px">
+        <p><h1>Aguarde enquanto buscamos os dados...<h1></p>
       </center>
     </div>
 
@@ -68,4 +67,5 @@
     <script language="javascript" type="text/javascript" src="/javascripts/simplify.js"></script>
     <script language="javascript" type="text/javascript" src="/javascripts/bootstrap.min.js"></script>
     <script language="javascript" type="text/javascript" src="/javascripts/graphs.js"></script>
+
 </body>

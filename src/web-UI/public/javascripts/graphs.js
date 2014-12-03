@@ -593,13 +593,18 @@ $("#historico").hide();
 $("#lexportar").click(function() {
   if (!is_loading) {
     is_loading = true;
+    $("#historico").hide();
+    $("#GraphsGrid").hide();
     $("#loading").show();
     var mode = "all";
     $.get('exportData/'+mode).success(
       function(data) {
         saveOnFile(data);
+        $("#loading").hide();
+        $('.nav li').removeClass('active');
+        $("#ltempoReal").addClass('active');
+        $("#ltempoReal").click();
       });
-    $("#loading").hide();
     is_loading = false;
   }
   else alertLoading();
@@ -607,10 +612,17 @@ $("#lexportar").click(function() {
 
 $("#llimpar").click(function() {
   if (confirm('Você deseja apagar todos os dados?')) {
+    $("#historico").hide();
+    $("#GraphsGrid").hide();
+    $("#loading").show();
     var mode = "all";
     $.get('deleteData/'+mode).success(
       function(data) {
         alert("Todos os dados foram deletados com sucesso.");
+        $("#loading").hide();
+        $('.nav li').removeClass('active');
+        $("#ltempoReal").addClass('active');
+        $("#ltempoReal").click();
       });
   }
 });
