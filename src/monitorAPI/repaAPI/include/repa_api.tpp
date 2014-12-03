@@ -34,20 +34,30 @@ message<T> RepaAPI<T>::GetMessage() {
   char* data = new char[1500];
   char* interest = new char[255];
 
-  int read_len = repa_recv(sock,interest, data, prefix_addr);
-
+  bool has_message = false;
+  
   message<T> result;
-  if (read_len > 0) {
-    msgpack::unpacked msg;
-    msgpack::unpack(&msg, data, read_len);
-    msgpack::object obj = msg.get();
 
-    obj.convert(&result);
+  while (!has_message) {
+    int read_len = repa_recv(sock,interest, data, prefix_addr);
 
-    char* prefix = new char[255];
-    repa_print_prefix(prefix_addr,prefix);
-    result.prefix_address = string(prefix);
-    delete[] prefix;
+    if (read_len > 0) {
+      try {
+        msgpack::unpacked msg;
+        msgpack::unpack(&msg, data, read_len);
+        msgpack::object obj = msg.get();
+
+        obj.convert(&result);
+
+        char* prefix = new char[255];
+        repa_print_prefix(prefix_addr,prefix);
+        result.prefix_address = string(prefix);
+        delete[] prefix;
+        has_message = true;
+      } catch (exception &err) {
+        cerr << err.what() << endl;
+      }
+    }
   }
 
   delete[] data;
