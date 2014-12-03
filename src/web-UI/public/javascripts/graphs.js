@@ -41,7 +41,8 @@ function interateAsyncData(index, graph, callBack, endFunction, result) {
   }
 
   dataLabel = graph.data[index].label;
-  loop(graph.data[index].data.length-1,graph.data[index].data,graph.times[dataLabel],graph.stats[dataLabel], dataLabel);
+  loop(graph.data[index].data.length-1,graph.data[index].data, 
+      graph.times[dataLabel],graph.stats[dataLabel], dataLabel);
 }
 
 
@@ -58,7 +59,8 @@ function nodeGraphManager(name, divId, options){
         "<h2 class=\"panel-title\">Node: "+name+
         (options.lastTemp ? " (<b id=\"lastTemp"+name+"\"></b>)" : "")+
         "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+
-        "<button id=\"save"+name+"\" type=\"button\" class=\"btn btn-sm btn-primary\">Salvar gráfico</button>"+
+        "<button id=\"save"+name+
+        "\" type=\"button\" class=\"btn btn-sm btn-primary\">Salvar gráfico</button>"+
         "&nbsp;&nbsp;&nbsp;&nbsp;"+
         (options.tabs ? "<a id=\"export"+name+"\" ></a></h2>" : "</h2>")+
         (options.closeBox ? "<a class=\"boxclose\" id=\"boxclose"+name+"\"></a>" : "") +
@@ -117,15 +119,15 @@ function nodeGraphManager(name, divId, options){
   });
 
   this.saveToImage = function() {
-    html2canvas($("#"+name), {
+    html2canvas($("#"+divId+" #"+name), {
       onrendered: function(canvas) { 
         var image = canvas.toDataURL("image/png");
-        image = image.replace("image/png","image/octet-stream");
-        document.location.href=image;
+        image = image.replace("image/png", "image/octet-stream");
+        document.location.href = image;
     }});
   }
 
-  var saveBtn = $("#save"+name);
+  var saveBtn = $("#"+divId+" #save"+name);
   saveBtn.click(this.saveToImage);
 
   this.highlight = function() {
@@ -159,8 +161,9 @@ function nodeGraphManager(name, divId, options){
     $("#selectStatistics"+name).change(function() {
       if (dataStatisticsInterator) dataStatisticsInterator.stop()
       $("#"+divId+" #statistics"+name).empty(); 
-    $("#"+divId+" #statistics"+name).append("Estatísticas dos dados "+pai.data[$(this).val()].label+"\n"+
-      " Carregando... \n");
+    $("#"+divId+" #statistics"+name).append("Estatísticas dos dados "+
+                                            pai.data[$(this).val()].label+"\n"+
+                                            " Carregando... \n");
 
     var result = {mean:0,alerts:0}
     dataStatisticsInterator = new interateAsyncData($(this).val(), pai,
@@ -186,7 +189,7 @@ function nodeGraphManager(name, divId, options){
       result.alerts += 1
       },
       function(label) {
-        $("#"+divId+" #statistics"+name).empty()
+          $("#"+divId+" #statistics"+name).empty()
           $("#"+divId+" #statistics"+name).append("Estatísticas dos dados \n")
           $("#"+divId+" #statistics"+name).append(""+label+" Média : "+Math.round(result.mean)+"\n")
           $("#"+divId+" #statistics"+name).append(""+label+" Máxima : "+result.highest+"\n")
