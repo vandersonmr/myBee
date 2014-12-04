@@ -130,15 +130,36 @@ function nodeGraphManager(name, divId, options){
   var saveBtn = $("#"+divId+" #save"+name);
   saveBtn.click(this.saveToImage);
 
+  var choiceContainer = $("#choices"+name);
+  var pai = this
+  function getChosenData() {
+      var data = [];
+      choiceContainer.find("input:checked").each(function () {
+        var key = $(this).attr("name");
+        if (key && pai.data[key]) {
+          data.push(pai.data[key]);
+        }
+      });
+      return data;  
+  }
+
   this.highlight = function() {
     this.plot.unhighlight();
-    var keys = Object.keys(stats);
+    if(options.tabs) {
+      var filteredData = getChosenData();
+      var keys1 = Object.keys(filteredData);
+      var keys  = [];  
+      for(i in keys1)
+        keys[i] = filteredData[i].label; 
+    } else {
+      var keys = Object.keys(stats);
+    }
     keys.sort();
 
     for(i in keys) {
       for(index in stats[keys[i]]) {
         if (parseInt(stats[keys[i]][index]) != 0) {
-          this.plot.highlight(parseInt(i),parseInt(index))
+          this.plot.highlight(parseInt(i), parseInt(index))
         }
       }
     }
@@ -213,7 +234,7 @@ function nodeGraphManager(name, divId, options){
         if(dataTextInterator) dataTextInterator.stop();
         $("#"+divId+" #rawData"+name).empty()
         $("#"+divId+" #rawData"+name).append("Chave tipo Tempo dado  status\n");
-      dataTextInterator = new interateAsyncData($(this).val(), pai, 
+        dataTextInterator = new interateAsyncData($(this).val(), pai, 
         function(key, data, times, stats, dataLabel) {
           $("#"+divId+" #rawData"+name)
         .append(key+" "+" "+dataLabel+" "+times[key]+" "+data[key][1]+" "+stats[key]+"\n")
@@ -225,7 +246,7 @@ function nodeGraphManager(name, divId, options){
   }
 
   this.setData = function(data, time, stat){
-    this.data = data
+      this.data = data
       times = time
       stats = stat
       if (options.miniGraph) {
@@ -239,32 +260,37 @@ function nodeGraphManager(name, divId, options){
                                             .html(getStatusMsg(nodeStatus,name)) 
   }
 
-  this.update = function(){
-    for(var i = 0; i < this.data.length; i++)
-      this.data[i].data = simplify(this.data[i].data, 1, false);
-
-    this.plot.setData(this.data);
-    this.plot.setupGrid();
-    this.plot.draw();
-
+  this.setHighlightColor = function(color) {
     for(var i in this.plot.getData()) 
-      this.plot.getData()[i].highlightColor = "#D80000";
-
-    this.highlight();
-
-    $("#"+divId+" [id='g"+name+"']").show();
-
-    lastDataByType = this.data[this.data.length-1];
-    var lastData = lastDataByType.data[this.data.length-1];
-    if(lastData)
-      $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+
-                            lastData[1]);
-
+      this.plot.getData()[i].highlightColor = color;
+  }
+  
+  this.update = function(){
     if(options.tabs) {
       this.fillDataTextArea();
       this.fillDataStatistics();
       this.fillOptions();
+    } else {
+      for(var i = 0; i < this.data.length; i++)
+        this.data[i].data = simplify(this.data[i].data, 1, false);
+
+      this.plot.setData(this.data);
+      this.plot.setupGrid();
+      this.plot.draw();
+
+      this.setHighlightColor("#D80000");
+
+      this.highlight();
+
+      $("#"+divId+" [id='g"+name+"']").show();
+
+      lastDataByType = this.data[this.data.length-1];
+      var lastData = lastDataByType.data[this.data.length-1];
+      if(lastData)
+        $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+
+            lastData[1]);
     }
+
   }
 
   if (options.closeBox)
@@ -297,6 +323,7 @@ function nodeGraphManager(name, divId, options){
       val.color = i;
       ++i;
     });
+
     var choiceContainer = $("#choices"+name);
     $.each(this.data, function(key, val) {
       choiceContainer.append("<br/><input type='checkbox' name='" + key +
@@ -304,22 +331,18 @@ function nodeGraphManager(name, divId, options){
         "<label for='id" + key + "'>"
         + val.label + "</label>");
     });
+
     choiceContainer.find("input").click(plotAccordingToChoices);
-    var pai = this
-      function plotAccordingToChoices() {
-        var data = [];
-        choiceContainer.find("input:checked").each(function () {
-          var key = $(this).attr("name");
-          if (key && pai.data[key]) {
-            data.push(pai.data[key]);
-          }
-        });
-        if (data.length > 0) {
-          pai.plot.setData(data)
-            pai.plot.setupGrid()
-            pai.plot.draw()
-        }
+    function plotAccordingToChoices() {
+      var data = getChosenData();
+      if (data.length > 0) {
+        pai.plot.setData(data)
+        pai.plot.setupGrid()
+        pai.plot.draw()
+        pai.setHighlightColor("#D80000");
+        pai.highlight();
       }
+    }
 
     //insert export option
     var exportContainer = $("#export"+name);
@@ -331,9 +354,9 @@ function nodeGraphManager(name, divId, options){
     var node_name = this.name;
     function exportData() {
       var filter = []
-        choiceContainer.find("input:checked").each(function() {
-          filter.push(pai.data[$(this).attr("name")].label.replace(' ', ''));
-        });
+      choiceContainer.find("input:checked").each(function() {
+        filter.push(pai.data[$(this).attr("name")].label.replace(' ', ''));
+      });
       if (filter.length > 0) {
         var mode = node_name;
         for (var i in filter) {
