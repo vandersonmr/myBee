@@ -255,8 +255,10 @@ function nodeGraphManager(name, divId, options){
     $("#"+divId+" [id='g"+name+"']").show();
 
     lastDataByType = this.data[this.data.length-1];
-    $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+
-                            lastDataByType.data[this.data.length-1][1]); //!TODO
+    var lastData = lastDataByType.data[this.data.length-1];
+    if(lastData)
+      $("#"+divId+" #lastTemp"+name).html(lastDataByType.label+": "+
+                            lastData[1]);
 
     if(options.tabs) {
       this.fillDataTextArea();
