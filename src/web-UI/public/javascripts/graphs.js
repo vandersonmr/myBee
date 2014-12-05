@@ -74,27 +74,27 @@ function nodeGraphManager(name, divId, options){
          "<li><a href=\"#tabs-4"+name+"\">Opções</a></li>"+
          "</ul>" : "") +
 
-        (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:100%;height:50%\">" : "")+
-        (options.tabs ? "<div id=\""+name+"\"  style=\"width:100%;height:80%;\"></div>" : 
+        (options.tabs ? "<div id=\"tabs-1"+name+"\" style=\"width:100%;height:65%\">" : "")+
+        (options.tabs ? "<div id=\""+name+"\"  style=\"width:100%;height:70%;\"></div>" : 
                         "<div id=\""+name+"\"  style=\"width:100%;height:50%;\"></div>")+
         (options.showStatus ? "<h3>Status: <br> "+
          "<div id=\"status"+name+"\">"+
          "<div style=\"color:blue\">"+this.nodeStatus+"</div>"+
          "</div></h3>" : "") + 
-        (options.miniGraph ? "<br><div id=\"smallgraph"+name+"\" style=\"width: 100%;height: 20%;\"></div>" : "")+ 
+        (options.miniGraph ? "<br><div id=\"smallgraph"+name+"\" style=\"width: 100%;height: 25%;\"></div>" : "")+ 
         (options.tabs ? "</div>" : "")+
 
-        (options.tabs ? "<div id=\"tabs-2"+name+"\" style=\"width:100%;height:50%\">" : "")+
+        (options.tabs ? "<div id=\"tabs-2"+name+"\" style=\"width:100%;height:65%\">" : "")+
         (options.tabs ? "<select id=\"selectRawData"+name+"\" ></select>": "")+
         (options.tabs ? "<textarea id=\"rawData"+name+"\" readonly style=\"resize: none; width:100%;height:100%\"></textarea>" : "")+
         (options.tabs ? "</div>" : "")+
 
-        (options.tabs ? "<div id=\"tabs-3"+name+"\" style=\"width:100%;height:50%\">" : "")+
+        (options.tabs ? "<div id=\"tabs-3"+name+"\" style=\"width:100%;height:65%\">" : "")+
         (options.tabs ? "<select id=\"selectStatistics"+name+"\" ></select>": "")+
         (options.tabs ? "<textarea id=\"statistics"+name+"\" readonly style=\"resize: none; width:100%;height:100%\"></textarea>" : "")+
         (options.tabs ? "</div>" : "")+
 
-        (options.tabs ? "<div id=\"tabs-4"+name+"\" style=\"width:100%;height:50%\">" : "")+
+        (options.tabs ? "<div id=\"tabs-4"+name+"\" style=\"width:100%;height:65%\">" : "")+
         (options.tabs ? "Mostrar os dados: <br>" : "") +
         (options.tabs ? "<p id=\"choices"+name+"\" style=\"float:left; width:90%;\"></p>" : "")+
         (options.tabs ? "</div>" : "")+
@@ -102,21 +102,28 @@ function nodeGraphManager(name, divId, options){
         "</div>");
 
   this.plot = $.plot("#"+divId+" [id='"+name+"']", [{data:[], label: name+" temp."}],
-      {series: {
-                 lines:{show:true}, 
-    points:{show:true}},
-    grid: {
-      hoverable: true,
-    downsample: { threshold: 500 },
-    clickable: true
-    },
-    xaxis:{
-      mode    : "time",
-      minTickSize: [1, "minute"],
-      timezone: "browser",
-      timeformat: "%H:%M"
-    }
-  });
+            {
+                 series: {
+                    lines:{show:true}, 
+                    points:{show:true},
+                    autoMarkings: {
+                      enabled: options.tabs,
+                      showMinMax: true,
+                      showAvg: true
+                    } 
+                 },
+                 grid: {
+                    hoverable: true,
+                    downsample: { threshold: 1000 },
+                    clickable: true
+                },
+                xaxis:{
+                  mode    : "time",
+                  minTickSize: [1, "minute"],
+                  timezone: "browser",
+                  timeformat: " %d/%m %H:%M"
+                },
+          });
 
   this.saveToImage = function() {
     html2canvas($("#"+divId+" #"+name), {
@@ -134,11 +141,13 @@ function nodeGraphManager(name, divId, options){
   var pai = this
   function getChosenData() {
       var data = [];
+      pai.plot.getOptions().series.autoMarkings.enabled = false;
       choiceContainer.find("input:checked").each(function () {
         var key = $(this).attr("name");
-        if (key && pai.data[key]) {
+        if(key == "showAvrg") 
+          pai.plot.getOptions().series.autoMarkings.enabled = true;
+        else if (key && pai.data[key]) 
           data.push(pai.data[key]);
-        }
       });
       return data;  
   }
@@ -236,8 +245,8 @@ function nodeGraphManager(name, divId, options){
         $("#"+divId+" #rawData"+name).append("Chave tipo Tempo dado  status\n");
         dataTextInterator = new interateAsyncData($(this).val(), pai, 
         function(key, data, times, stats, dataLabel) {
-          $("#"+divId+" #rawData"+name)
-        .append(key+" "+" "+dataLabel+" "+times[key]+" "+data[key][1]+" "+stats[key]+"\n")
+          $("#"+divId+" #rawData"+name).append(key+" "+" "+dataLabel+" "+
+                                times[key]+" "+data[key][1]+" "+stats[key]+"\n")
         }
         );
       })
@@ -332,6 +341,11 @@ function nodeGraphManager(name, divId, options){
         + val.label + "</label>");
     });
 
+    choiceContainer.append("<br/><input type='checkbox' name='showAvrg'"+
+      " checked='checked' id='showAvrg'></input>" +
+      "<label for='showAvrg'>Mostrar sombra do min e max</label>");
+
+
     choiceContainer.find("input").click(plotAccordingToChoices);
     function plotAccordingToChoices() {
       var data = getChosenData();
@@ -399,23 +413,23 @@ function nodeGraphManager(name, divId, options){
       },
         xaxis: {     
           mode    : "time",
-        timezone: "browser",
-        timeformat: "%H:%M"
+          timezone: "browser",
+          timeformat: " %d/%m %H:%M"
         },
         yaxis: {
           show: false
         },
         grid:{
           color: "#666",
-        downsample: { threshold: 50 },
-        backgroundColor: { colors: ["#ddd", "#fff"]}
+          downsample: { threshold: 50 },
+          backgroundColor: { colors: ["#ddd", "#fff"]}
         },
         rangeselection:{
           start   : sData[0].data[sData[0].data.length-1][0],
-        end     : sData[0].data[0][0],
-        color   : "#feb",
-        enabled : true,
-        callback: rangeselectionCallback
+          end     : sData[0].data[0][0],
+          color   : "#feb",
+          enabled : true,
+          callback: rangeselectionCallback
         }
     });
   }
