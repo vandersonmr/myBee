@@ -9,6 +9,7 @@ class Generic {
     std::string name;
     int type;
     double temperature, humidity, pressure;
+    std::string command;
 
   public:
     Generic() {};
@@ -28,6 +29,10 @@ class Generic {
     void setType(int t) { type = t; };
 
     int getType() { return type; };
+    
+    void setCommand(std::string c) { command = c; };
+    
+    std::string getCommand() { return command; };
 
     double getTemperature() { return temperature; };
 
@@ -41,7 +46,7 @@ class Generic {
 
     void setPressure(double p) { pressure = p; };
 
-    MSGPACK_DEFINE(name, type, temperature, pressure, humidity);
+    MSGPACK_DEFINE(name, type, temperature, pressure, humidity, command);
 };
 
 //this overload must be implemented to persist data on database
@@ -52,6 +57,8 @@ std::stringstream& operator<<(std::stringstream& ss, Generic& g) {
     ss << g.getHumidity();
   else if (g.getType() == 2)
     ss << g.getPressure();
+  else if (g.getType() == 3)
+    ss << g.getCommand();
   else
     ss << g.getName();
   return ss;
@@ -64,6 +71,8 @@ std::ostream& operator<<(std::ostream& os, Generic& g) {
     os << g.getHumidity();
   else if (g.getType() == 2)
     os << g.getPressure();
+  else if (g.getType() == 3)
+    os << g.getCommand();
   else
     os << g.getName();
   return os;

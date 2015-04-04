@@ -22,6 +22,8 @@ class ServerMonitor {
     struct sockaddr_in server_tcp;
     void AcceptTCP();
     void ReceiveTCPMessage(int);
+    function<void(Data<T>&, string)> PackValueFunction;
+    void SendMessage(string, string);
 
 #ifdef ML
     int  CheckData(Data<T> data);
@@ -56,6 +58,7 @@ class ServerMonitor {
     void Run();
     void GetTimeServer();
     void GetTimeClient();
+    void TCPPackFunction(function<void(Data<T>&, string)>);
 };
 
 static bool quit = false;
@@ -63,7 +66,7 @@ static bool quit = false;
 template <typename T>
 void ServerMonitor<T>::HandleMessage(message<Data<T>> msg) {
   for (auto& data: msg.data){ 
-    
+
     data.node = msg.prefix_address; 
 
     if (!is_time_client)
@@ -71,9 +74,9 @@ void ServerMonitor<T>::HandleMessage(message<Data<T>> msg) {
 
     if (has_a_filter)
       data = filter(data);
-      
+
     int status = 0;
-      
+
 #ifdef ML
     if (is_machine_learning_enable) { 
       status = CheckData(data);
@@ -83,7 +86,7 @@ void ServerMonitor<T>::HandleMessage(message<Data<T>> msg) {
     if (is_persistence_enable) {
       dao.saveData(data, status);
     }
-    
+
     UpdateListOfNodesOnline();
 
   }
@@ -154,11 +157,11 @@ void ServerMonitor<T>::ParseArgs(int* argc, char** argv){
       if (arg[1] == 'c') GetTimeClient();
 #ifdef ML
       else if (arg[1] == 'm'){
-        if (++i < num_args && string(argv[i]).compare("disable"))
-          EnableMachineLearning(1);
-        else if (i < num_args && string(argv[i]).compare("enable"))
-          EnableMachineLearning(0);
-        else Usage();
+	if (++i < num_args && string(argv[i]).compare("disable"))
+	  EnableMachineLearning(1);
+	else if (i < num_args && string(argv[i]).compare("enable"))
+	  EnableMachineLearning(0);
+	else Usage();
       }
 #endif
       else if (arg[1] == 's') GetTimeServer();
@@ -263,9 +266,36 @@ void ServerMonitor<T>::ReceiveTCPMessage(int fd) {
       return;
     }
     else {
-      cout << buffer << endl;
+      string word;
+      vector<string> elems;
+
+      stringstream ss;
+
+      ss << string(buffer);
+
+      while (getline(ss, word, '&')) elems.push_back(word);
+
+      SendMessage(elems[0], elems[1]);
+
     }
   }
+}
+
+template <typename T>
+void ServerMonitor<T>::SendMessage(string nickname, string value) {
+  vector<Data<T>> datas;
+  Data<T> data;
+  PackValueFunction(data, value);
+  data.nickname = nickname;
+  datas.push_back(data);
+
+  vector<string> interests = {nickname};
+
+  message<Data<T>> msg;
+  msg.data = datas;
+  msg.interests = interests;
+
+  repa.SendMessage(msg);
 }
 
 template <typename T>
@@ -282,7 +312,7 @@ void ServerMonitor<T>::EnableTCP(int port) {
     cerr << "Error opening socket" << endl;
     return;
   }
-  
+
   server_tcp.sin_family	     = AF_INET;
   server_tcp.sin_port	     = htons(port);
   server_tcp.sin_addr.s_addr = INADDR_ANY;
@@ -305,4 +335,9 @@ void ServerMonitor<T>::EnableTCP(int port) {
 
   thread(&ServerMonitor::AcceptTCP, this).detach();
 
+}
+
+template <typename T>
+void ServerMonitor<T>::TCPPackFunction(function<void(Data<T>&, string)> callback) {
+  PackValueFunction = callback;
 }

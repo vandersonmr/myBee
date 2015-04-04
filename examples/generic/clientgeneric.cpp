@@ -59,6 +59,14 @@ TYPE GetGenericData() {
   }
 }
 
+void RunCommand(TYPE data) {
+  cout << data.getCommand() << endl;
+  if (data.getCommand() == "toggle-tv1") {
+    cout << "Toggling TV power button" << endl;
+    system("echo 'tx 10 44 6B' | cec-client -s");
+  }
+}
+
 int main(int argc, char **argv) {
   ClientMonitor<TYPE> monitor(&argc, argv);
 
@@ -68,6 +76,8 @@ int main(int argc, char **argv) {
   monitor.AddDataGenerator("temperature", 3, &GetTemperature);
   monitor.AddDataGenerator("humidity", 15, &GetHumidity);
   monitor.AddDataGenerator("pressure", 20, &GetPressure);
+
+  monitor.HandleServerMessages(&RunCommand);
 
   monitor.Run();
 

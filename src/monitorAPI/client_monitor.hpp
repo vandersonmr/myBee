@@ -36,6 +36,7 @@ class ClientMonitor {
     void ResendLostMessages();
     void HandleMessage(message<Data<T>>&);
     message<Data<T>> CreateMessage(vector<Data<T>>);
+    function<void(T)>* filter_server_message = nullptr;
     static void Handler(int);
 
   public:
@@ -56,6 +57,7 @@ class ClientMonitor {
     void Close();
     void EnableACK(bool);
     void Run();
+    void HandleServerMessages(function<void(T)>);
 };
 
 static bool quit = false;
@@ -201,6 +203,10 @@ void ClientMonitor<T>::Run(){
     repa_api.GetMessage([this](message<Data<T>> msg) { HandleMessage(msg); });
     thread(&ClientMonitor::ResendLostMessages, this).detach();
   }
+  if (filter_server_message != nullptr) {
+    repa_api.GetMessage([this](message<Data<T>> msg) 
+	{ (*filter_server_message)(msg.data.back().value); });
+  }
   while (!quit) sleep(1);
 }
 
@@ -308,4 +314,9 @@ void ClientMonitor<T>::Usage(){
   cout << "\t-a      : Enable ACK to resend messages to the server." << endl;
   cout << "\t-h      : Display this message." << endl;
   exit(0);
+}
+
+template <typename T>
+void ClientMonitor<T>::HandleServerMessages(function<void(T)> callback) {
+   filter_server_message = &callback;
 }
