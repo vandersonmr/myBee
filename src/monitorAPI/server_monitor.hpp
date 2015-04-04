@@ -247,14 +247,21 @@ template <typename T>
 void ServerMonitor<T>::Close() {
   dao.closeConnection();
   repa.CloseRepa();
+  if (fd_tcp >= 0) close(fd_tcp);
 }
 
 template <typename T>
 void ServerMonitor<T>::ReceiveTCPMessage(int fd) {
   char buffer[1024];
   while (!quit) {
-    if (recv(fd, buffer, 1024, 0) < 0)
+    int recv_val = recv(fd, buffer, 1024, 0);
+    if (recv_val < 0)
       cerr << "Error receiving message" << endl;
+    else if (recv_val == 0) {
+      cout << "Connection closed" << endl;
+      close(fd);
+      return;
+    }
     else {
       cout << buffer << endl;
     }
@@ -271,15 +278,26 @@ void ServerMonitor<T>::AcceptTCP() {
 
 template <typename T>
 void ServerMonitor<T>::EnableTCP(int port) {
-  if ((fd_tcp = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+  if ((fd_tcp = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     cerr << "Error opening socket" << endl;
+    return;
+  }
   
   server_tcp.sin_family	     = AF_INET;
   server_tcp.sin_port	     = htons(port);
   server_tcp.sin_addr.s_addr = INADDR_ANY;
 
-  if (bind(fd_tcp, (struct sockaddr *) &server_tcp, sizeof(server_tcp)) < 0)
+  int yes = 1;
+
+  if (setsockopt(fd_tcp, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+    cerr << "Error setting socket reuse." << endl;
+    return;
+  }
+
+  if (bind(fd_tcp, (struct sockaddr *) &server_tcp, sizeof(server_tcp)) < 0) {
     cerr << "Error binding socket" << endl;
+    return;
+  }
 
   listen(fd_tcp, 5);
 
