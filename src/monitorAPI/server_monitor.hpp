@@ -5,6 +5,9 @@
 #include <string>
 #include <map>
 #include <functional>
+#include <thread>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 template <typename T>
 class ServerMonitor {
@@ -15,6 +18,10 @@ class ServerMonitor {
     DataDAO<T> dao;
     bool is_persistence_enable      = false;
     void UpdateListOfNodesOnline();
+    int fd_tcp, port;
+    struct sockaddr_in server_tcp;
+    void AcceptTCP();
+    void ReceiveTCPMessage(int);
 
 #ifdef ML
     int  CheckData(Data<T> data);
@@ -44,6 +51,7 @@ class ServerMonitor {
     ~ServerMonitor();
     void SetFilter(function<Data<T>(Data<T>)>);
     int  EnablePersistence(string);
+    void EnableTCP(int);
     void Close();
     void Run();
     void GetTimeServer();
@@ -155,6 +163,12 @@ void ServerMonitor<T>::ParseArgs(int* argc, char** argv){
 #endif
       else if (arg[1] == 's') GetTimeServer();
       else if (arg[1] == 'h') Usage();
+      else if (string(argv[i]) == "-tcp") {
+	if (i + 1 == num_args || argv[i + 1][0] == '-')
+	  Usage();
+	else
+	  EnableTCP(atoi(argv[++i]));
+      }
       else Usage();
     }
     else Usage();
@@ -169,6 +183,7 @@ void ServerMonitor<T>::Usage(){
 #endif
   cout << "\t-c                : Use time from client." << endl;
   cout << "\t-s                : Use time from server." << endl;
+  cout << "\t-tcp [port]       : Enable TCP connection. Insert port." << endl;
   exit(0);
 }
 
@@ -232,4 +247,44 @@ template <typename T>
 void ServerMonitor<T>::Close() {
   dao.closeConnection();
   repa.CloseRepa();
+}
+
+template <typename T>
+void ServerMonitor<T>::ReceiveTCPMessage(int fd) {
+  char buffer[1024];
+  while (!quit) {
+    if (recv(fd, buffer, 1024, 0) < 0)
+      cerr << "Error receiving message" << endl;
+    else {
+      cout << buffer << endl;
+    }
+  }
+}
+
+template <typename T>
+void ServerMonitor<T>::AcceptTCP() {
+  while (!quit) {
+    thread (&ServerMonitor::ReceiveTCPMessage, this, 
+	accept(fd_tcp, NULL, NULL)).detach();
+  }
+}
+
+template <typename T>
+void ServerMonitor<T>::EnableTCP(int port) {
+  if ((fd_tcp = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    cerr << "Error opening socket" << endl;
+  
+  server_tcp.sin_family	     = AF_INET;
+  server_tcp.sin_port	     = htons(port);
+  server_tcp.sin_addr.s_addr = INADDR_ANY;
+
+  if (bind(fd_tcp, (struct sockaddr *) &server_tcp, sizeof(server_tcp)) < 0)
+    cerr << "Error binding socket" << endl;
+
+  listen(fd_tcp, 5);
+
+  cout << "Listening on port " << port << endl;
+
+  thread(&ServerMonitor::AcceptTCP, this).detach();
+
 }
