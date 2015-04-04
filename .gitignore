@@ -7,6 +7,7 @@
 *.swp
 
 src/web-UI/node_modules/
+examples/generic/automation/node_modules/
 docs/
 
 server
