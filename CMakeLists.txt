@@ -3,7 +3,7 @@ project (APIMonitor)
 
 include(ExternalProject)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O0 -Wall -Wextra -Werror ${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O0 -Wall -Wextra ${CMAKE_CXX_FLAGS} -g")
 set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/monitorAPI")
 
 include_directories("${PROJECT_SOURCE_DIR}/include/")
