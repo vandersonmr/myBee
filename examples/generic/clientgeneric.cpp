@@ -63,19 +63,33 @@ void RunCommand(TYPE data) {
   cout << data.getCommand() << endl;
   if (data.getCommand() == "toggle-tv1") {
     cout << "Toggling TV power button" << endl;
-    system("echo 'tx 10 44 6B' | cec-client -s");
+    system("echo 'tx 10 44 6B' | cec-client -s -d 1");
   }
+}
+
+TYPE GetTVPower() {
+  TYPE gen("tv power");
+  gen.setType(4);
+  FILE* fp = popen("echo 'pow 0' | cec-client -s -d 1", "r");
+  char buffer[1024];
+  while (fgets(buffer, sizeof(buffer), fp) != NULL);
+  sscanf(buffer, "%*[^:]: %s", buffer);
+  gen.setStatus(string(buffer));
+  pclose(fp);
+  return gen;
 }
 
 int main(int argc, char **argv) {
   ClientMonitor<TYPE> monitor(&argc, argv);
 
-  monitor.SendMessageForEachGenerator(true);
+  //monitor.SendMessageForEachGenerator(true);
 
-  monitor.AddDataGenerator("generic data", 0, &GetGenericData);
-  monitor.AddDataGenerator("temperature", 3, &GetTemperature);
-  monitor.AddDataGenerator("humidity", 15, &GetHumidity);
-  monitor.AddDataGenerator("pressure", 20, &GetPressure);
+  //monitor.AddDataGenerator("generic data", 0, &GetGenericData);
+  //monitor.AddDataGenerator("temperature", 3, &GetTemperature);
+  //monitor.AddDataGenerator("humidity", 15, &GetHumidity);
+  //monitor.AddDataGenerator("pressure", 20, &GetPressure);
+
+  monitor.AddDataGenerator("tv power", &GetTVPower);
 
   monitor.HandleServerMessages(&RunCommand);
 
