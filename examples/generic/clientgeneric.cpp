@@ -82,12 +82,12 @@ TYPE GetTVPower() {
 int main(int argc, char **argv) {
   ClientMonitor<TYPE> monitor(&argc, argv);
 
-  //monitor.SendMessageForEachGenerator(true);
+  monitor.SendMessageForEachGenerator(true);
 
   //monitor.AddDataGenerator("generic data", 0, &GetGenericData);
-  //monitor.AddDataGenerator("temperature", 3, &GetTemperature);
-  //monitor.AddDataGenerator("humidity", 15, &GetHumidity);
-  //monitor.AddDataGenerator("pressure", 20, &GetPressure);
+  monitor.AddDataGenerator("temperature", 3, &GetTemperature);
+  monitor.AddDataGenerator("humidity", 15, &GetHumidity);
+  monitor.AddDataGenerator("pressure", 20, &GetPressure);
 
   monitor.AddDataGenerator("tv power", &GetTVPower);
 
