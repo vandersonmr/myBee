@@ -31,8 +31,8 @@ bool RepaAPI<T>::InitRepa(vector<string> interests) {
 template<class T>
 message<T> RepaAPI<T>::GetMessage() {
   prefix_addr_t prefix_addr;
-  char* data = new char[1500];
-  char* interest = new char[255];
+  char* data = new char[2048];
+  char* interest = new char[512];
 
   bool has_message = false;
   
