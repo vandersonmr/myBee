@@ -281,12 +281,20 @@ void ServerMonitor<T>::ReceiveTCPMessage(int fd) {
   }
 }
 
+
+
 template <typename T>
 void ServerMonitor<T>::SendMessage(string nickname, string value) {
   vector<Data<T>> datas;
   Data<T> data;
+  time_t timenow;
+  time(&timenow);
+
+  data.type = string("command");
+  data.definedType.sensor = Type::None;
   PackValueFunction(data, value);
   data.nickname = nickname;
+  data.time = timenow;
   datas.push_back(data);
 
   vector<string> interests = {nickname};
@@ -294,6 +302,8 @@ void ServerMonitor<T>::SendMessage(string nickname, string value) {
   message<Data<T>> msg;
   msg.data = datas;
   msg.interests = interests;
+  msg.time = timenow;
+  msg.has_ack = false;
 
   repa.SendMessage(msg);
 }
