@@ -63,14 +63,14 @@ void RunCommand(TYPE data) {
   cout << data.getCommand() << endl;
   if (data.getCommand() == "toggle-tv1") {
     cout << "Toggling TV power button" << endl;
-    system("echo 'tx 10 44 6B' | cec-client -s -d 1");
+    system("./commands.sh 'toggle'");
   }
 }
 
 TYPE GetTVPower() {
   TYPE gen("tv power");
   gen.setType(4);
-  FILE* fp = popen("echo 'pow 0' | cec-client -s -d 1", "r");
+  FILE* fp = popen("./commands.sh 'status'", "r");
   char buffer[1024];
   while (fgets(buffer, sizeof(buffer), fp) != NULL);
   sscanf(buffer, "%*[^:]: %s", buffer);
