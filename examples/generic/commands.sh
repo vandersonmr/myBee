@@ -9,5 +9,11 @@ status() {
   echo "pow 0" | cec-client -s -d 1
 }
 
-while ps -e | grep cec-client; do :; done
+timenow=$(date +%s)
+while ps -e | grep cec-client; do 
+  let tim=$(date +%s)-$timenow; 
+  if [ $tim -ge 10 ]; then
+    pkill cec-client;
+  fi;
+done
 $1
