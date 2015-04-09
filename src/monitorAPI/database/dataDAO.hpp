@@ -105,7 +105,7 @@ void DataDAO<T>::saveData(Data<T> data, int status){
   stringstream ss;
   ss << data.value;
 
-  snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%s','%s','%d','%s')",
+  snprintf(query,LINE_SIZE,"INSERT INTO data VALUES ('%s','%s','%s','%s','%d','%s', null)",
       data.nickname.c_str(), date, data.type.c_str(), ss.str().c_str(), status, 
       (char*) data.node.c_str());
 
@@ -163,7 +163,7 @@ int DataDAO<T>::clearNodesOnline() {
 
 template <typename T>
 int DataDAO<T>::insertNodeOnline(string prefix) {
-  char* queryWithoutPrefix =  const_cast<char*>("insert into nodesOnline values ('%s')");
+  char* queryWithoutPrefix =  const_cast<char*>("insert into nodesOnline values ('%s', null)");
   char query[200];
   snprintf(query,200, queryWithoutPrefix, prefix.c_str());
   return mysql_query(connection, query);
