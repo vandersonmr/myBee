@@ -30,6 +30,11 @@ class ServerMonitor {
     bool is_machine_learning_enable = true;
 
   public:
+    /**@brief Enable the machine learning algorithms to be applied on the
+     * received data. Note that for this to work it must be enabled during
+     * compilation time.
+     * @param sensible 0 to disable and any number different from 0 to enable.
+     */
     void EnableMachineLearning(int);
 #endif
 
@@ -47,8 +52,16 @@ class ServerMonitor {
     void InitMonitor();
     static void Handler(int);
 
-  public: 
+  public:
+    /**@brief Creates a ServerMonitor instance.
+     */
     ServerMonitor();
+
+    /**@brief Creates a ServerMonitor instance, but it parses the commands passed
+     * on command line. Useful to set some variables during execution.
+     * @param argc the amount of arguments passed.
+     * @param argv an array containing all the arguments.
+     */
     ServerMonitor(int*, char**);
     ~ServerMonitor();
     void SetFilter(function<Data<T>(Data<T>)>);
@@ -56,8 +69,20 @@ class ServerMonitor {
     void EnableTCP(int);
     void Close();
     void Run();
-    void GetTimeServer();
-    void GetTimeClient();
+
+    /**@brief Set the time to be taken from the server. When the message
+     * is received it discards the time from the client and use the one from
+     * the server.
+     * This is useful to define which time will be saved on database.
+     * @see SetTimeClient()
+     */
+    void SetTimeServer();
+
+    /**@brief It uses the time received from the client. 
+     * @see SetTimeServer()
+     */
+    void SetTimeClient();
+
     void TCPPackFunction(function<void(Data<T>&, string)>);
 };
 
@@ -154,7 +179,7 @@ void ServerMonitor<T>::ParseArgs(int* argc, char** argv){
   for (int i = 1; i < num_args; i++){
     string arg = string(argv[i]);
     if (arg[0] == '-') {
-      if (arg[1] == 'c') GetTimeClient();
+      if (arg[1] == 'c') SetTimeClient();
 #ifdef ML
       else if (arg[1] == 'm'){
 	if (++i < num_args && string(argv[i]).compare("disable"))
@@ -164,7 +189,7 @@ void ServerMonitor<T>::ParseArgs(int* argc, char** argv){
 	else Usage();
       }
 #endif
-      else if (arg[1] == 's') GetTimeServer();
+      else if (arg[1] == 's') SetTimeServer();
       else if (arg[1] == 'h') Usage();
       else if (string(argv[i]) == "-tcp") {
 	if (i + 1 == num_args || argv[i + 1][0] == '-')
@@ -235,13 +260,13 @@ void ServerMonitor<T>::UpdateListOfNodesOnline() {
 }
 
 template <typename T>
-void ServerMonitor<T>::GetTimeServer(){
+void ServerMonitor<T>::SetTimeServer(){
   cout << "Getting time from server." << endl;
   this->is_time_client = false;
 }
 
 template <typename T>
-void ServerMonitor<T>::GetTimeClient(){
+void ServerMonitor<T>::SetTimeClient(){
   cout << "Getting time from client." << endl;
   this->is_time_client = true;
 }
