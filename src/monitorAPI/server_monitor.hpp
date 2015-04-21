@@ -63,11 +63,42 @@ class ServerMonitor {
      * @param argv an array containing all the arguments.
      */
     ServerMonitor(int*, char**);
+
+    /**@brief Terminates the ServerMonitor instance.
+     * @see Close()
+     */
     ~ServerMonitor();
+
+    /**@brief Function that will be applied for every message received from
+     * the client.
+     * @param filter Function with the data type as argument and returning the
+     * same data type. This is useful if you want to change the data before 
+     * persisting on the database.
+     */
     void SetFilter(function<Data<T>(Data<T>)>);
+
+    /**@brief All data received from the client will be saved on a database.
+     * @param config_path Path contaning the info to log in on the database
+     * @return EXIT_FAILURE if the connection failed or EXIT_SUCCESS if the
+     * connection succeed.
+     */
     int  EnablePersistence(string);
+
+    /**@brief Enables TCP/IP connection.
+     * @param port the port in which the server will listen and accept
+     * connections.
+     */
     void EnableTCP(int);
+
+    /**@brief Closes the database, repa and tcp connection. Killing all
+     * threads running.
+     */
     void Close();
+
+    /**@brief After everything has been configure, call this method
+     * to evoke all threads and leave the main flux blocked until
+     * the Close method has been called.
+     */
     void Run();
 
     /**@brief Set the time to be taken from the server. When the message
@@ -83,6 +114,13 @@ class ServerMonitor {
      */
     void SetTimeClient();
 
+    /**@brief If TCP/IP connection is enabled, it is necessary to pass a 
+     * function which packs the data received from a TCP client to send to
+     * a client using the repa protocol.
+     * @param callback A function with two parameters where the second is the
+     * message received from the TCP client and the first the data type used
+     * between the server/client repa protocol communication.
+     */
     void TCPPackFunction(function<void(Data<T>&, string)>);
 };
 
