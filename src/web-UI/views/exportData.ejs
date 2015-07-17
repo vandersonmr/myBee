@@ -1,4 +1,7 @@
+<% var media = 0.0; var quantidade_temperatura = 0; %>
 <%= 'Prefix' -%>, <%= 'Date' -%>, <%= 'Type' -%>, <%= 'Value' -%>, <%= 'Status' -%>
-<% for(var i in result) { var data = result[i] %> 
+<% for(var i in result) { var data = result[i]; if (data.Type === 'temperature') { media += parseFloat(data.Value); quantidade_temperatura += 1; } %> 
 <%= data.Prefix -%>, <%= data.Date -%>, <%= data.Type -%>, <%= data.Value -%>, <%= data.Status -%>
 <% } %>
+<%= 'Média\n' -%>
+<%= 'temperatura' -%>, <%= media / quantidade_temperatura -%>
