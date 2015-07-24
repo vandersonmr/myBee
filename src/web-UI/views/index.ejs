@@ -21,7 +21,6 @@
       </div>
     </nav>
 	
-    
     <div class="image">
         <center><img src="bee.gif" style="display:none" id="theBee"></center>
     </div>
@@ -33,6 +32,11 @@
       Intervalo de tempo (minutos): <input type="number" id="intervalVal" min="1" value="15"> 
       </center>
     </div>
+ 
+    <div id="download-dialog" title="Download" style="display:none;" >
+      Selecione a extensão que deseja realizar o download.
+    </div>
+
 
     <div id="historico" class="jumbotron">
       <center>
@@ -53,6 +57,8 @@
     </div>
 
     <script language="javascript" type="text/javascript" src="/lang/statusMsgPT.json"></script>
+    <script language="javascript" type="text/javascript" src="/javascripts/libs/FileSaver/FileSaver.js"></script>
+    <script language="javascript" type="text/javascript" src="/javascripts/jspdf.js"></script>
     <script language="javascript" type="text/javascript" src="/javascripts/konami.js"></script>
     <script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.js"></script>
     <script language="javascript" type="text/javascript" src="/javascripts/flot/jquery-ui.js"></script>
