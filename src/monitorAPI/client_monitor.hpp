@@ -40,23 +40,95 @@ class ClientMonitor {
     static void Handler(int);
 
   public:
-    /**@brief Create a ClientMonitor
-     * @param Name is a string used to identify this client on the server
-     * @param Freq is the frequence that data is generated and sent to the server
+    /**@brief Create a ClientMonitor instance.
+     * @param node_Name is a string used to identify this client on the server
+     * @param freq is the frequence in seconds that data is generated 
+     * and sent to the server
      */
     ClientMonitor(string, int);
+    
+    /**@brief Create a ClientMonitor instance. This can be used to automatically
+     * initiate the function to parse the command line arguments. It is used like
+     * a helper showing which commands the user can pass.
+     * @param argc the amount of arguments passed on command line.
+     * @param argv array containing the arguments passed to the program.
+     */
     ClientMonitor(int*, char**);
+
+    /**@brief Destroys the instance and close the communication.
+     * @see Close()
+     */
     ~ClientMonitor();
+
+    /**@brief Add a generator to get data to send to the server. The amount of
+     * time is specified by the freq
+     * @see SetFreq()
+     * @param name the name of the data generator.
+     * @param callback the function used to generate the data.
+     */
     void AddDataGenerator(string, function<T(void)>);
+
+    /**@see AddDataGenerator(string, function<T(void>)
+     * @param freq the time in seconds which will generate the data to send
+     * to server
+     */
     void AddDataGenerator(string, int, function<T(void)>);
+
+    /**@see AddDataGenerator(string, function<T(<void>)
+     * @param type the type of the generator in which the data is been generated.
+     * For example, if the data is the type of temperature, set the type like this
+     * Type::Temperature.
+     */
     void AddDataGenerator(string, Type  , function<T(void)>);
+
+    /**@brief Remove a generator given the name of the specific generator.
+     * @param name name of the generator.
+     */
     void RmDataGenerator(string);
+
+    /**@brief By default it is sent one message for all the generators. This
+     * method gives the possibility to send a message for each generator. It
+     * is important when the interval time for each generator is different.
+     * @param val true to send for each or false to send one message for all.
+     */
     void SendMessageForEachGenerator(bool);
+
+    /**@brief The interval time that all the generators will be getting
+     * the data.
+     * @param freq interval time in seconds.
+     */
     void SetFreq(int);
+
+    /**@brief Set the interest which all the messages will be sent.
+     * @param interest an array containing all the interest. By default
+     * the interest is already set on "server".
+     */
     void SetInterest(vector<string>);
+
+    /**@brief Close the repa communication and the main flux is unblocked
+     * from the Run() method
+     */
     void Close();
+
+    /**@brief If after 30 seconds there is not a response from the server
+     * that the message has arrived, it resends it. You can change the time
+     * on the TIMEOUT_TIME variable
+     * @param value true to enable and false to disable.
+     */
     void EnableACK(bool);
+
+    /**@brief This method is used for the execution not terminate. After
+     * everything has been initialized, it left threads generating data,
+     * so the main flux needs to be blocked to not terminate.
+     */
     void Run();
+
+    /**@brief Apply some filter for the messages received from the server.
+     * If you don't want to do anything with the messages received from server,
+     * just leave this alone.
+     * @param callback the function that will be executed on the particular message.
+     * It works like a filter
+     */
     void HandleServerMessages(function<void(T)>);
 };
 

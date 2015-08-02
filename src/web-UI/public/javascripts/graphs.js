@@ -367,9 +367,12 @@ function nodeGraphManager(name, divId, options){
 
     var node_name = this.name;
     function exportData() {
-      var filter = []
+      var filter = [];
       choiceContainer.find("input:checked").each(function() {
-        filter.push(pai.data[$(this).attr("name")].label.replace(' ', ''));
+        var val = $(this).attr("name");
+        if (!isNaN(val)) {
+          filter.push(pai.data[val].label.replace(' ', ''));
+        }
       });
       if (filter.length > 0) {
         var mode = node_name;
@@ -379,13 +382,10 @@ function nodeGraphManager(name, divId, options){
         // make the data downloadable for the user.
         if (!is_loading) {
           is_loading = true;
+          $("#historico").hide();
+          $("#GraphsGrid").hide();
           $("#loading").show();
-          $.get('exportData/'+mode).success(
-              function(data){
-                saveOnFile(data);
-              });
-          $("#loading").hide();
-          is_loading = false;
+          showDownloadDialog(mode);
         }
         else alertLoading();
       } else {
@@ -438,13 +438,64 @@ function nodeGraphManager(name, divId, options){
 
 }
 
-function saveOnFile(data) {
+function showDownloadDialog(mode) {
+  var hideLoading = function() {
+    $("#loading").hide();
+    $('.nav li').removeClass('active');
+    $("#ltempoReal").addClass('active');
+    $("#ltempoReal").click();
+    is_loading = false;
+    $("#download-dialog").dialog('close');
+  }
+  
+  $("#download-dialog").dialog({
+    open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
+    position: "bottom",
+    closeOnEscape: false,
+    buttons: {
+      'csv': {
+        text: 'CSV',
+        click: function() {
+          $.get('exportData/'+mode+'=csv').success(
+            function(data){
+              saveOnFileCSV(data);
+              hideLoading();
+            });
+        }
+      },
+      'pdf': {
+        text: 'PDF',
+        click: function() {
+          $.get('exportData/'+mode+'=pdf').success(
+            function(data) {
+              saveOnFilePDF(data);
+              hideLoading();
+            });
+        }
+      },
+      'cancelar': {
+        text: 'Cancelar',
+        click: function() {
+          $("#download-dialog").dialog('close');
+          hideLoading();
+        }
+      }
+  }});
+}
+
+function saveOnFileCSV(data) {
   var a      = document.createElement('a');
   a.href     = 'data:attachment/csv;charset=utf-8,' + encodeURIComponent(data);
   a.target   = '_blank';
   a.download = 'data.csv';
   document.body.appendChild(a);
   a.click();
+}
+
+function saveOnFilePDF(data) {
+  var doc = new jsPDF();
+  doc.text(20, 20, data);
+  doc.save("data.pdf");
 }
 
 var graphList = {}
@@ -659,15 +710,7 @@ $("#lexportar").click(function() {
     $("#GraphsGrid").hide();
     $("#loading").show();
     var mode = "all";
-    $.get('exportData/'+mode).success(
-      function(data) {
-        saveOnFile(data);
-        $("#loading").hide();
-        $('.nav li').removeClass('active');
-        $("#ltempoReal").addClass('active');
-        $("#ltempoReal").click();
-      });
-    is_loading = false;
+    showDownloadDialog(mode);
   }
   else alertLoading();
 });

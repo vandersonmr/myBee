@@ -30,6 +30,11 @@ class ServerMonitor {
     bool is_machine_learning_enable = true;
 
   public:
+    /**@brief Enable the machine learning algorithms to be applied on the
+     * received data. Note that for this to work it must be enabled during
+     * compilation time.
+     * @param sensible 0 to disable and any number different from 0 to enable.
+     */
     void EnableMachineLearning(int);
 #endif
 
@@ -47,17 +52,75 @@ class ServerMonitor {
     void InitMonitor();
     static void Handler(int);
 
-  public: 
+  public:
+    /**@brief Creates a ServerMonitor instance.
+     */
     ServerMonitor();
+
+    /**@brief Creates a ServerMonitor instance, but it parses the commands passed
+     * on command line. Useful to set some variables during execution.
+     * @param argc the amount of arguments passed.
+     * @param argv an array containing all the arguments.
+     */
     ServerMonitor(int*, char**);
+
+    /**@brief Terminates the ServerMonitor instance.
+     * @see Close()
+     */
     ~ServerMonitor();
+
+    /**@brief Function that will be applied for every message received from
+     * the client.
+     * @param filter Function with the data type as argument and returning the
+     * same data type. This is useful if you want to change the data before 
+     * persisting on the database.
+     */
     void SetFilter(function<Data<T>(Data<T>)>);
+
+    /**@brief All data received from the client will be saved on a database.
+     * @param config_path Path contaning the info to log in on the database
+     * @return EXIT_FAILURE if the connection failed or EXIT_SUCCESS if the
+     * connection succeed.
+     */
     int  EnablePersistence(string);
+
+    /**@brief Enables TCP/IP connection.
+     * @param port the port in which the server will listen and accept
+     * connections.
+     */
     void EnableTCP(int);
+
+    /**@brief Closes the database, repa and tcp connection. Killing all
+     * threads running.
+     */
     void Close();
+
+    /**@brief After everything has been configure, call this method
+     * to evoke all threads and leave the main flux blocked until
+     * the Close method has been called.
+     */
     void Run();
-    void GetTimeServer();
-    void GetTimeClient();
+
+    /**@brief Set the time to be taken from the server. When the message
+     * is received it discards the time from the client and use the one from
+     * the server.
+     * This is useful to define which time will be saved on database.
+     * @see SetTimeClient()
+     */
+    void SetTimeServer();
+
+    /**@brief It uses the time received from the client. 
+     * @see SetTimeServer()
+     */
+    void SetTimeClient();
+
+    /**@brief If TCP/IP connection is enabled, it is necessary to pass a 
+     * function which packs the data received from a TCP client to send to
+     * a client using the repa protocol.
+     * @param callback A function with two parameters where the second is the
+     * message received from the TCP client and the first the data type used
+     * between the server/client repa protocol communication.
+     */
     void TCPPackFunction(function<void(Data<T>&, string)>);
 };
 
@@ -154,7 +217,7 @@ void ServerMonitor<T>::ParseArgs(int* argc, char** argv){
   for (int i = 1; i < num_args; i++){
     string arg = string(argv[i]);
     if (arg[0] == '-') {
-      if (arg[1] == 'c') GetTimeClient();
+      if (arg[1] == 'c') SetTimeClient();
 #ifdef ML
       else if (arg[1] == 'm'){
 	if (++i < num_args && string(argv[i]).compare("disable"))
@@ -164,7 +227,7 @@ void ServerMonitor<T>::ParseArgs(int* argc, char** argv){
 	else Usage();
       }
 #endif
-      else if (arg[1] == 's') GetTimeServer();
+      else if (arg[1] == 's') SetTimeServer();
       else if (arg[1] == 'h') Usage();
       else if (string(argv[i]) == "-tcp") {
 	if (i + 1 == num_args || argv[i + 1][0] == '-')
@@ -235,13 +298,13 @@ void ServerMonitor<T>::UpdateListOfNodesOnline() {
 }
 
 template <typename T>
-void ServerMonitor<T>::GetTimeServer(){
+void ServerMonitor<T>::SetTimeServer(){
   cout << "Getting time from server." << endl;
   this->is_time_client = false;
 }
 
 template <typename T>
-void ServerMonitor<T>::GetTimeClient(){
+void ServerMonitor<T>::SetTimeClient(){
   cout << "Getting time from client." << endl;
   this->is_time_client = true;
 }
