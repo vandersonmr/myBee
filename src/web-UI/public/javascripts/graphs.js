@@ -493,8 +493,8 @@ function saveOnFileCSV(data) {
 }
 
 function saveOnFilePDF(data) {
-  var doc = new jsPDF();
-  doc.text(20, 20, data);
+  var doc = new jsPDF('p', 'pt');
+  doc.autoTable(data.columns, data.values, {});
   doc.save("data.pdf");
 }
 

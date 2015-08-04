@@ -11,7 +11,9 @@ exports.exportData = function(req, res) {
     var humidade_total = 0.0;
     var qtde_temp = 0;
     var qtde_hum = 0;
+    var values = [];
     for (var i = 0; i < data.length; i++) {
+      values.push({"tipo": data[i].Type, "valor": data[i].Value});
       if (data[i].Type === 'temperature') {
         temperatura_total += parseFloat(data[i].Value);
         qtde_temp += 1;
@@ -49,8 +51,13 @@ exports.exportData = function(req, res) {
 
     if (query[1] === 'csv')
       res.render('exportData', { layout : false, result : data_json })
-    else if (query[1] === 'pdf')
-      res.render('exportDataPDF', { layout : false, result : data })
+    else if (query[1] === 'pdf') {
+      var columns = [
+        {title: "Tipo", key: "tipo"},
+        {title: "Valor", key: "valor"}
+      ];
+      res.send({columns: columns, values: values});
+    }
   }
   if (query[0] === 'all') {
     dataDAO.getAllValues(renderize);
