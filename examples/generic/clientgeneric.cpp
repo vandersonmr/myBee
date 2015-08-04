@@ -79,6 +79,18 @@ TYPE GetTVPower() {
   return gen;
 }
 
+TYPE GetIP() {
+  TYPE gen("ip address");
+  gen.setType(5);
+  FILE* fp = popen("curl ipconfig.me", "r");
+  char buffer[1024];
+  while (fgets(buffer, sizeof(buffer), fp) != NULL);
+  sscanf(buffer, "%[^\n]", buffer);
+  gen.setIP(string(buffer));
+  pclose(fp);
+  return gen;
+}
+
 int main(int argc, char **argv) {
   ClientMonitor<TYPE> monitor(&argc, argv);
 
@@ -90,6 +102,8 @@ int main(int argc, char **argv) {
   monitor.AddDataGenerator("pressure", 20, &GetPressure);
 
   monitor.AddDataGenerator("tv power", &GetTVPower);
+  
+  monitor.AddDataGenerator("ip address", 300, &GetIP);
 
   monitor.HandleServerMessages(&RunCommand);
 
