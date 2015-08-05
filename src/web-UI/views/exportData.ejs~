@@ -1,0 +1,19 @@
+<%= 'Prefix' -%>, <%= 'Date' -%>, <%= 'Type' -%>, <%= 'Value' -%>, <%= 'Status' -%>
+<% for(var i in result.data) { %>
+<% var data = result.data[i] %> <%= data.Prefix -%>, <%= data.Date -%>, <%= data.Type -%>, <%= data.Value -%>, <%= data.Status -%>
+<% } %>
+<%= %>
+<%= 'Media' %>
+<%= 'temperatura' -%>, <%= result.temperatura_media %>
+<%= %>
+<%= 'humidade' -%>, <%= result.humidade_media %>
+<%= '\n' %>
+<%= 'Variancia' %>
+<%= 'temperatura' -%>, <%= result.temperatura_variancia %>
+<%= %>
+<%= 'humidade' -%>, <%= result.humidade_variancia %>
+<%= '\n' %>
+<%= 'Desvio Padrao' %>
+<%= 'temperatura' -%>, <%= result.temperatura_desvio %>
+<%= %>
+<%= 'humidade' -%>, <%= result.humidade_desvio %>

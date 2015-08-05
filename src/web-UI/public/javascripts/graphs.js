@@ -473,6 +473,16 @@ function showDownloadDialog(mode) {
             });
         }
       },
+      'txt': {
+        text: 'TXT',
+        click: function() {
+          $.get('exportData/'+mode+'=txt').success(
+            function(data) {
+              saveOnFileTXT(data);
+              hideLoading();
+            });
+        }
+      },
       'cancelar': {
         text: 'Cancelar',
         click: function() {
@@ -494,8 +504,21 @@ function saveOnFileCSV(data) {
 
 function saveOnFilePDF(data) {
   var doc = new jsPDF('p', 'pt');
+  doc.text(20,20,"Relatório de dados do Apiário");
   doc.autoTable(data.columns, data.values, {});
+  doc.addPage();
+  doc.text(20,20,"Estatísticas da captura:");
+  doc.autoTable(data.columns2, data.values2, {});
   doc.save("data.pdf");
+}
+
+function saveOnFileTXT(data) {
+  var a      = document.createElement('a');
+  a.href     = 'data:attachment/txt;charset=utf-8,' + encodeURIComponent(data);
+  a.target   = '_blank';
+  a.download = 'data.txt';
+  document.body.appendChild(a);
+  a.click();
 }
 
 var graphList = {}
