@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11 -O0 -Wall -Wextra  -g    CMakeFiles/clientrandom.dir/examples/random/client.cpp.o  -o clientrandom -rdynamic /usr/lib/librepa.so -lpthread -lpython2.7 -lmysqlclient 

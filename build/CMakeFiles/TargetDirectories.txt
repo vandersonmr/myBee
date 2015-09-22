@@ -1,0 +1,7 @@
+/home/jao/WirelessSensorNetwork-Framework/build/CMakeFiles/ML.dir
+/home/jao/WirelessSensorNetwork-Framework/build/CMakeFiles/clientgeneric.dir
+/home/jao/WirelessSensorNetwork-Framework/build/CMakeFiles/clientrandom.dir
+/home/jao/WirelessSensorNetwork-Framework/build/CMakeFiles/clientsim.dir
+/home/jao/WirelessSensorNetwork-Framework/build/CMakeFiles/extern_lib_repa.dir
+/home/jao/WirelessSensorNetwork-Framework/build/CMakeFiles/server.dir
+/home/jao/WirelessSensorNetwork-Framework/build/CMakeFiles/servergeneric.dir

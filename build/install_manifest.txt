@@ -1,0 +1,5 @@
+/home/jao/WirelessSensorNetwork-Framework/src/monitorAPI/../../examples/server
+/home/jao/WirelessSensorNetwork-Framework/src/monitorAPI/../../examples/random/clientrandom
+/home/jao/WirelessSensorNetwork-Framework/src/monitorAPI/../../examples/simuladorFazenda/clientsim
+/home/jao/WirelessSensorNetwork-Framework/src/monitorAPI/../../examples/generic/clientgeneric
+/home/jao/WirelessSensorNetwork-Framework/src/monitorAPI/../../examples/generic/servergeneric

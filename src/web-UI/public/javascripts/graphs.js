@@ -450,13 +450,14 @@ function showDownloadDialog(mode) {
   
   $("#download-dialog").dialog({
     open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
-    position: "bottom",
+    position: "center",
     closeOnEscape: false,
     buttons: {
       'csv': {
         text: 'CSV',
         click: function() {
-          $.get('exportData/'+mode+'=csv').success(
+          var periodo = $('#download-period').val();
+          $.get('exportData/'+mode+'=csv&period='+periodo).success(
             function(data){
               saveOnFileCSV(data);
               hideLoading();
@@ -466,7 +467,8 @@ function showDownloadDialog(mode) {
       'pdf': {
         text: 'PDF',
         click: function() {
-          $.get('exportData/'+mode+'=pdf').success(
+          var periodo = $('#download-period').val();
+          $.get('exportData/'+mode+'=pdf&period='+periodo).success(
             function(data) {
               saveOnFilePDF(data);
               hideLoading();
