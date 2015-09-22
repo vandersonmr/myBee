@@ -377,7 +377,7 @@ function nodeGraphManager(name, divId, options){
       if (filter.length > 0) {
         var mode = node_name;
         for (var i in filter) {
-          mode += "&" + filter[i];
+          mode += "," + filter[i];
         }
         // make the data downloadable for the user.
         if (!is_loading) {
@@ -457,7 +457,7 @@ function showDownloadDialog(mode) {
         text: 'CSV',
         click: function() {
           var periodo = $('#download-period').val();
-          $.get('exportData/'+mode+'=csv&period='+periodo).success(
+          $.get('exportData/node='+mode+'&format=csv&period='+periodo).success(
             function(data){
               saveOnFileCSV(data);
               hideLoading();
@@ -468,7 +468,7 @@ function showDownloadDialog(mode) {
         text: 'PDF',
         click: function() {
           var periodo = $('#download-period').val();
-          $.get('exportData/'+mode+'=pdf&period='+periodo).success(
+          $.get('exportData/node='+mode+'&format=pdf&period='+periodo).success(
             function(data) {
               saveOnFilePDF(data);
               hideLoading();
@@ -478,7 +478,8 @@ function showDownloadDialog(mode) {
       'txt': {
         text: 'TXT',
         click: function() {
-          $.get('exportData/'+mode+'=txt').success(
+          var periodo = $('#download-period').val();
+          $.get('exportData/node='+mode+'&format=txt&period='+periodo).success(
             function(data) {
               saveOnFileTXT(data);
               hideLoading();
