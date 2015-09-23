@@ -6,7 +6,7 @@ exports.exportData = function(req, res) {
   var query = req.params.mode.split('&');
   var node = query[0].split('=')[1];
   var format = query[1].split('=')[1];
-  var period = query[2].split('=')[1];
+  var period = parseInt(query[2].split('=')[1]) - 1;
   function renderize(data){
     
     /* calculo da temperatura e umidade media */
@@ -76,11 +76,11 @@ exports.exportData = function(req, res) {
 	res.render('exportDataTXT', { layout : false, result : data_json })
   }
   if (node === 'all') {
-    dataDAO.getAllValues(renderize);
+    dataDAO.getAllValuesByPeriod(period, renderize);
   } else {
     var request = node.split(',');
     if (request.length == 0) return;
     var node_name = request.shift();
-    dataDAO.getValuesFrom(node_name, request, renderize);
+    dataDAO.getValuesFromByPeriod(node_name, request, period, renderize);
   }
 };
