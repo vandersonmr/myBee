@@ -3,7 +3,10 @@
  */
 
 exports.exportData = function(req, res) {
-  var query = req.params.mode.split('=');
+  var query = req.params.mode.split('&');
+  var node = query[0].split('=')[1];
+  var format = query[1].split('=')[1];
+  var period = parseInt(query[2].split('=')[1]) - 1;
   function renderize(data){
     
     /* calculo da temperatura e umidade media */
@@ -53,9 +56,9 @@ exports.exportData = function(req, res) {
       umidade_desvio: Math.sqrt(umidade_variancia)
     };
 
-    if (query[1] === 'csv')
+    if (format === 'csv')
       res.render('exportData', { layout : false, result : data_json })
-    else if (query[1] === 'pdf') {
+    else if (format === 'pdf') {
       var columns = [
 	{title: "Data", key: "data"},
         {title: "Tipo", key: "tipo"},
@@ -69,15 +72,15 @@ exports.exportData = function(req, res) {
       ];
       res.send({columns: columns, columns2: columns2, values: values, values2: values2});
     }
-    else if (query[1] === 'txt')
+    else if (format === 'txt')
 	res.render('exportDataTXT', { layout : false, result : data_json })
   }
-  if (query[0] === 'all') {
-    dataDAO.getAllValues(renderize);
+  if (node === 'all') {
+    dataDAO.getAllValuesByPeriod(period, renderize);
   } else {
-    var request = query[0].split('&');
+    var request = node.split(',');
     if (request.length == 0) return;
     var node_name = request.shift();
-    dataDAO.getValuesFrom(node_name, request, renderize);
+    dataDAO.getValuesFromByPeriod(node_name, request, period, renderize);
   }
 };

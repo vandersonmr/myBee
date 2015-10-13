@@ -1,0 +1,2 @@
+/usr/bin/ar cr libML.a  CMakeFiles/ML.dir/src/monitorAPI/machineLearning/KCentroid.cpp.o CMakeFiles/ML.dir/src/monitorAPI/machineLearning/limit.cpp.o CMakeFiles/ML.dir/src/monitorAPI/machineLearning/Krls.cpp.o CMakeFiles/ML.dir/src/monitorAPI/machineLearning/machineLearning.cpp.o CMakeFiles/ML.dir/src/monitorAPI/machineLearning/ManipulateData.cpp.o
+/usr/bin/ranlib libML.a

@@ -6,14 +6,14 @@
 <%= 'Media' %>
 <%= 'temperatura' -%>, <%= result.temperatura_media %>
 <%= %>
-<%= 'humidade' -%>, <%= result.humidade_media %>
+<%= 'umidade' -%>, <%= result.umidade_media %>
 <%= '\n' %>
 <%= 'Variancia' %>
 <%= 'temperatura' -%>, <%= result.temperatura_variancia %>
 <%= %>
-<%= 'humidade' -%>, <%= result.humidade_variancia %>
+<%= 'umidade' -%>, <%= result.umidade_variancia %>
 <%= '\n' %>
 <%= 'Desvio Padrao' %>
 <%= 'temperatura' -%>, <%= result.temperatura_desvio %>
 <%= %>
-<%= 'humidade' -%>, <%= result.humidade_desvio %>
+<%= 'umidade' -%>, <%= result.umidade_desvio %>

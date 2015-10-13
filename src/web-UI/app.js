@@ -11,7 +11,8 @@ var express     =  require('express')
   , exportData  =  require('./routes/exportData')
   , deleteData  =  require('./routes/deleteData')
   , _mysql      =  require('mysql')
-  , dataDB      =  require('./public/javascripts/dataDAO');
+  , dataDB      =  require('./public/javascripts/dataDAO')
+  , service     =  require('./public/javascripts/service')
 
 // DataBase - Mysql
 
@@ -31,6 +32,7 @@ var db_config = {
 var mysql;
 
 dataDAO = null;
+sv = new service.service();
 
 function connectToDatabase() {
     mysql = _mysql.createConnection(db_config); // Recreate the connection, since

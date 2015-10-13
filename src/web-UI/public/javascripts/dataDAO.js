@@ -26,18 +26,34 @@ exports.dataDAO = function(mysql) {
             else {
               callBack(result);
             }
-      });
+          });
   }
 
   this.getAllValues = function(callBack) {
     var queryText = "select * from data order by Prefix;"
+      mysql.query(queryText,
+          function(err, result, fields) {
+            if (err) throw err;
+            else {
+              callBack(result);
+            }
+          });
+  }
+
+  this.getAllValuesByPeriod = function(period, callBack) {
+    var queryText = "select * from data where ";
+    for (var i = period * 6; i < ((period + 1) * 6); i++) {
+      if (i > period * 6) queryText += "or ";
+      queryText += "Date like \'% " + sv.pad(i, 2) + ":%\' ";
+    }
+    queryText += "order by Prefix;";
     mysql.query(queryText,
-      function(err, result, fields) {
-        if (err) throw err;
-        else {
-          callBack(result);
-        }
-    });
+        function(err, result, fields) {
+          if (err) throw err;
+          else {
+            callBack(result);
+          }
+        });
   }
 
   this.getAllFrom = function(nodeName, callBack) {
@@ -55,35 +71,55 @@ exports.dataDAO = function(mysql) {
     var query  = "select * from data where Prefix = '" + nodeName + "'";
     if (types != null || types.length > 0) query += this.addFilter(types);
     mysql.query(query,
-      function(err, result, fields) {
-        if (err) throw err;
-        else {
-          callBack(result);
-        }
-    });
+        function(err, result, fields) {
+          if (err) throw err;
+          else {
+            callBack(result);
+          }
+        });
   }
+
+  this.getValuesFromByPeriod = function(nodeName, types, period, callBack) {
+    var query  = "select * from data where Prefix = '" + nodeName + "'";
+    if (types != null || types.length > 0) query += this.addFilter(types);
+    query += " and (";
+    for (var i = period * 6; i < ((period + 1) * 6); i++) {
+      if (i > period * 6) query += "or ";
+      query += "Date like \'% " + sv.pad(i, 2) + ":%\' ";
+    }
+    query += ")"
+    mysql.query(query,
+        function(err, result, fields) {
+          if (err) throw err;
+          else {
+            callBack(result);
+          }
+        });
+  }
+
+
 
   this.deleteAllValues = function(callBack) {
     var query = "delete from data";
     mysql.query(query,
-      function(err, result, fields) {
-        if (err) throw err;
-        else {
-          callBack(result);
-      }
-    });
+        function(err, result, fields) {
+          if (err) throw err;
+          else {
+            callBack(result);
+          }
+        });
   }
 
   this.deleteValuesFrom = function(nodeName, types, callBack) {
     var query  = "delete from data where Prefix = '" + nodeName + "'";
     if (types != null || types.length > 0) query += this.addFilter(types);
     mysql.query(query,
-      function(err, result, fields) {
-        if (err) throw err;
-        else {
-          callBack(result);
-      }
-    });
+        function(err, result, fields) {
+          if (err) throw err;
+          else {
+            callBack(result);
+          }
+        });
   }
 
   this.createBackup = function(callBack) {
@@ -102,7 +138,7 @@ exports.dataDAO = function(mysql) {
     for (var i = 1; i < types.length; i++) {
       filter += " or Type = '" + types[i] + "'";
     }
-    filter += ");";
+    filter += ")";
     return filter;
   }
 }
